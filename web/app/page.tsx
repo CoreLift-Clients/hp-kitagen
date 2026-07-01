@@ -162,13 +162,21 @@ export default async function Home() {
                 </h2>
                 <SectionDivider />
                 <p className="text-sm md:text-base text-muted leading-[2.1] md:leading-[2.2] mb-8">
-                  ふらっと来ても、ちゃんと満足できる。
-                  <br />
-                  そんな一品をご用意しています。
+                  きたげんの名物は、自家製のしゅうまいと鉄鍋餃子。
                   <br className="hidden sm:block" />
-                  餃子やしゅうまい、唐揚げなど、
-                  <br />
-                  お酒が進む味に仕上げています。
+                  手間を惜しまず作る一品は、派手さはないけれど、
+                  <br className="hidden sm:block" />
+                  また食べたくなる味です。蒸したてのしゅうまい、
+                  <br className="hidden sm:block" />
+                  こんがり焼けた餃子を肴に、まずは一杯。
+                  <br className="hidden sm:block" />
+                  からあげ、豚の角煮、串の盛り合わせと、
+                  <br className="hidden sm:block" />
+                  箸もお酒も進む料理を取り揃えています。
+                  <br className="hidden sm:block" />
+                  飾らないけれど、&ldquo;ちゃんとうまい&rdquo;。
+                  <br className="hidden sm:block" />
+                  それがきたげんの一品です。
                 </p>
                 <Link
                   href="/menu"
