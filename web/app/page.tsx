@@ -97,9 +97,10 @@ export default async function Home() {
 
       {/* ── ② きたげんについて（テキスト左・画像右） ──────── */}
       <section className="py-24 px-4 section-light">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <ScrollReveal>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
+            {/* 写真=7 / テキスト=5：写真を大きく、テキストは読みやすい幅に保つ */}
+            <div className="grid grid-cols-1 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-12 md:gap-20 items-center">
               {/* テキスト */}
               <div>
                 <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-3">
@@ -139,9 +140,10 @@ export default async function Home() {
 
       {/* ── ③ こだわりの料理（画像左・テキスト右） ─────────── */}
       <section className="py-24 px-4 section-warm">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <ScrollReveal>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
+            {/* 写真=7 / テキスト=5：PCでは写真が左・大きく、テキストが右 */}
+            <div className="grid grid-cols-1 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] gap-12 md:gap-20 items-center">
               {/* 画像（スマホでは下に、PCでは左に） */}
               {/* public/food-main.jpg を配置してください */}
               <div className="order-2 md:order-1">
@@ -182,9 +184,10 @@ export default async function Home() {
 
       {/* ── ④ くつろぎの空間（テキスト左・画像右） ─────────── */}
       <section className="py-24 px-4 section-light">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <ScrollReveal>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
+            {/* 写真=7 / テキスト=5：写真を大きく、テキストは読みやすい幅に保つ */}
+            <div className="grid grid-cols-1 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-12 md:gap-20 items-center">
               {/* テキスト */}
               <div>
                 <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-3">
@@ -230,7 +233,7 @@ export default async function Home() {
 
       {/* ── ⑤ 料理ギャラリー ────────────────────────────────── */}
       <section className="py-20 px-4 section-deep">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <ScrollReveal>
             <div className="text-center mb-10">
               <p className="text-[10px] tracking-[0.45em] text-accent/80 mb-2">
