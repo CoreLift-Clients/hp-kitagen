@@ -34,6 +34,11 @@ function getRemotePatterns(): {
 }
 
 const nextConfig: NextConfig = {
+  // モノレポ親（corelift）に package-lock.json があるため、Next がワークスペース
+  // ルートを誤推定し tailwindcss を解決できなくなる。web/ をルートとして明示する。
+  turbopack: {
+    root: __dirname,
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: "20mb",
