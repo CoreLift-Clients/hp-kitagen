@@ -47,15 +47,30 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen">
-      {/* ── ① Hero ──────────────────────────────────────────── */}
-      <section className="relative h-[55vh] md:h-auto md:min-h-[82vh] flex items-center justify-center overflow-hidden bg-foreground">
+      {/* ── ① Hero ──────────────────────────────────────────────
+          ┌──────────────────────────────────────────────────────────┐
+          │ 【写真の差し込み口】撮影後、下記2枚を同名で上書きするだけ  │
+          │   ・PC横長  → web/public/images/hero/hero-pc.jpg           │
+          │   ・SP縦長  → web/public/images/hero/hero-sp.jpg           │
+          │ ※ 現状は仮画像。ファイル名は変えず同名で差し替えれば反映。 │
+          │ ※ 管理画面（口コミシステム）で hero.pc / hero.sp を        │
+          │    アップロードすると、そちらが自動で優先表示されます。    │
+          │ ※ 構図の見え方（顔・料理の位置）は positionPc/positionSp   │
+          │    の "center 40%" の数値で上下位置を微調整できます。      │
+          └──────────────────────────────────────────────────────────┘ */}
+      <section className="relative h-[62vh] md:h-auto md:min-h-[82vh] flex items-center justify-center overflow-hidden bg-foreground">
         <ParallaxHero
           srcSp={SITE_IMAGES.hero.sp}
           srcPc={SITE_IMAGES.hero.pc}
-          positionSp="center 40%"
+          positionSp="center 42%"
           positionPc="center 40%"
         />
-        <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/50 via-black/30 to-black/60" />
+
+        {/* オーバーレイ：写真の温かみは残しつつ、白文字を確実に読ませる2層構成 */}
+        {/* 1) 上下グラデーション（全体を軽く締め、下部をやや濃く） */}
+        <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/45 via-black/25 to-black/60" />
+        {/* 2) 中央ヴィネット：見出し・キャッチの背後だけ重点的に暗くし、端は写真を見せる */}
+        <div className="absolute inset-0 z-[1] bg-[radial-gradient(ellipse_62%_52%_at_50%_50%,rgba(0,0,0,0.4)_0%,transparent_72%)]" />
 
         <div className="hidden sm:block absolute top-20 left-8 w-8 h-8 border-t border-l border-white/25 z-10 hero-animate" />
         <div className="hidden sm:block absolute top-20 right-8 w-8 h-8 border-t border-r border-white/25 z-10 hero-animate" />
@@ -63,19 +78,19 @@ export default async function Home() {
         <div className="hidden sm:block absolute bottom-12 right-8 w-8 h-8 border-b border-r border-white/25 z-10 hero-animate" />
 
         <div className="relative z-10 text-center px-4">
-          <p className="text-xs tracking-[0.5em] text-white/60 mb-4 hero-animate">
+          <p className="text-xs tracking-[0.5em] text-white/70 mb-4 hero-animate text-shadow">
             IZAKAYA
           </p>
           <h1 className="text-5xl sm:text-7xl md:text-9xl font-bold mb-4 hero-animate-delay text-white text-shadow">
             きたげん
           </h1>
           <div className="flex items-center justify-center gap-3 mb-4 hero-animate-delay">
-            <div className="w-10 h-px bg-white/35" />
+            <div className="w-10 h-px bg-white/40" />
             <div className="w-1 h-1 rounded-full bg-accent" />
-            <div className="w-10 h-px bg-white/35" />
+            <div className="w-10 h-px bg-white/40" />
           </div>
-          <p className="text-sm sm:text-lg md:text-xl text-white/65 tracking-wide hero-animate-delay-2 text-shadow">
-            落ち着いて飲める、ちゃんとした居酒屋。
+          <p className="text-[15px] sm:text-lg md:text-xl text-white/85 tracking-wide hero-animate-delay-2 text-shadow">
+            ふらっと寄って、ちゃんとうまい。
           </p>
         </div>
       </section>
