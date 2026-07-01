@@ -11,6 +11,8 @@
  * ────────────────────────────────────────────────────────
  */
 
+import { PHONE_INTL } from "../lib/contact";
+
 const SITE_URL = "https://www.kitagen-izakaya.com";
 
 const restaurantJsonLd = {
@@ -18,7 +20,7 @@ const restaurantJsonLd = {
   "@type": "Restaurant",
   name: "IZAKAYA きたげん",
   url: SITE_URL,
-  telephone: "+81-70-1744-2839",
+  telephone: PHONE_INTL,
   image: `${SITE_URL}/og.png`,
   priceRange: "¥3,000〜4,000",
   servesCuisine: ["居酒屋", "中華"],

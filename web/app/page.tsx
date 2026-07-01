@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { Phone } from "lucide-react";
 import { getMenusForTop } from "./lib/menus";
 import { getAnnouncements } from "./lib/announcements";
 import { getSiteImages } from "./lib/site-images";
@@ -7,6 +8,7 @@ import ParallaxHero from "./components/ParallaxHero";
 import ScrollReveal from "./components/ScrollReveal";
 import PhotoStrip from "./components/PhotoStrip";
 import NewsCard from "./components/NewsCard";
+import { PHONE } from "./lib/contact";
 
 // 左右分割セクションの画像コンポーネント
 // public/ に画像を配置すれば自動で表示されます
@@ -184,7 +186,12 @@ export default async function Home() {
                   <br />
                   お一人様でもグループでも、気兼ねなくお過ごしください。
                   <br />
-                  宴会や飲み会のご予約もお気軽にどうぞ。
+                  <Link
+                    href="/#group-reservation"
+                    className="text-accent hover:text-accent-dark underline underline-offset-4 decoration-accent/40 transition-colors duration-200"
+                  >
+                    宴会や飲み会のご予約もお気軽にどうぞ。
+                  </Link>
                 </p>
                 <Link
                   href="/info"
@@ -283,11 +290,11 @@ export default async function Home() {
 
             {/* 本文 — 簡潔に3行以内 */}
             <p className="text-sm text-muted leading-[2.1] mb-12">
-              予約不要、お一人でもどうぞ。
+              ふらっと立ち寄って、ちゃんとおいしい。
               <br />
-              きたげんは、気軽に入れてちゃんとおいしい、
+              お一人でも、気兼ねなくどうぞ。
               <br />
-              桃谷の居酒屋です。
+              桃谷の居酒屋、きたげんです。
             </p>
 
             {/* CTA ボタン — 主従明確 */}
@@ -313,6 +320,45 @@ export default async function Home() {
               >
                 店舗情報・アクセス
               </Link>
+            </div>
+          </ScrollReveal>
+
+          {/* ── 団体・宴会のご予約（気軽さの導線とは視覚的に分離）──── */}
+          <ScrollReveal delay={80}>
+            <div id="group-reservation" className="mt-16 pt-12 border-t border-foreground/10 scroll-mt-24">
+              <div className="rounded-xl border border-border bg-background/70 p-7 sm:p-8">
+                <p className="text-[9px] tracking-[0.55em] text-accent/70 font-medium mb-3">
+                  PARTY &amp; GROUP
+                </p>
+                <p className="text-base font-bold text-foreground mb-1.5">
+                  ご宴会・団体でのご利用は
+                </p>
+                <p className="text-xs text-muted mb-7 leading-relaxed">
+                  お席をご用意しますので、お電話ください。
+                </p>
+
+                {/* 電話予約ボタン（番号込み・Header/MobileNav と同じ tel: パターン） */}
+                <a
+                  href={`tel:${PHONE}`}
+                  className="btn-lift inline-flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1
+                             w-full py-4 px-4 rounded-sm
+                             bg-accent text-white hover:bg-accent-dark
+                             font-bold text-sm tracking-wider
+                             transition-colors duration-200 active:scale-[0.98]"
+                >
+                  <span className="inline-flex items-center gap-2">
+                    <Phone size={16} strokeWidth={2} />
+                    団体・宴会のご予約
+                  </span>
+                  <span className="tabular-nums">{PHONE}</span>
+                </a>
+
+                <p className="text-xs text-muted/60 mt-5 leading-relaxed">
+                  ご予約時に「ホームページを見た」とお伝えください。
+                  <br />
+                  営業時間外（昼間・開店前）でも承ります。
+                </p>
+              </div>
             </div>
           </ScrollReveal>
         </div>

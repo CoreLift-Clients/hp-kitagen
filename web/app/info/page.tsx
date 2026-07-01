@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { MapPin, ExternalLink } from "lucide-react";
 import { listDocuments } from "../lib/adminDocuments";
 import CalendarViewer from "../components/CalendarViewer";
+import { PHONE } from "../lib/contact";
 import {
   BUSINESS_HOURS,
   REGULAR_CLOSED,
@@ -29,8 +30,6 @@ const SEATS = {
 };
 
 const PAYMENT = ["現金", "クレジットカード"];
-
-const PHONE = "070-1744-2839";
 
 const ACCESS = {
   address:     "〒544-0033 大阪府大阪市生野区\n勝山北1丁目2-13",
@@ -243,10 +242,12 @@ export default async function InfoPage() {
           <SectionLabel en="RESERVATION" ja="ご予約" />
 
           <p className="text-sm text-muted mb-1.5">
-            お電話でご予約いただけます。
+            ご宴会・団体でのご利用は、お電話でお席をご用意いたします。
           </p>
           <p className="text-xs text-muted/60 mb-8 leading-relaxed">
             お電話の際は「ホームページを見た」とお伝えいただくとご案内がスムーズです。
+            <br />
+            営業時間外（昼間・開店前）でも、ご予約のお電話を承ります。
           </p>
 
           <a

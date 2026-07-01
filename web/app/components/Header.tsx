@@ -4,8 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import MobileNav from "./MobileNav";
 import { NAV_LINKS } from "@/app/lib/nav";
-
-const TEL = "070-1744-2839";
+import { PHONE as TEL } from "@/app/lib/contact";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);

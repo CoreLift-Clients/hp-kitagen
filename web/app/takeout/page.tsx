@@ -3,13 +3,12 @@ import { ShoppingBag, Phone } from "lucide-react";
 import { getMenusForTakeout } from "../lib/menus";
 import { listDocuments } from "../lib/adminDocuments";
 import ImageGallery from "../components/ImageGallery";
+import { PHONE } from "../lib/contact";
 
 export const metadata: Metadata = {
   title: "テイクアウト｜きたげん",
   description: "きたげんの人気メニューをご自宅でもお楽しみいただけます。お電話でのご注文も可能です。",
 };
-
-const PHONE = "070-1744-2839";
 
 export default async function TakeoutPage() {
   const [items, takeoutDocs] = await Promise.all([
@@ -129,7 +128,7 @@ export default async function TakeoutPage() {
             </a>
             <p className="text-xs text-muted mt-3">タップで発信できます</p>
             <div className="border-t border-border/40 mt-5 pt-5 text-xs text-muted leading-relaxed">
-              受付時間は通常の営業時間内となります。<br />
+              テイクアウトのご注文受付は、通常の営業時間内となります。<br />
               お時間に余裕を持ってご連絡いただけますと幸いです。
             </div>
           </div>

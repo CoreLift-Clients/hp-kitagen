@@ -5,8 +5,7 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { Phone } from "lucide-react";
 import { NAV_LINKS } from "@/app/lib/nav";
-
-const TEL = "070-1744-2839";
+import { PHONE as TEL } from "@/app/lib/contact";
 
 export default function MobileNav() {
   const [open, setOpen] = useState(false);
