@@ -2,6 +2,12 @@ import type { Metadata } from "next";
 import { MapPin, ExternalLink } from "lucide-react";
 import { listDocuments } from "../lib/adminDocuments";
 import CalendarViewer from "../components/CalendarViewer";
+import {
+  BUSINESS_HOURS,
+  REGULAR_CLOSED,
+  LUNCH_SUSPENDED,
+  LUNCH_SUSPENDED_NOTICE,
+} from "../lib/businessHours";
 
 export const metadata: Metadata = {
   title: "店舗情報｜きたげん",
@@ -12,22 +18,8 @@ export const metadata: Metadata = {
 // 編集はここだけ
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-const HOURS = {
-  regular: {
-    days: "月・火・水・木・金・土",
-    sessions: [
-      { label: "ランチ",   open: "11:30", close: "14:00", lo: "13:30" },
-      { label: "ディナー", open: "17:00", close: "22:00", lo: "21:30" },
-    ],
-  },
-  holiday: {
-    days: "祝日",
-    sessions: [
-      { label: "ディナー", open: "17:00", close: "22:00", lo: "21:30" },
-    ],
-  },
-  closed: "日曜日（変動あり）",
-};
+// 営業時間・定休日・ランチ臨時休業フラグは lib/businessHours.ts で一元管理。
+// （BUSINESS_HOURS / REGULAR_CLOSED / LUNCH_SUSPENDED を import して使用）
 
 const SEATS = {
   count:    "41席",
@@ -95,36 +87,16 @@ export default async function InfoPage() {
 
           <div className="border-t border-dashed border-foreground/20">
 
-            {/* 月〜土 — グループヘッダー行 */}
-            <div className="py-3 border-b border-dashed border-foreground/20">
-              <span className="text-xs font-semibold text-foreground">{HOURS.regular.days}</span>
-            </div>
-            {HOURS.regular.sessions.map((s) => (
+            {/* 曜日グループごとの営業時間 */}
+            {BUSINESS_HOURS.map((g) => (
               <div
-                key={s.label}
+                key={g.days}
                 className="grid grid-cols-[5rem_1fr] items-baseline gap-x-6 py-4 border-b border-dashed border-foreground/20"
               >
-                <span className="text-xs text-muted">{s.label}</span>
+                <span className="text-xs font-semibold text-foreground">{g.days}</span>
                 <div className="flex items-baseline justify-between gap-4">
-                  <span className="text-sm font-medium tabular-nums">{s.open}〜{s.close}</span>
-                  <span className="text-xs text-muted tabular-nums">L.O.&nbsp;{s.lo}</span>
-                </div>
-              </div>
-            ))}
-
-            {/* 祝日 — グループヘッダー行 */}
-            <div className="py-3 border-b border-dashed border-foreground/20">
-              <span className="text-xs font-semibold text-foreground">{HOURS.holiday.days}</span>
-            </div>
-            {HOURS.holiday.sessions.map((s) => (
-              <div
-                key={s.label}
-                className="grid grid-cols-[5rem_1fr] items-baseline gap-x-6 py-4 border-b border-dashed border-foreground/20"
-              >
-                <span className="text-xs text-muted">{s.label}</span>
-                <div className="flex items-baseline justify-between gap-4">
-                  <span className="text-sm font-medium tabular-nums">{s.open}〜{s.close}</span>
-                  <span className="text-xs text-muted tabular-nums">L.O.&nbsp;{s.lo}</span>
+                  <span className="text-sm font-medium tabular-nums">{g.open}〜{g.close}</span>
+                  <span className="text-xs text-muted tabular-nums">L.O.&nbsp;{g.lo}</span>
                 </div>
               </div>
             ))}
@@ -132,10 +104,17 @@ export default async function InfoPage() {
             {/* 定休日 */}
             <div className="grid grid-cols-[5rem_1fr] items-baseline gap-x-6 py-4 border-b border-dashed border-foreground/20">
               <span className="text-xs text-muted">定休日</span>
-              <span className="text-sm font-bold text-accent">{HOURS.closed}</span>
+              <span className="text-sm font-bold text-accent">{REGULAR_CLOSED}</span>
             </div>
 
           </div>
+
+          {/* ランチ臨時休業のお知らせ（再開時は lib/businessHours.ts の LUNCH_SUSPENDED を false に） */}
+          {LUNCH_SUSPENDED && (
+            <p className="mt-5 text-xs text-accent/90 leading-relaxed">
+              ※ {LUNCH_SUSPENDED_NOTICE}
+            </p>
+          )}
 
           {/* 補足 + カレンダー導線 */}
           {activeCalendar && (

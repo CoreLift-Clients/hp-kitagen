@@ -187,7 +187,7 @@ export default async function Home() {
                   宴会や飲み会のご予約もお気軽にどうぞ。
                 </p>
                 <Link
-                  href="/shop"
+                  href="/info"
                   className="btn-lift inline-flex items-center gap-2 text-sm text-accent border border-accent/40 px-5 py-2.5 rounded-sm hover:bg-accent/5 transition-colors"
                 >
                   店舗情報を見る →

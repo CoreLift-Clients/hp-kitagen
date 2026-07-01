@@ -5,6 +5,7 @@ import Link from "next/link";
 import { getMenusForLunch, groupByCategorySub } from "../../lib/menus";
 import { listDocuments } from "../../lib/adminDocuments";
 import ImageGallery from "../../components/ImageGallery";
+import { LUNCH_SUSPENDED, LUNCH_SUSPENDED_NOTICE } from "../../lib/businessHours";
 
 export const metadata: Metadata = {
   title: "ランチメニュー｜きたげん",
@@ -82,9 +83,12 @@ export default async function LunchMenuPage() {
           <div className="w-1 h-1 rounded-full bg-accent/70" />
           <div className="w-8 h-px bg-accent/50" />
         </div>
-        <p className="text-sm text-muted mb-3">
-          営業時間：11:30〜14:00（L.O. 13:30）／ 月〜土
-        </p>
+        {/* ランチ臨時休業の告知（再開時は lib/businessHours.ts の LUNCH_SUSPENDED を false に） */}
+        {LUNCH_SUSPENDED && (
+          <p className="text-sm text-accent/90 mb-3 leading-relaxed">
+            ※ {LUNCH_SUSPENDED_NOTICE}
+          </p>
+        )}
         <Link href="/menu/dinner" className="text-xs text-accent/70 hover:text-accent transition-colors duration-200">
           ディナーメニューはこちら →
         </Link>

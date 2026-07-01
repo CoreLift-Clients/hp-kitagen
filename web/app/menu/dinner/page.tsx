@@ -143,7 +143,7 @@ export default async function DinnerMenuPage() {
           <div className="w-8 h-px bg-accent/50" />
         </div>
         <p className="text-sm text-muted mb-1">
-          営業時間：17:00〜22:00（L.O. 21:30）／ 月〜土・祝日
+          ディナータイム：17:00〜22:00（L.O. 21:30）
         </p>
         <p className="text-xs text-muted/70 mb-3">
           ※ 仕入れ状況により内容が変わる場合があります。最新情報は店頭にてご確認ください。

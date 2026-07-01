@@ -3,6 +3,7 @@ import { Noto_Sans_JP } from "next/font/google";
 import Link from "next/link";
 import Header from "./components/Header";
 import ClientLayout from "./components/ClientLayout";
+import StructuredData from "./components/StructuredData";
 import "./globals.css";
 
 const notoSansJP = Noto_Sans_JP({
@@ -11,7 +12,7 @@ const notoSansJP = Noto_Sans_JP({
   weight: ["400", "500", "700"],
 });
 
-const SITE_URL = "https://kitagen-izakaya.com";
+const SITE_URL = "https://www.kitagen-izakaya.com";
 const OG_IMAGE = "/og.png";
 
 const TITLE       = "IZAKAYA きたげん｜桃谷の居酒屋【公式サイト】";
@@ -101,6 +102,7 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body className={`${notoSansJP.variable} font-sans antialiased`}>
+        <StructuredData />
         <ClientLayout header={<Header />} footer={<Footer />}>
           {children}
         </ClientLayout>
