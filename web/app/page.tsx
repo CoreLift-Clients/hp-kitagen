@@ -208,18 +208,28 @@ export default async function Home() {
                 </h2>
                 <SectionDivider />
                 <p className="text-sm md:text-base text-muted leading-[2.1] md:leading-[2.2] mb-8">
-                  気を張らずに過ごせる、
-                  <br className="sm:hidden" />
-                  ちょうどいい距離感の空間。
-                  <br />
-                  お一人様でもグループでも、気兼ねなくお過ごしください。
-                  <br />
+                  気の向くままに使える、そんな居心地を大事にしています。
+                  <br className="hidden sm:block" />
+                  カウンターは、お一人でも仕事帰りでも、
+                  <br className="hidden sm:block" />
+                  ふらっと立ち寄って一杯やるのにちょうどいい席。
+                  <br className="hidden sm:block" />
+                  2階には座敷があり、気の合う仲間との飲み会や、
+                  <br className="hidden sm:block" />
+                  ご家族での食事にぴったりです。
+                  <br className="hidden sm:block" />
+                  ひとりでも、大勢でも、それぞれの居心地がある一軒。
+                  <br className="hidden sm:block" />
                   <Link
                     href="/#group-reservation"
                     className="text-accent hover:text-accent-dark underline underline-offset-4 decoration-accent/40 transition-colors duration-200"
                   >
-                    宴会や飲み会のご予約もお気軽にどうぞ。
+                    ご宴会や団体でのご利用は、貸切でのご相談も承っています。
                   </Link>
+                  <br className="hidden sm:block" />
+                  その日の気分や人数に合わせて、
+                  <br className="hidden sm:block" />
+                  思い思いにお過ごしください。
                 </p>
                 <Link
                   href="/info"
