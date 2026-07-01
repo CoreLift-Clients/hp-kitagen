@@ -112,13 +112,15 @@ export default async function Home() {
                 </h2>
                 <SectionDivider />
                 <p className="text-sm md:text-base text-muted leading-[2.1] md:leading-[2.2] mb-8">
-                  大阪・桃谷にある「きたげん」は、気軽に入れて、
-                  <br />
-                  料理もお酒もちゃんとおいしい居酒屋です。
-                  <br />
-                  一人でふらっと立ち寄っても、仲間とにぎやかに過ごしても、
-                  <br />
-                  自然と落ち着ける場所でありたいと思っています。
+                  桃谷駅からのびる商店街の中に、きたげんはあります。
+                  <br className="hidden sm:block" />
+                  自家製のしゅうまいや鉄鍋餃子をはじめ、
+                  <br className="hidden sm:block" />
+                  手をかけた一品を、飾らない雰囲気の中で。
+                  <br className="hidden sm:block" />
+                  お一人でもふらっと入れて、気づけば居心地よく過ごしてしまう。
+                  <br className="hidden sm:block" />
+                  そんな一軒を目指しています。
                 </p>
                 <Link
                   href="/info"
