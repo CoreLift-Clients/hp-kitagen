@@ -62,17 +62,17 @@ export default function Header() {
           </ul>
 
           {/* 電話予約 — 縦区切り線 ＋ 番号 */}
-          <div className="ml-3.5 pl-3.5 lg:ml-5 lg:pl-5 border-l border-border/60 flex flex-col justify-center">
-            <p className="text-[9px] text-muted/60 tracking-wider leading-none mb-1">
+          <div className="ml-4 pl-4 lg:ml-6 lg:pl-6 border-l border-border/60 flex flex-col justify-center">
+            <p className="text-[9px] text-muted/60 tracking-wider leading-none mb-1.5">
               ご予約・お問い合わせ
             </p>
             <a
               href={`tel:${TEL}`}
-              className="text-[17px] font-bold tracking-wider text-foreground hover:text-accent transition-colors duration-200 tabular-nums leading-none"
+              className="text-[17px] font-bold tracking-wide text-foreground hover:text-accent transition-colors duration-200 tabular-nums leading-none whitespace-nowrap"
             >
               {TEL}
             </a>
-            <p className="text-[9px] text-muted/50 mt-1 leading-snug">
+            <p className="text-[9px] text-muted/50 mt-1.5 leading-none whitespace-nowrap">
               「ホームページを見た」とお伝えください
             </p>
           </div>

@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { Utensils } from "lucide-react";
-import Link from "next/link";
 import { getMenusForDinner, getMenusForTop, groupByCategorySub } from "../../lib/menus";
 import { listDocuments } from "../../lib/adminDocuments";
 import ImageGallery from "../../components/ImageGallery";
+import { LUNCH_SUSPENDED } from "../../lib/businessHours";
+
+// ランチ営業のご案内で使用（info頁・構造化データと同じ公式アカウント）
+const INSTAGRAM_URL = "https://www.instagram.com/izakaya_kitagen";
 
 // ドリンクカテゴリの表示順（居酒屋として自然な並び）
 const DRINK_CATEGORY_ORDER = [
@@ -145,12 +148,30 @@ export default async function DinnerMenuPage() {
         <p className="text-sm text-muted mb-1">
           ディナータイム：17:00〜22:00（L.O. 21:30）
         </p>
-        <p className="text-xs text-muted/70 mb-3">
+        <p className="text-xs text-muted/70 mb-6">
           ※ 仕入れ状況により内容が変わる場合があります。最新情報は店頭にてご確認ください。
         </p>
-        <Link href="/menu/lunch" className="text-xs text-accent/70 hover:text-accent transition-colors duration-200">
-          ランチメニューはこちら →
-        </Link>
+
+        {/* ── ランチ営業のご案内 ───────────────────────────────
+             ランチは NAV から統合。営業状況は Instagram に集約して案内する。
+             再開時は lib/businessHours.ts の LUNCH_SUSPENDED を false に。 */}
+        <div className="max-w-md mx-auto rounded-lg border border-border bg-background/70 px-6 py-5 text-left">
+          <p className="text-[10px] tracking-[0.35em] text-accent/70 mb-2">LUNCH</p>
+          <p className="text-sm text-muted leading-[2.0]">
+            {LUNCH_SUSPENDED
+              ? "ランチ営業は、ただいま臨時休業とさせていただいております。再開の時期やその日の営業状況は、"
+              : "ランチ営業の有無や、その日の営業状況は、"}
+            <a
+              href={INSTAGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-accent underline underline-offset-2 decoration-accent/40 hover:decoration-accent transition-colors"
+            >
+              Instagram
+            </a>
+            にてご案内しております。お手数ですが、ご来店前にご確認いただけますと幸いです。
+          </p>
+        </div>
       </section>
 
       {/* ── スクロールナビ ─────────────────────────────────── */}
