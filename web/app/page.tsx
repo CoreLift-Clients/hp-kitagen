@@ -1,9 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Phone } from "lucide-react";
-import { getMenusForTop } from "./lib/menus";
 import { getAnnouncements } from "./lib/announcements";
 import { getSiteImages } from "./lib/site-images";
+import { GALLERY_ITEMS } from "./lib/gallery";
 import ParallaxHero from "./components/ParallaxHero";
 import ScrollReveal from "./components/ScrollReveal";
 import PhotoStrip from "./components/PhotoStrip";
@@ -37,12 +37,10 @@ function SectionDivider() {
 }
 
 export default async function Home() {
-  const [topItems, announcements, SITE_IMAGES] = await Promise.all([
-    getMenusForTop(),
+  const [announcements, SITE_IMAGES] = await Promise.all([
     getAnnouncements(),
     getSiteImages(),
   ]);
-  const photoItems = topItems.map((i) => ({ ...i, image: i.image ?? "" }));
   const recentNews = announcements.slice(0, 5);
 
   return (
@@ -249,30 +247,35 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ── ⑤ 料理ギャラリー ────────────────────────────────── */}
-      <section className="py-20 px-4 section-deep">
-        <div className="max-w-5xl mx-auto">
-          <ScrollReveal>
-            <div className="text-center mb-10">
-              <p className="text-[10px] tracking-[0.45em] text-accent/80 mb-2">
-                GALLERY
-              </p>
-              <h2 className="text-2xl font-bold">きたげんの料理</h2>
-              <div className="flex items-center justify-center gap-3 mt-4">
-                <div className="w-8 h-px bg-accent/50" />
-                <div className="w-1 h-1 rounded-full bg-accent/70" />
-                <div className="w-8 h-px bg-accent/50" />
+      {/* ── ⑤ 料理ギャラリー ──────────────────────────────────
+          写真は public/images/gallery/ に置き、app/lib/gallery.ts の
+          GALLERY_ITEMS に追記すると表示される（フォルダ方式）。
+          写真が1枚も無い（配列が空）間は、セクションごと非表示にする。 */}
+      {GALLERY_ITEMS.length > 0 && (
+        <section className="py-20 px-4 section-deep">
+          <div className="max-w-5xl mx-auto">
+            <ScrollReveal>
+              <div className="text-center mb-10">
+                <p className="text-[10px] tracking-[0.45em] text-accent/80 mb-2">
+                  GALLERY
+                </p>
+                <h2 className="text-2xl font-bold">きたげんの料理</h2>
+                <div className="flex items-center justify-center gap-3 mt-4">
+                  <div className="w-8 h-px bg-accent/50" />
+                  <div className="w-1 h-1 rounded-full bg-accent/70" />
+                  <div className="w-8 h-px bg-accent/50" />
+                </div>
+                <p className="text-sm text-muted mt-4">
+                  定番から季節のひと品まで。
+                </p>
               </div>
-              <p className="text-sm text-muted mt-4">
-                定番から季節のひと品まで。
-              </p>
-            </div>
-          </ScrollReveal>
-          <ScrollReveal delay={80}>
-            <PhotoStrip items={photoItems} />
-          </ScrollReveal>
-        </div>
-      </section>
+            </ScrollReveal>
+            <ScrollReveal delay={80}>
+              <PhotoStrip items={GALLERY_ITEMS} />
+            </ScrollReveal>
+          </div>
+        </section>
+      )}
 
       {/* ── ⑥ お知らせ ──────────────────────────────────────── */}
       {recentNews.length > 0 && (
