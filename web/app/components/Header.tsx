@@ -46,23 +46,23 @@ export default function Header() {
         {/* ── デスクトップ: ナビ ＋ 電話番号 ────────────────── */}
         <div className="hidden md:flex items-center">
 
-          {/* ナビリンク */}
+          {/* ナビリンク（項目数が増えたため lg 未満はやや詰める） */}
           <ul className="flex items-center">
             {NAV_LINKS.map(({ href, label }) => (
               <li key={href}>
                 <Link
                   href={href}
-                  className="relative px-3.5 py-1.5 text-sm text-muted hover:text-accent transition-colors duration-200 group"
+                  className="relative px-2.5 lg:px-3.5 py-1.5 text-sm text-muted hover:text-accent transition-colors duration-200 group whitespace-nowrap"
                 >
                   {label}
-                  <span className="absolute bottom-0 left-3.5 right-3.5 h-px bg-accent scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left" />
+                  <span className="absolute bottom-0 left-2.5 right-2.5 lg:left-3.5 lg:right-3.5 h-px bg-accent scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left" />
                 </Link>
               </li>
             ))}
           </ul>
 
           {/* 電話予約 — 縦区切り線 ＋ 番号 */}
-          <div className="ml-5 pl-5 border-l border-border/60 flex flex-col justify-center">
+          <div className="ml-3.5 pl-3.5 lg:ml-5 lg:pl-5 border-l border-border/60 flex flex-col justify-center">
             <p className="text-[9px] text-muted/60 tracking-wider leading-none mb-1">
               ご予約・お問い合わせ
             </p>

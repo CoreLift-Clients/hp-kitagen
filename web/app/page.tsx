@@ -121,12 +121,20 @@ export default async function Home() {
                   <br className="hidden sm:block" />
                   そんな一軒を目指しています。
                 </p>
-                <Link
-                  href="/info"
-                  className="btn-lift inline-flex items-center gap-2 text-sm text-accent border border-accent/40 px-5 py-2.5 rounded-sm hover:bg-accent/5 transition-colors"
-                >
-                  店舗情報を見る →
-                </Link>
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+                  <Link
+                    href="/info"
+                    className="btn-lift inline-flex items-center gap-2 text-sm text-accent border border-accent/40 px-5 py-2.5 rounded-sm hover:bg-accent/5 transition-colors"
+                  >
+                    店舗情報を見る →
+                  </Link>
+                  <Link
+                    href="/owner"
+                    className="text-sm text-accent hover:text-accent-dark underline underline-offset-4 decoration-accent/40 transition-colors duration-200"
+                  >
+                    店主のことをもっと詳しく →
+                  </Link>
+                </div>
               </div>
 
               {/* 画像（public/shop.jpg を配置してください） */}

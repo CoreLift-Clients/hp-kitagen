@@ -9,6 +9,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1.0,
     },
     {
+      url: 'https://www.kitagen-izakaya.com/owner',
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    },
+    {
       url: 'https://www.kitagen-izakaya.com/menu',
       lastModified: new Date(),
       changeFrequency: 'weekly',
