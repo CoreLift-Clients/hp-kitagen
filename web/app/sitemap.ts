@@ -27,12 +27,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     },
     {
-      url: 'https://www.kitagen-izakaya.com/menu/lunch',
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
-    {
       url: 'https://www.kitagen-izakaya.com/takeout',
       lastModified: new Date(),
       changeFrequency: 'weekly',
