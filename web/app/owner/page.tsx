@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import { OWNER_PHOTO, OWNER_PHOTO_ALT } from "../lib/owner";
+import {
+  OWNER_SECTIONS,
+  OWNER_PULLQUOTE,
+  OWNER_PHOTO,
+  OWNER_PHOTO_ALT,
+} from "../lib/owner";
 
 export const metadata: Metadata = {
   title: "店主紹介 | IZAKAYA きたげん",
@@ -9,14 +14,9 @@ export const metadata: Metadata = {
     "桃谷で生まれ育った、居酒屋きたげんの店主より。みんなの居場所になる店を目指して。鉄鍋餃子や自家製しゅうまいへの想い、女性お一人でも入りやすい店づくりについてお話しします。",
 };
 
-// 本文（一人称・確定稿）。段落ごとに配列で持ち、読み物としての余白・行間を整える。
-const PARAGRAPHS = [
-  "『きたげん』という店名は、実は私の小学生の頃からのあだ名なんです。この桃谷で生まれ育って、気づけばこの街でお店を開いていました。",
-  "店を始めたとき、一番やりたかったのは、みんなが自然と集まってくる場所をつくること。特別な日じゃなくても、ふらっと立ち寄って、うまいものを食べて、気持ちよく帰ってもらえる。そんな、地元のみんなの居場所みたいな店にしたかったんです。",
-  "料理は、美味しくて手頃に、を大事にしています。一番の自慢は鉄鍋餃子。ひとつひとつ手をかけた自家製しゅうまいや、揚げたてのからあげも、ぜひ味わってほしい一品です。お酒が進む料理を、気取らずに楽しんでもらえたらうれしいです。",
-  "そして、女性のお一人でも、気兼ねなく入ってもらえる店にしたいと思っています。居酒屋は一人だと入りにくいこともあると思いますが、きたげんはそんな心配のいらない店を目指しています。",
-  "桃谷にお越しの際は、ぜひ気軽にのぞいてみてください。お待ちしています。",
-];
+// プルクオートを挿入するセクションの区切り位置（このインデックスのセクションの直後）。
+// 本文の中盤に自然に置けるよう、想いを語ったセクションの後に差し込む。
+const PULLQUOTE_AFTER_INDEX = 1;
 
 export default function OwnerPage() {
   const hasPhoto = OWNER_PHOTO.trim() !== "";
@@ -74,10 +74,39 @@ export default function OwnerPage() {
             <div className="w-1 h-1 rounded-full bg-accent/60" />
           </div>
 
-          {/* 本文段落 */}
-          <div className="space-y-7 text-[15px] md:text-base text-muted leading-[2.15] md:leading-[2.25]">
-            {PARAGRAPHS.map((text, i) => (
-              <p key={i}>{text}</p>
+          {/* 本文（見出し付きセクション）。話題のまとまりごとに区切って読ませる。 */}
+          <div className="space-y-12">
+            {OWNER_SECTIONS.map((section, i) => (
+              <div key={i}>
+                <h2 className="flex items-center gap-3 mb-5">
+                  <span className="w-4 h-px bg-accent/50" />
+                  <span className="text-base md:text-lg font-bold text-accent tracking-wide">
+                    {section.heading}
+                  </span>
+                </h2>
+                <div className="space-y-6 text-[15px] md:text-base text-muted leading-[2.15] md:leading-[2.25]">
+                  {section.body.map((text, j) => (
+                    <p key={j}>{text}</p>
+                  ))}
+                </div>
+
+                {/* 中盤に一度だけ、店の想いをプルクオートで大きく見せる */}
+                {i === PULLQUOTE_AFTER_INDEX && (
+                  <figure className="mt-12 mb-0">
+                    <div className="flex items-center gap-3 mb-5">
+                      <span className="w-8 h-px bg-accent/40" />
+                      <span className="w-1 h-1 rounded-full bg-accent/60" />
+                    </div>
+                    <blockquote className="text-xl md:text-2xl font-medium text-foreground/90 leading-[1.9] tracking-wide pl-1">
+                      「{OWNER_PULLQUOTE}」
+                    </blockquote>
+                    <div className="flex items-center gap-3 mt-5">
+                      <span className="w-1 h-1 rounded-full bg-accent/60" />
+                      <span className="w-8 h-px bg-accent/40" />
+                    </div>
+                  </figure>
+                )}
+              </div>
             ))}
           </div>
 
