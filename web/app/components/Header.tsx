@@ -46,33 +46,33 @@ export default function Header() {
         {/* ── デスクトップ: ナビ ＋ 電話番号 ────────────────── */}
         <div className="hidden md:flex items-center">
 
-          {/* ナビリンク */}
+          {/* ナビリンク（項目数が増えたため lg 未満はやや詰める） */}
           <ul className="flex items-center">
             {NAV_LINKS.map(({ href, label }) => (
               <li key={href}>
                 <Link
                   href={href}
-                  className="relative px-3.5 py-1.5 text-sm text-muted hover:text-accent transition-colors duration-200 group"
+                  className="relative px-2.5 lg:px-3.5 py-1.5 text-sm text-muted hover:text-accent transition-colors duration-200 group whitespace-nowrap"
                 >
                   {label}
-                  <span className="absolute bottom-0 left-3.5 right-3.5 h-px bg-accent scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left" />
+                  <span className="absolute bottom-0 left-2.5 right-2.5 lg:left-3.5 lg:right-3.5 h-px bg-accent scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left" />
                 </Link>
               </li>
             ))}
           </ul>
 
           {/* 電話予約 — 縦区切り線 ＋ 番号 */}
-          <div className="ml-5 pl-5 border-l border-border/60 flex flex-col justify-center">
-            <p className="text-[9px] text-muted/60 tracking-wider leading-none mb-1">
+          <div className="ml-4 pl-4 lg:ml-6 lg:pl-6 border-l border-border/60 flex flex-col justify-center">
+            <p className="text-[9px] text-muted/60 tracking-wider leading-none mb-1.5">
               ご予約・お問い合わせ
             </p>
             <a
               href={`tel:${TEL}`}
-              className="text-[17px] font-bold tracking-wider text-foreground hover:text-accent transition-colors duration-200 tabular-nums leading-none"
+              className="text-[17px] font-bold tracking-wide text-foreground hover:text-accent transition-colors duration-200 tabular-nums leading-none whitespace-nowrap"
             >
               {TEL}
             </a>
-            <p className="text-[9px] text-muted/50 mt-1 leading-snug">
+            <p className="text-[9px] text-muted/50 mt-1.5 leading-none whitespace-nowrap">
               「ホームページを見た」とお伝えください
             </p>
           </div>

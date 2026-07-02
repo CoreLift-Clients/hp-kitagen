@@ -1,9 +1,10 @@
+import type { ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Phone } from "lucide-react";
-import { getMenusForTop } from "./lib/menus";
 import { getAnnouncements } from "./lib/announcements";
 import { getSiteImages } from "./lib/site-images";
+import { GALLERY_ITEMS } from "./lib/gallery";
 import ParallaxHero from "./components/ParallaxHero";
 import ScrollReveal from "./components/ScrollReveal";
 import PhotoStrip from "./components/PhotoStrip";
@@ -36,26 +37,55 @@ function SectionDivider() {
   );
 }
 
+// セクションのコンテンツ幅・左右余白を一元管理するラッパー。
+// 基準幅は max-w-6xl（≈1152px）／左右余白は px-6 md:px-8 に統一する。
+// News など意図的に幅を絞りたい場合のみ maxW で上書きする（Tailwind の
+// max-w 競合を避けるため className 追記ではなく maxW プロップで差し替える）。
+function SectionInner({
+  maxW = "max-w-6xl",
+  className = "",
+  children,
+}: {
+  maxW?: string;
+  className?: string;
+  children: ReactNode;
+}) {
+  return <div className={`mx-auto ${maxW} px-6 md:px-8 ${className}`}>{children}</div>;
+}
+
 export default async function Home() {
-  const [topItems, announcements, SITE_IMAGES] = await Promise.all([
-    getMenusForTop(),
+  const [announcements, SITE_IMAGES] = await Promise.all([
     getAnnouncements(),
     getSiteImages(),
   ]);
-  const photoItems = topItems.map((i) => ({ ...i, image: i.image ?? "" }));
   const recentNews = announcements.slice(0, 5);
 
   return (
     <div className="min-h-screen">
-      {/* ── ① Hero ──────────────────────────────────────────── */}
-      <section className="relative h-[55vh] md:h-auto md:min-h-[82vh] flex items-center justify-center overflow-hidden bg-foreground">
+      {/* ── ① Hero ──────────────────────────────────────────────
+          ┌──────────────────────────────────────────────────────────┐
+          │ 【写真の差し込み口】撮影後、下記2枚を同名で上書きするだけ  │
+          │   ・PC横長  → web/public/images/hero/hero-pc.jpg           │
+          │   ・SP縦長  → web/public/images/hero/hero-sp.jpg           │
+          │ ※ 現状は仮画像。ファイル名は変えず同名で差し替えれば反映。 │
+          │ ※ 管理画面（口コミシステム）で hero.pc / hero.sp を        │
+          │    アップロードすると、そちらが自動で優先表示されます。    │
+          │ ※ 構図の見え方（顔・料理の位置）は positionPc/positionSp   │
+          │    の "center 40%" の数値で上下位置を微調整できます。      │
+          └──────────────────────────────────────────────────────────┘ */}
+      <section className="relative h-[62vh] md:h-auto md:min-h-[82vh] flex items-center justify-center overflow-hidden bg-foreground">
         <ParallaxHero
           srcSp={SITE_IMAGES.hero.sp}
           srcPc={SITE_IMAGES.hero.pc}
-          positionSp="center 40%"
+          positionSp="center 42%"
           positionPc="center 40%"
         />
-        <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/50 via-black/30 to-black/60" />
+
+        {/* オーバーレイ：写真の温かみは残しつつ、白文字を確実に読ませる2層構成 */}
+        {/* 1) 上下グラデーション（全体を軽く締め、下部をやや濃く） */}
+        <div className="absolute inset-0 z-[1] bg-gradient-to-b from-black/45 via-black/25 to-black/60" />
+        {/* 2) 中央ヴィネット：見出し・キャッチの背後だけ重点的に暗くし、端は写真を見せる */}
+        <div className="absolute inset-0 z-[1] bg-[radial-gradient(ellipse_62%_52%_at_50%_50%,rgba(0,0,0,0.4)_0%,transparent_72%)]" />
 
         <div className="hidden sm:block absolute top-20 left-8 w-8 h-8 border-t border-l border-white/25 z-10 hero-animate" />
         <div className="hidden sm:block absolute top-20 right-8 w-8 h-8 border-t border-r border-white/25 z-10 hero-animate" />
@@ -63,68 +93,80 @@ export default async function Home() {
         <div className="hidden sm:block absolute bottom-12 right-8 w-8 h-8 border-b border-r border-white/25 z-10 hero-animate" />
 
         <div className="relative z-10 text-center px-4">
-          <p className="text-xs tracking-[0.5em] text-white/60 mb-4 hero-animate">
+          <p className="text-xs tracking-[0.5em] text-white/70 mb-4 hero-animate text-shadow">
             IZAKAYA
           </p>
           <h1 className="text-5xl sm:text-7xl md:text-9xl font-bold mb-4 hero-animate-delay text-white text-shadow">
             きたげん
           </h1>
           <div className="flex items-center justify-center gap-3 mb-4 hero-animate-delay">
-            <div className="w-10 h-px bg-white/35" />
+            <div className="w-10 h-px bg-white/40" />
             <div className="w-1 h-1 rounded-full bg-accent" />
-            <div className="w-10 h-px bg-white/35" />
+            <div className="w-10 h-px bg-white/40" />
           </div>
-          <p className="text-sm sm:text-lg md:text-xl text-white/65 tracking-wide hero-animate-delay-2 text-shadow">
-            落ち着いて飲める、ちゃんとした居酒屋。
+          <p className="text-[15px] sm:text-lg md:text-xl text-white/85 tracking-wide hero-animate-delay-2 text-shadow">
+            ふらっと寄って、ちゃんとうまい。
           </p>
         </div>
       </section>
 
       {/* ── ② きたげんについて（テキスト左・画像右） ──────── */}
-      <section className="py-24 px-4 section-light">
-        <div className="max-w-5xl mx-auto">
+      <section className="py-24 md:py-28 section-light">
+        <SectionInner>
           <ScrollReveal>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
+            {/* 写真=7 / テキスト=5：写真を大きく、テキストは読みやすい幅に保つ */}
+            <div className="grid grid-cols-1 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-12 md:gap-20 items-center">
               {/* テキスト */}
               <div>
                 <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-3">
                   ABOUT
                 </p>
-                <h2 className="text-2xl md:text-3xl font-bold leading-snug">
+                <h2 className="text-3xl md:text-4xl font-bold leading-snug">
                   ふらっと寄れる、
                   <br />
                   ちゃんとした居酒屋。
                 </h2>
                 <SectionDivider />
-                <p className="text-sm md:text-base text-muted leading-[2.1] md:leading-[2.2] mb-8">
-                  大阪・桃谷にある「きたげん」は、気軽に入れて、
-                  <br />
-                  料理もお酒もちゃんとおいしい居酒屋です。
-                  <br />
-                  一人でふらっと立ち寄っても、仲間とにぎやかに過ごしても、
-                  <br />
-                  自然と落ち着ける場所でありたいと思っています。
+                <p className="text-base md:text-lg text-muted leading-[2.1] md:leading-[2.2] mb-8">
+                  桃谷駅からのびる商店街の中に、きたげんはあります。
+                  <br className="hidden sm:block" />
+                  自家製のしゅうまいや鉄鍋餃子をはじめ、
+                  <br className="hidden sm:block" />
+                  手をかけた一品を、飾らない雰囲気の中で。
+                  <br className="hidden sm:block" />
+                  お一人でもふらっと入れて、気づけば居心地よく過ごしてしまう。
+                  <br className="hidden sm:block" />
+                  そんな一軒を目指しています。
                 </p>
-                <Link
-                  href="/info"
-                  className="btn-lift inline-flex items-center gap-2 text-sm text-accent border border-accent/40 px-5 py-2.5 rounded-sm hover:bg-accent/5 transition-colors"
-                >
-                  店舗情報を見る →
-                </Link>
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+                  <Link
+                    href="/info"
+                    className="btn-lift inline-flex items-center gap-2 text-sm text-accent border border-accent/40 px-5 py-2.5 rounded-sm hover:bg-accent/5 transition-colors"
+                  >
+                    店舗情報を見る →
+                  </Link>
+                  <Link
+                    href="/owner"
+                    className="text-sm text-accent hover:text-accent-dark underline underline-offset-4 decoration-accent/40 transition-colors duration-200"
+                  >
+                    店主のことをもっと詳しく →
+                  </Link>
+                </div>
               </div>
 
               {/* 画像（public/shop.jpg を配置してください） */}
               <SplitImage src={SITE_IMAGES.about.shop} alt="きたげん店内" />
             </div>
           </ScrollReveal>
-        </div>
+        </SectionInner>
       </section>
 
       {/* ── ③ こだわりの料理（画像左・テキスト右） ─────────── */}
-      <section className="py-24 px-4 section-warm">
-        <div className="max-w-5xl mx-auto">
+      <section className="py-24 md:py-28 section-warm">
+        <SectionInner>
           <ScrollReveal>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
+            {/* 写真=7 / テキスト=5：PCでは写真が左・大きく、テキストが右 */}
+            <div className="grid grid-cols-1 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] gap-12 md:gap-20 items-center">
               {/* 画像（スマホでは下に、PCでは左に） */}
               {/* public/food-main.jpg を配置してください */}
               <div className="order-2 md:order-1">
@@ -136,20 +178,28 @@ export default async function Home() {
                 <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-3">
                   FOOD
                 </p>
-                <h2 className="text-2xl md:text-3xl font-bold leading-snug">
+                <h2 className="text-3xl md:text-4xl font-bold leading-snug">
                   手作りにこだわった、
                   <br />
                   うまい一品。
                 </h2>
                 <SectionDivider />
-                <p className="text-sm md:text-base text-muted leading-[2.1] md:leading-[2.2] mb-8">
-                  ふらっと来ても、ちゃんと満足できる。
-                  <br />
-                  そんな一品をご用意しています。
+                <p className="text-base md:text-lg text-muted leading-[2.1] md:leading-[2.2] mb-8">
+                  きたげんの名物は、自家製のしゅうまいと鉄鍋餃子。
                   <br className="hidden sm:block" />
-                  餃子やしゅうまい、唐揚げなど、
-                  <br />
-                  お酒が進む味に仕上げています。
+                  手間を惜しまず作る一品は、派手さはないけれど、
+                  <br className="hidden sm:block" />
+                  また食べたくなる味です。蒸したてのしゅうまい、
+                  <br className="hidden sm:block" />
+                  こんがり焼けた餃子を肴に、まずは一杯。
+                  <br className="hidden sm:block" />
+                  からあげ、豚の角煮、串の盛り合わせと、
+                  <br className="hidden sm:block" />
+                  箸もお酒も進む料理を取り揃えています。
+                  <br className="hidden sm:block" />
+                  飾らないけれど、&ldquo;ちゃんとうまい&rdquo;。
+                  <br className="hidden sm:block" />
+                  それがきたげんの一品です。
                 </p>
                 <Link
                   href="/menu"
@@ -160,38 +210,49 @@ export default async function Home() {
               </div>
             </div>
           </ScrollReveal>
-        </div>
+        </SectionInner>
       </section>
 
       {/* ── ④ くつろぎの空間（テキスト左・画像右） ─────────── */}
-      <section className="py-24 px-4 section-light">
-        <div className="max-w-5xl mx-auto">
+      <section className="py-24 md:py-28 section-light">
+        <SectionInner>
           <ScrollReveal>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20 items-center">
+            {/* 写真=7 / テキスト=5：写真を大きく、テキストは読みやすい幅に保つ */}
+            <div className="grid grid-cols-1 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-12 md:gap-20 items-center">
               {/* テキスト */}
               <div>
                 <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-3">
                   SPACE
                 </p>
-                <h2 className="text-2xl md:text-3xl font-bold leading-snug">
+                <h2 className="text-3xl md:text-4xl font-bold leading-snug">
                   肩肘張らない、
                   <br />
                   居心地の良い空間。
                 </h2>
                 <SectionDivider />
-                <p className="text-sm md:text-base text-muted leading-[2.1] md:leading-[2.2] mb-8">
-                  気を張らずに過ごせる、
-                  <br className="sm:hidden" />
-                  ちょうどいい距離感の空間。
-                  <br />
-                  お一人様でもグループでも、気兼ねなくお過ごしください。
-                  <br />
+                <p className="text-base md:text-lg text-muted leading-[2.1] md:leading-[2.2] mb-8">
+                  気の向くままに使える、そんな居心地を大事にしています。
+                  <br className="hidden sm:block" />
+                  カウンターは、お一人でも仕事帰りでも、
+                  <br className="hidden sm:block" />
+                  ふらっと立ち寄って一杯やるのにちょうどいい席。
+                  <br className="hidden sm:block" />
+                  2階には座敷があり、気の合う仲間との飲み会や、
+                  <br className="hidden sm:block" />
+                  ご家族での食事にぴったりです。
+                  <br className="hidden sm:block" />
+                  ひとりでも、大勢でも、それぞれの居心地がある一軒。
+                  <br className="hidden sm:block" />
                   <Link
                     href="/#group-reservation"
                     className="text-accent hover:text-accent-dark underline underline-offset-4 decoration-accent/40 transition-colors duration-200"
                   >
-                    宴会や飲み会のご予約もお気軽にどうぞ。
+                    ご宴会や団体でのご利用は、貸切でのご相談も承っています。
                   </Link>
+                  <br className="hidden sm:block" />
+                  その日の気分や人数に合わせて、
+                  <br className="hidden sm:block" />
+                  思い思いにお過ごしください。
                 </p>
                 <Link
                   href="/info"
@@ -208,50 +269,55 @@ export default async function Home() {
               />
             </div>
           </ScrollReveal>
-        </div>
+        </SectionInner>
       </section>
 
-      {/* ── ⑤ 料理ギャラリー ────────────────────────────────── */}
-      <section className="py-20 px-4 section-deep">
-        <div className="max-w-4xl mx-auto">
-          <ScrollReveal>
-            <div className="text-center mb-10">
-              <p className="text-[10px] tracking-[0.45em] text-accent/80 mb-2">
-                GALLERY
-              </p>
-              <h2 className="text-2xl font-bold">きたげんの料理</h2>
-              <div className="flex items-center justify-center gap-3 mt-4">
-                <div className="w-8 h-px bg-accent/50" />
-                <div className="w-1 h-1 rounded-full bg-accent/70" />
-                <div className="w-8 h-px bg-accent/50" />
-              </div>
-              <p className="text-sm text-muted mt-4">
-                定番から季節のひと品まで。
-              </p>
-            </div>
-          </ScrollReveal>
-          <ScrollReveal delay={80}>
-            <PhotoStrip items={photoItems} />
-          </ScrollReveal>
-        </div>
-      </section>
-
-      {/* ── ⑥ お知らせ ──────────────────────────────────────── */}
-      {recentNews.length > 0 && (
-        <section className="py-20 px-4 section-light">
-          <div className="max-w-2xl mx-auto">
+      {/* ── ⑤ 料理ギャラリー ──────────────────────────────────
+          写真は public/images/gallery/ に置き、app/lib/gallery.ts の
+          GALLERY_ITEMS に追記すると表示される（フォルダ方式）。
+          写真が1枚も無い（配列が空）間は、セクションごと非表示にする。 */}
+      {GALLERY_ITEMS.length > 0 && (
+        <section className="py-24 md:py-28 section-deep">
+          <SectionInner>
             <ScrollReveal>
-              <div className="text-center mb-12">
-                <p className="text-[10px] tracking-[0.5em] text-accent/70 mb-2">
-                  NEWS
+              <div className="text-center mb-10">
+                <p className="text-[10px] tracking-[0.45em] text-accent/80 mb-2">
+                  GALLERY
                 </p>
-                <h2 className="text-2xl font-bold tracking-wide">お知らせ</h2>
+                <h2 className="text-3xl md:text-4xl font-bold">きたげんの料理</h2>
                 <div className="flex items-center justify-center gap-3 mt-4">
                   <div className="w-8 h-px bg-accent/50" />
                   <div className="w-1 h-1 rounded-full bg-accent/70" />
                   <div className="w-8 h-px bg-accent/50" />
                 </div>
-                <p className="text-xs text-muted mt-4 tracking-wider">
+                <p className="text-base text-muted mt-4">
+                  定番から季節のひと品まで。
+                </p>
+              </div>
+            </ScrollReveal>
+            <ScrollReveal delay={80}>
+              <PhotoStrip items={GALLERY_ITEMS} />
+            </ScrollReveal>
+          </SectionInner>
+        </section>
+      )}
+
+      {/* ── ⑥ お知らせ ──────────────────────────────────────── */}
+      {recentNews.length > 0 && (
+        <section className="py-24 md:py-28 section-light">
+          <SectionInner maxW="max-w-4xl">
+            <ScrollReveal>
+              <div className="text-center mb-12">
+                <p className="text-[10px] tracking-[0.5em] text-accent/70 mb-2">
+                  NEWS
+                </p>
+                <h2 className="text-3xl md:text-4xl font-bold tracking-wide">お知らせ</h2>
+                <div className="flex items-center justify-center gap-3 mt-4">
+                  <div className="w-8 h-px bg-accent/50" />
+                  <div className="w-1 h-1 rounded-full bg-accent/70" />
+                  <div className="w-8 h-px bg-accent/50" />
+                </div>
+                <p className="text-sm text-muted mt-4 tracking-wider">
                   きたげんからのご案内
                 </p>
               </div>
@@ -263,13 +329,13 @@ export default async function Home() {
                 </ScrollReveal>
               ))}
             </div>
-          </div>
+          </SectionInner>
         </section>
       )}
 
       {/* ── ⑦ はじめてのお客様へ ────────────────────────────── */}
-      <section className="py-28 px-4 section-warm">
-        <div className="max-w-lg mx-auto text-center">
+      <section className="py-24 md:py-28 section-warm">
+        <SectionInner className="text-center">
           <ScrollReveal>
             {/* ラベル */}
             <p className="text-[9px] tracking-[0.65em] text-accent/70 font-medium mb-5">
@@ -277,7 +343,7 @@ export default async function Home() {
             </p>
 
             {/* 見出し */}
-            <h2 className="text-2xl md:text-3xl font-bold leading-snug mb-6">
+            <h2 className="text-3xl md:text-4xl font-bold leading-snug mb-6">
               はじめてのお客様へ
             </h2>
 
@@ -289,7 +355,7 @@ export default async function Home() {
             </div>
 
             {/* 本文 — 簡潔に3行以内 */}
-            <p className="text-sm text-muted leading-[2.1] mb-12">
+            <p className="text-base md:text-lg text-muted leading-[2.1] mb-12">
               ふらっと立ち寄って、ちゃんとおいしい。
               <br />
               お一人でも、気兼ねなくどうぞ。
@@ -326,14 +392,14 @@ export default async function Home() {
           {/* ── 団体・宴会のご予約（気軽さの導線とは視覚的に分離）──── */}
           <ScrollReveal delay={80}>
             <div id="group-reservation" className="mt-16 pt-12 border-t border-foreground/10 scroll-mt-24">
-              <div className="rounded-xl border border-border bg-background/70 p-7 sm:p-8">
+              <div className="rounded-xl border border-border bg-background/70 p-7 sm:p-8 max-w-xl mx-auto">
                 <p className="text-[9px] tracking-[0.55em] text-accent/70 font-medium mb-3">
                   PARTY &amp; GROUP
                 </p>
-                <p className="text-base font-bold text-foreground mb-1.5">
+                <p className="text-lg font-bold text-foreground mb-1.5">
                   ご宴会・団体でのご利用は
                 </p>
-                <p className="text-xs text-muted mb-7 leading-relaxed">
+                <p className="text-sm text-muted mb-7 leading-relaxed">
                   お席をご用意しますので、お電話ください。
                 </p>
 
@@ -353,7 +419,7 @@ export default async function Home() {
                   <span className="tabular-nums">{PHONE}</span>
                 </a>
 
-                <p className="text-xs text-muted/60 mt-5 leading-relaxed">
+                <p className="text-sm text-muted/60 mt-5 leading-relaxed">
                   ご予約時に「ホームページを見た」とお伝えください。
                   <br />
                   営業時間外（昼間・開店前）でも承ります。
@@ -361,7 +427,7 @@ export default async function Home() {
               </div>
             </div>
           </ScrollReveal>
-        </div>
+        </SectionInner>
       </section>
     </div>
   );
