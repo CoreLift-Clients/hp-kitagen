@@ -49,7 +49,7 @@ export default function Header() {
         {/* ── デスクトップ: ナビ ＋ 電話番号 ────────────────── */}
         <div className="hidden md:flex items-center">
 
-          {/* ナビリンク（項目数が増えたため lg 未満はやや詰める） */}
+          {/* ナビリンク（4項目に絞りゆったり配置） */}
           <ul className="flex items-center">
             {NAV_LINKS.map(({ href, label }) => {
               const active = isNavActive(pathname, href);
@@ -58,13 +58,13 @@ export default function Header() {
                   <Link
                     href={href}
                     aria-current={active ? "page" : undefined}
-                    className={`relative px-2.5 lg:px-3.5 py-1.5 text-sm transition-colors duration-200 group whitespace-nowrap ${
+                    className={`relative px-3.5 lg:px-4 py-1.5 text-sm transition-colors duration-200 group whitespace-nowrap ${
                       active ? "text-accent font-medium" : "text-muted hover:text-accent"
                     }`}
                   >
                     {label}
                     <span
-                      className={`absolute bottom-0 left-2.5 right-2.5 lg:left-3.5 lg:right-3.5 h-px bg-accent transition-transform duration-200 origin-left ${
+                      className={`absolute bottom-0 left-3.5 right-3.5 lg:left-4 lg:right-4 h-px bg-accent transition-transform duration-200 origin-left ${
                         active ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
                       }`}
                     />
