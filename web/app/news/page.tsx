@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getAnnouncements } from "../lib/announcements";
 import NewsCard from "../components/NewsCard";
+import SectionInner from "../components/SectionInner";
 
 export const metadata: Metadata = {
   title: "お知らせ｜きたげん",
@@ -24,23 +25,25 @@ export default async function NewsPage({
   const items = allItems.slice((safePage - 1) * PER_PAGE, safePage * PER_PAGE);
 
   return (
-    <div className="min-h-screen pt-16">
+    <div className="pt-16">
 
       {/* ── ページヘッダー ───────────────────────────────── */}
-      <section className="section-warm py-16 px-4 text-center">
-        <p className="text-[10px] tracking-[0.45em] text-accent/80 mb-2">NEWS</p>
-        <h1 className="text-3xl font-bold">お知らせ</h1>
-        <div className="flex items-center justify-center gap-3 mt-4">
-          <div className="w-8 h-px bg-accent/50" />
-          <div className="w-1 h-1 rounded-full bg-accent/70" />
-          <div className="w-8 h-px bg-accent/50" />
-        </div>
-        <p className="text-sm text-muted mt-4">きたげんからの最新情報</p>
+      <section className="section-warm py-16 md:py-20 border-b border-foreground/15">
+        <SectionInner className="text-center">
+          <p className="text-[10px] md:text-[11px] tracking-[0.45em] text-accent/80 mb-2">NEWS</p>
+          <h1 className="text-3xl md:text-4xl font-bold">お知らせ</h1>
+          <div className="flex items-center justify-center gap-3 mt-4">
+            <div className="w-8 h-px bg-accent/50" />
+            <div className="w-1 h-1 rounded-full bg-accent/70" />
+            <div className="w-8 h-px bg-accent/50" />
+          </div>
+          <p className="text-sm md:text-base text-muted mt-4">きたげんからの最新情報</p>
+        </SectionInner>
       </section>
 
       {/* ── お知らせ一覧 ────────────────────────────────── */}
-      <section className="py-12 px-4 section-light">
-        <div className="max-w-2xl mx-auto">
+      <section className="py-24 md:py-28 section-light">
+        <SectionInner maxW="max-w-4xl">
 
           {allItems.length === 0 ? (
             <div className="text-center py-16">
@@ -115,7 +118,7 @@ export default async function NewsPage({
             </>
           )}
 
-        </div>
+        </SectionInner>
       </section>
 
     </div>
