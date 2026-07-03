@@ -2,12 +2,15 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import MobileNav from "./MobileNav";
 import { NAV_LINKS } from "@/app/lib/nav";
+import { isNavActive } from "@/app/lib/navActive";
 import { PHONE as TEL } from "@/app/lib/contact";
 
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -48,17 +51,27 @@ export default function Header() {
 
           {/* ナビリンク（項目数が増えたため lg 未満はやや詰める） */}
           <ul className="flex items-center">
-            {NAV_LINKS.map(({ href, label }) => (
-              <li key={href}>
-                <Link
-                  href={href}
-                  className="relative px-2.5 lg:px-3.5 py-1.5 text-sm text-muted hover:text-accent transition-colors duration-200 group whitespace-nowrap"
-                >
-                  {label}
-                  <span className="absolute bottom-0 left-2.5 right-2.5 lg:left-3.5 lg:right-3.5 h-px bg-accent scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left" />
-                </Link>
-              </li>
-            ))}
+            {NAV_LINKS.map(({ href, label }) => {
+              const active = isNavActive(pathname, href);
+              return (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    aria-current={active ? "page" : undefined}
+                    className={`relative px-2.5 lg:px-3.5 py-1.5 text-sm transition-colors duration-200 group whitespace-nowrap ${
+                      active ? "text-accent font-medium" : "text-muted hover:text-accent"
+                    }`}
+                  >
+                    {label}
+                    <span
+                      className={`absolute bottom-0 left-2.5 right-2.5 lg:left-3.5 lg:right-3.5 h-px bg-accent transition-transform duration-200 origin-left ${
+                        active ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
+                      }`}
+                    />
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
 
           {/* 電話予約 — 縦区切り線 ＋ 番号 */}

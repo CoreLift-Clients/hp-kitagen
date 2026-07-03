@@ -3,13 +3,16 @@
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Phone } from "lucide-react";
 import { NAV_LINKS } from "@/app/lib/nav";
+import { isNavActive } from "@/app/lib/navActive";
 import { PHONE as TEL } from "@/app/lib/contact";
 
 export default function MobileNav() {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -55,26 +58,40 @@ export default function MobileNav() {
             NAVIGATION
           </p>
           <ul className="divide-y divide-border">
-            {NAV_LINKS.map(({ href, label, en }, i) => (
-              <li
-                key={href}
-                style={{ transitionDelay: open ? `${i * 40 + 60}ms` : "0ms" }}
-                className={`transition-all duration-300 ${open ? "opacity-100 translate-x-0" : "opacity-0 translate-x-6"}`}
-              >
-                <Link
-                  href={href}
-                  onClick={() => setOpen(false)}
-                  className="flex items-center justify-between py-4 group"
+            {NAV_LINKS.map(({ href, label, en }, i) => {
+              const active = isNavActive(pathname, href);
+              return (
+                <li
+                  key={href}
+                  style={{ transitionDelay: open ? `${i * 40 + 60}ms` : "0ms" }}
+                  className={`transition-all duration-300 ${open ? "opacity-100 translate-x-0" : "opacity-0 translate-x-6"}`}
                 >
-                  <span className="text-lg font-medium text-foreground group-hover:text-accent transition-colors duration-200">
-                    {label}
-                  </span>
-                  <span className="text-[10px] tracking-[0.3em] text-muted/50 group-hover:text-accent/60 transition-colors duration-200 uppercase">
-                    {en}
-                  </span>
-                </Link>
-              </li>
-            ))}
+                  <Link
+                    href={href}
+                    onClick={() => setOpen(false)}
+                    aria-current={active ? "page" : undefined}
+                    className="flex items-center justify-between py-4 group"
+                  >
+                    <span
+                      className={`text-lg transition-colors duration-200 ${
+                        active
+                          ? "text-accent font-semibold"
+                          : "text-foreground font-medium group-hover:text-accent"
+                      }`}
+                    >
+                      {label}
+                    </span>
+                    <span
+                      className={`text-[10px] tracking-[0.3em] transition-colors duration-200 uppercase ${
+                        active ? "text-accent/70" : "text-muted/50 group-hover:text-accent/60"
+                      }`}
+                    >
+                      {en}
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </nav>
 
