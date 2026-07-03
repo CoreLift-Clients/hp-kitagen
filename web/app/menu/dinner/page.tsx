@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
-import { Utensils } from "lucide-react";
+import Link from "next/link";
+import { Utensils, ShoppingBag, ArrowRight } from "lucide-react";
 import { getMenusForDinner, groupByCategorySub } from "../../lib/menus";
 import { listDocuments } from "../../lib/adminDocuments";
 import ImageGallery from "../../components/ImageGallery";
@@ -300,6 +301,28 @@ export default async function DinnerMenuPage() {
               <RecommendCard key={item.name} item={item} price={priceOf(item)} />
             ))}
           </div>
+
+          {/* ── テイクアウトのご案内（/takeout への導線） ─────────── */}
+          <Link
+            href="/takeout"
+            className="group mt-10 md:mt-12 flex items-center gap-4 md:gap-5 rounded-2xl border border-accent/40 bg-accent/[0.06] p-5 md:p-6 transition-all duration-300 hover:-translate-y-0.5 hover:border-accent/60 hover:bg-accent/10"
+          >
+            <div className="flex h-11 w-11 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-xl border border-accent/30 bg-background/70">
+              <ShoppingBag size={20} strokeWidth={1.6} className="text-accent" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] md:text-[11px] tracking-[0.35em] text-accent/70 mb-1">TAKEOUT</p>
+              <h3 className="text-base md:text-lg font-bold text-foreground">お持ち帰りも承っています</h3>
+              <p className="text-xs md:text-sm text-muted mt-1 leading-relaxed">
+                人気メニューをご自宅でも。テイクアウト専用メニューをお電話でご注文いただけます。
+              </p>
+            </div>
+            <ArrowRight
+              size={18}
+              strokeWidth={1.8}
+              className="hidden sm:block shrink-0 text-accent transition-transform duration-300 group-hover:translate-x-1"
+            />
+          </Link>
         </SectionInner>
       </section>
 
