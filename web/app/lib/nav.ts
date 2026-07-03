@@ -1,9 +1,9 @@
+// ヘッダー（デスクトップ Header・モバイル MobileNav 共通）に表示するナビ。
+// スッキリさせるため主要4項目に絞る。トップはロゴ（→ /）で代替し、
+// お知らせ・アンケートはフッター（layout.tsx の Footer）から辿れるようにしている。
 export const NAV_LINKS = [
-  { href: "/",            label: "トップ",       en: "Top"     },
-  { href: "/owner",       label: "店主紹介",     en: "Owner"   },
   { href: "/menu/dinner", label: "メニュー",     en: "Menu"    },
-  { href: "/info",        label: "店舗情報",     en: "Info"    },
   { href: "/takeout",     label: "テイクアウト", en: "Takeout" },
-  { href: "/news",        label: "お知らせ",     en: "News"    },
-  { href: "/survey",      label: "アンケート",   en: "Survey"  },
+  { href: "/info",        label: "店舗情報",     en: "Info"    },
+  { href: "/owner",       label: "店主紹介",     en: "Owner"   },
 ];
