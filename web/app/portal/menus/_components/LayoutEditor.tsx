@@ -46,7 +46,7 @@ type Tab = "top" | "lunch" | "menu" | "takeout";
 const TABS: { key: Tab; label: string; description: string; field?: keyof AdminMenuItem }[] = [
   { key: "top",     label: "TOPページ",   description: "おすすめメニュー（上位3件が/トップに表示）",       field: "showOnTop" },
   { key: "lunch",   label: "ランチ",      description: "/menu/lunch の表示順（subCategory=ランチ が自動表示）" },
-  { key: "menu",    label: "ディナー",    description: "/menu/dinner フード・ドリンク（ランチ除く）",       field: "showOnMenuPage" },
+  { key: "menu",    label: "ディナー",    description: "/menu/dinner フード・ドリンク（ランチ除く）",       field: "showOnOfficialMenuPage" },
   { key: "takeout", label: "テイクアウト", description: "/takeout に表示されるメニュー",                   field: "showOnTakeout" },
 ];
 
@@ -680,7 +680,7 @@ function PhoneContentLunch({
       <div className="py-8 px-4 text-center border-b border-border/50">
         <p className="text-[9px] tracking-[0.45em] text-accent/80 mb-1.5">LUNCH</p>
         <h2 className="text-base font-bold text-foreground">ランチメニュー</h2>
-        <p className="text-[10px] text-muted/60 mt-1">11:30〜14:00</p>
+        <p className="text-[10px] text-muted/60 mt-1">12:00〜14:00</p>
         <div className="flex items-center justify-center gap-3 mt-2">
           <div className="w-6 h-px bg-accent/50" />
           <div className="w-1 h-1 rounded-full bg-accent/60" />
@@ -762,9 +762,9 @@ export default function LayoutEditor({ items }: Props) {
         .filter((i) => i.isActive && isLunchItem(i))
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((i) => i.id),
-      // ディナー: showOnMenuPage=true かつランチ以外
+      // ディナー: showOnOfficialMenuPage=true かつランチ以外
       menu:    items
-        .filter((i) => i.showOnMenuPage && !isLunchItem(i))
+        .filter((i) => i.showOnOfficialMenuPage && !isLunchItem(i))
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((i) => i.id),
       takeout: sort("showOnTakeout"),

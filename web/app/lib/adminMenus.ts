@@ -20,9 +20,9 @@ export interface AdminMenuItem {
   subCategory:   string;
   sortOrder:     number;
   isActive:      boolean;
-  showOnTop:     boolean;
-  showOnMenuPage: boolean;
-  showOnTakeout: boolean;
+  showOnTop:              boolean;
+  showOnOfficialMenuPage: boolean;
+  showOnTakeout:          boolean;
   createdAt:     string;
   updatedAt:     string;
 }
@@ -39,9 +39,9 @@ function mapItem(raw: Record<string, any>): AdminMenuItem {
     subCategory:    String(raw.subCategory ?? raw.category_sub  ?? ""),
     sortOrder:      Number(raw.sortOrder   ?? 0),
     isActive:       raw.isActive   !== false,
-    showOnTop:      raw.showOnTop      === true,
-    showOnMenuPage: raw.showOnMenuPage === true,
-    showOnTakeout:  raw.showOnTakeout  === true,
+    showOnTop:              raw.showOnTop              === true,
+    showOnOfficialMenuPage: raw.showOnOfficialMenuPage === true,
+    showOnTakeout:          raw.showOnTakeout          === true,
     createdAt:      String(raw.createdAt ?? ""),
     updatedAt:      String(raw.updatedAt ?? ""),
   };

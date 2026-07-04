@@ -8,9 +8,9 @@ const SHOP_ID  = "kitagen";
 
 type Tab = "top" | "menu" | "takeout";
 
-const TAB_FIELD: Record<Tab, "showOnTop" | "showOnMenuPage" | "showOnTakeout"> = {
+const TAB_FIELD: Record<Tab, "showOnTop" | "showOnOfficialMenuPage" | "showOnTakeout"> = {
   top:     "showOnTop",
-  menu:    "showOnMenuPage",
+  menu:    "showOnOfficialMenuPage",
   takeout: "showOnTakeout",
 };
 

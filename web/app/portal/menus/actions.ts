@@ -10,9 +10,9 @@ const SHOP_ID  = "kitagen";
 
 type Tab = "top" | "menu" | "takeout";
 
-const TAB_FIELD: Record<Tab, "showOnTop" | "showOnMenuPage" | "showOnTakeout"> = {
+const TAB_FIELD: Record<Tab, "showOnTop" | "showOnOfficialMenuPage" | "showOnTakeout"> = {
   top:     "showOnTop",
-  menu:    "showOnMenuPage",
+  menu:    "showOnOfficialMenuPage",
   takeout: "showOnTakeout",
 };
 
@@ -51,10 +51,10 @@ export async function saveLayout(
 export async function updateMenuDisplay(
   id: string,
   data: {
-    showOnTop:      boolean;
-    showOnMenuPage: boolean;
-    showOnTakeout:  boolean;
-    sortOrder:      number;
+    showOnTop:              boolean;
+    showOnOfficialMenuPage: boolean;
+    showOnTakeout:          boolean;
+    sortOrder:              number;
   },
 ) {
   const res = await backendFetch(`${BASE_URL}/api/admin/menus/${id}/display`, {
@@ -62,10 +62,10 @@ export async function updateMenuDisplay(
     headers: { "Content-Type": "application/json" },
     body:    JSON.stringify({
       shopId: SHOP_ID,
-      showOnTop:      data.showOnTop,
-      showOnMenuPage: data.showOnMenuPage,
-      showOnTakeout:  data.showOnTakeout,
-      sortOrder:      data.sortOrder,
+      showOnTop:              data.showOnTop,
+      showOnOfficialMenuPage: data.showOnOfficialMenuPage,
+      showOnTakeout:          data.showOnTakeout,
+      sortOrder:              data.sortOrder,
     }),
   });
 
