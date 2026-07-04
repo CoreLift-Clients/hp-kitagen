@@ -4,6 +4,7 @@ import Link from "next/link";
 import Header from "./components/Header";
 import ClientLayout from "./components/ClientLayout";
 import StructuredData from "./components/StructuredData";
+import { SITE_URL, OG_IMAGE } from "./lib/seo";
 import "./globals.css";
 
 const notoSansJP = Noto_Sans_JP({
@@ -11,9 +12,6 @@ const notoSansJP = Noto_Sans_JP({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
 });
-
-const SITE_URL = "https://www.kitagen-izakaya.com";
-const OG_IMAGE = "/og.png";
 
 const TITLE       = "IZAKAYA きたげん｜桃谷の居酒屋【公式サイト】";
 const DESCRIPTION = "桃谷の居酒屋「IZAKAYA きたげん」公式サイト。こだわりの料理とお酒を楽しめるお店です。ランチ・ディナー・テイクアウト対応。宴会や飲み会にもおすすめ。";
@@ -52,6 +50,8 @@ export const metadata: Metadata = {
     description: DESCRIPTION,
     images: [OG_IMAGE],
   },
+  // canonical はトップページ（/）専用。下層ページは各 page.tsx が
+  // pageMetadata() で自分自身のURLに上書きするため、ここの値は継承されない。
   alternates: {
     canonical: SITE_URL,
   },

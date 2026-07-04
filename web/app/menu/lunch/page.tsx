@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import Image from "next/image";
 import { Utensils } from "lucide-react";
 import Link from "next/link";
@@ -6,11 +5,13 @@ import { getMenusForLunch, groupByCategorySub } from "../../lib/menus";
 import { listDocuments } from "../../lib/adminDocuments";
 import ImageGallery from "../../components/ImageGallery";
 import { LUNCH_SUSPENDED, LUNCH_SUSPENDED_NOTICE } from "../../lib/businessHours";
+import { pageMetadata } from "../../lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "ランチメニュー｜きたげん",
   description: "きたげんのランチメニューをご覧いただけます。",
-};
+  path: "/menu/lunch",
+});
 
 function SectionHeading({ label, title }: { label: string; title: string }) {
   return (
