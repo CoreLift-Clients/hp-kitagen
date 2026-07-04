@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getAnnouncements } from "../lib/announcements";
 import NewsCard from "../components/NewsCard";
 import SectionInner from "../components/SectionInner";
+import BreadcrumbJsonLd from "../components/BreadcrumbJsonLd";
 import { pageMetadata } from "../lib/seo";
 
 export const metadata = pageMetadata({
@@ -27,6 +28,12 @@ export default async function NewsPage({
 
   return (
     <div className="pt-16">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "トップ", path: "/" },
+          { name: "お知らせ", path: "/news" },
+        ]}
+      />
 
       {/* ── ページヘッダー ───────────────────────────────── */}
       <section className="section-warm py-16 md:py-20 border-b border-foreground/15">

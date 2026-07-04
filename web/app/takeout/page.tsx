@@ -2,6 +2,7 @@ import { Phone } from "lucide-react";
 import { getMenusForTakeout, groupByCategorySub } from "../lib/menus";
 import { listDocuments } from "../lib/adminDocuments";
 import ImageGallery from "../components/ImageGallery";
+import BreadcrumbJsonLd from "../components/BreadcrumbJsonLd";
 import SectionInner from "../components/SectionInner";
 import { PHONE } from "../lib/contact";
 import { pageMetadata } from "../lib/seo";
@@ -117,6 +118,12 @@ export default async function TakeoutPage() {
 
   return (
     <div className="min-h-screen">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "トップ", path: "/" },
+          { name: "テイクアウト", path: "/takeout" },
+        ]}
+      />
 
       {/* ── ページヘッダー（案内文もここに集約し、間延びを解消） ───── */}
       <section className="section-warm border-b border-border py-16 md:py-20 text-center">

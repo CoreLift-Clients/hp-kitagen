@@ -5,6 +5,7 @@ import { getMenusForDinner, groupByCategorySub } from "../../lib/menus";
 import { listDocuments } from "../../lib/adminDocuments";
 import { pageMetadata } from "../../lib/seo";
 import ImageGallery from "../../components/ImageGallery";
+import BreadcrumbJsonLd from "../../components/BreadcrumbJsonLd";
 import SectionInner from "../../components/SectionInner";
 import { LUNCH_SUSPENDED } from "../../lib/businessHours";
 import {
@@ -222,6 +223,12 @@ export default async function DinnerMenuPage() {
 
   return (
     <div className="min-h-screen">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "トップ", path: "/" },
+          { name: "ディナーメニュー", path: "/menu/dinner" },
+        ]}
+      />
 
       {/* ── ページヘッダー ─────────────────────────────────── */}
       <section className="section-warm border-b border-border py-16 md:py-20 text-center">

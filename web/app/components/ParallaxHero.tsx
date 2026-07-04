@@ -47,7 +47,12 @@ export default function ParallaxHero({
           写真が未配置 / 読み込みエラーのときに表示される温かいグラデーション */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#2c2215] via-[#1e1a0e] to-[#181408]" />
 
-      {/* ── SP用（md未満）：縦長構図 ─────────────────── */}
+      {/* ── SP用（md未満）：縦長構図 ─────────────────────────
+          preload は SP画像側のみ（priority）に付与する。
+          next/image の preload には media 属性が付かず、priority を両方に
+          付けると全ビューポートで縦横2枚が二重に preload されてしまう。
+          当サイトはスマホ優先（大半がモバイル流入）のため、モバイルLCPを
+          守る観点で SP画像を優先読み込み対象にする。 */}
       {!spError && (
         <Image
           src={srcSp}
@@ -64,7 +69,9 @@ export default function ParallaxHero({
         />
       )}
 
-      {/* ── PC用（md以上）：横長構図 ─────────────────── */}
+      {/* ── PC用（md以上）：横長構図 ─────────────────────────
+          priority は付けず（二重 preload を避ける）、代わりに loading="eager"
+          でファーストビュー描画時に遅延なく読み込む。preload リンクは出さない。 */}
       {!pcError && (
         <Image
           src={srcPc ?? srcSp}
@@ -74,7 +81,7 @@ export default function ParallaxHero({
             pcLoaded ? "opacity-100" : "opacity-0"
           }`}
           style={{ objectPosition: positionPc }}
-          priority
+          loading="eager"
           sizes="100vw"
           onLoad={() => setPcLoaded(true)}
           onError={() => setPcError(true)}
