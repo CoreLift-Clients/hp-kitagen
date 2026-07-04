@@ -680,7 +680,7 @@ function PhoneContentLunch({
       <div className="py-8 px-4 text-center border-b border-border/50">
         <p className="text-[9px] tracking-[0.45em] text-accent/80 mb-1.5">LUNCH</p>
         <h2 className="text-base font-bold text-foreground">ランチメニュー</h2>
-        <p className="text-[10px] text-muted/60 mt-1">11:30〜14:00</p>
+        <p className="text-[10px] text-muted/60 mt-1">12:00〜14:00</p>
         <div className="flex items-center justify-center gap-3 mt-2">
           <div className="w-6 h-px bg-accent/50" />
           <div className="w-1 h-1 rounded-full bg-accent/60" />
