@@ -251,7 +251,7 @@ export default async function DinnerMenuPage() {
           <p className="text-sm md:text-base text-muted mb-1">
             ディナータイム：17:00〜22:00（L.O. 21:30）
           </p>
-          <p className="text-xs md:text-sm text-muted/70 mb-8">
+          <p className="text-xs md:text-sm text-muted/90 mb-8">
             ※ 仕入れ状況により内容が変わる場合があります。最新情報は店頭にてご確認ください。
           </p>
 

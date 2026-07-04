@@ -63,7 +63,7 @@ export default function OwnerPage() {
                   priority
                 />
               </div>
-              <figcaption className="mt-4 text-xs text-muted/70 tracking-wide">
+              <figcaption className="mt-4 text-xs text-muted/90 tracking-wide">
                 IZAKAYA きたげん 店主
               </figcaption>
             </figure>

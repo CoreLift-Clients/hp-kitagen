@@ -172,13 +172,13 @@ export default async function InfoPage() {
                   </div>
                 )}
 
-                <p className="text-sm text-muted/80 leading-relaxed">
+                <p className="text-sm text-muted/90 leading-relaxed">
                   ※ 急な営業時間の変更はInstagramでお知らせする場合があります
                 </p>
 
                 {activeCalendar && (
                   <div className="space-y-3 pt-1">
-                    <p className="text-sm text-muted/80 leading-relaxed">
+                    <p className="text-sm text-muted/90 leading-relaxed">
                       ※ 営業日・臨時休業はカレンダーでご確認いただけます
                     </p>
                     <CalendarViewer
@@ -289,7 +289,7 @@ export default async function InfoPage() {
                   <span className="text-sm md:text-base text-muted">支払い</span>
                   <span className="text-base md:text-lg">{PAYMENT.join("・")}</span>
                 </div>
-                <p className="mt-4 text-sm text-muted/80 leading-relaxed">
+                <p className="mt-4 text-sm text-muted/90 leading-relaxed">
                   各種クレジットカードがご利用いただけます。
                 </p>
               </div>
@@ -300,7 +300,7 @@ export default async function InfoPage() {
                 <p className="text-sm md:text-base text-muted mb-1.5 leading-relaxed">
                   ご宴会・団体でのご利用は、お電話でお席をご用意いたします。
                 </p>
-                <p className="text-xs md:text-sm text-muted/70 mb-6 leading-relaxed">
+                <p className="text-xs md:text-sm text-muted/90 mb-6 leading-relaxed">
                   「ホームページを見た」とお伝えいただくとご案内がスムーズです。
                   営業時間外（昼間・開店前）でも、ご予約のお電話を承ります。
                 </p>
@@ -320,7 +320,7 @@ export default async function InfoPage() {
                 <p className="text-sm md:text-base text-muted leading-relaxed mb-1.5">
                   料理や店内の様子をInstagramで発信しています。
                 </p>
-                <p className="text-xs md:text-sm text-muted/70 mb-6 leading-relaxed">
+                <p className="text-xs md:text-sm text-muted/90 mb-6 leading-relaxed">
                   最新情報や営業日の変更なども随時更新していますので、ぜひご確認ください。
                 </p>
                 <a

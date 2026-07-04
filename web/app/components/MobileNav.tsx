@@ -108,8 +108,8 @@ export default function MobileNav() {
             <Phone size={18} strokeWidth={2} />
             電話で予約する
           </a>
-          <p className="text-center text-xs text-muted/60 tabular-nums">{TEL}</p>
-          <p className="text-center text-[11px] text-muted/50 leading-relaxed">
+          <p className="text-center text-xs text-muted/90 tabular-nums">{TEL}</p>
+          <p className="text-center text-[11px] text-muted/90 leading-relaxed">
             「ホームページを見た」とお伝えいただくと<br />ご案内がスムーズです。
           </p>
         </div>
