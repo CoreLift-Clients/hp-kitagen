@@ -46,7 +46,7 @@ type Tab = "top" | "lunch" | "menu" | "takeout";
 const TABS: { key: Tab; label: string; description: string; field?: keyof AdminMenuItem }[] = [
   { key: "top",     label: "TOPページ",   description: "おすすめメニュー（上位3件が/トップに表示）",       field: "showOnTop" },
   { key: "lunch",   label: "ランチ",      description: "/menu/lunch の表示順（subCategory=ランチ が自動表示）" },
-  { key: "menu",    label: "ディナー",    description: "/menu/dinner フード・ドリンク（ランチ除く）",       field: "showOnMenuPage" },
+  { key: "menu",    label: "ディナー",    description: "/menu/dinner フード・ドリンク（ランチ除く）",       field: "showOnOfficialMenuPage" },
   { key: "takeout", label: "テイクアウト", description: "/takeout に表示されるメニュー",                   field: "showOnTakeout" },
 ];
 
@@ -762,9 +762,9 @@ export default function LayoutEditor({ items }: Props) {
         .filter((i) => i.isActive && isLunchItem(i))
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((i) => i.id),
-      // ディナー: showOnMenuPage=true かつランチ以外
+      // ディナー: showOnOfficialMenuPage=true かつランチ以外
       menu:    items
-        .filter((i) => i.showOnMenuPage && !isLunchItem(i))
+        .filter((i) => i.showOnOfficialMenuPage && !isLunchItem(i))
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((i) => i.id),
       takeout: sort("showOnTakeout"),
