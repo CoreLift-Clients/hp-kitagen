@@ -40,7 +40,7 @@ export default function Header() {
           </div>
           <div className="hidden sm:flex items-center gap-3 ml-0.5">
             <div className="w-px h-7 bg-border" />
-            <span className="text-[10px] text-muted/70 tracking-wide leading-[1.7]">
+            <span className="text-[10px] text-muted/90 tracking-wide leading-[1.7]">
               桃谷の<br />居酒屋
             </span>
           </div>
@@ -76,7 +76,7 @@ export default function Header() {
 
           {/* 電話予約 — 縦区切り線 ＋ 番号 */}
           <div className="ml-4 pl-4 lg:ml-6 lg:pl-6 border-l border-border/60 flex flex-col justify-center">
-            <p className="text-[9px] text-muted/60 tracking-wider leading-none mb-1.5">
+            <p className="text-[9px] text-muted/90 tracking-wider leading-none mb-1.5">
               ご予約・お問い合わせ
             </p>
             <a
@@ -85,7 +85,7 @@ export default function Header() {
             >
               {TEL}
             </a>
-            <p className="text-[9px] text-muted/50 mt-1.5 leading-none whitespace-nowrap">
+            <p className="text-[9px] text-muted/90 mt-1.5 leading-none whitespace-nowrap">
               「ホームページを見た」とお伝えください
             </p>
           </div>

@@ -206,10 +206,18 @@ export default async function DinnerMenuPage() {
     listDocuments("dinner"),
   ]);
 
-  const galleryImages = dinnerDocs
+  const galleryDocs = dinnerDocs
     .filter((d) => d.isActive && d.resourceType === "image")
-    .sort((a, b) => a.sortOrder - b.sortOrder)
-    .map((d) => ({ url: d.fileUrl, alt: d.title }));
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+  const galleryImages = galleryDocs.map((d, i) => ({
+    url: d.fileUrl,
+    // alt は管理画面のドキュメント名を流用。未入力時は内容が伝わる説明文にフォールバック。
+    alt:
+      d.title.trim() ||
+      (galleryDocs.length > 1
+        ? `きたげんのメニュー表（${i + 1}枚目）`
+        : "きたげんのメニュー表"),
+  }));
 
   const foodSections = groupByCategorySub(allItems.filter((i) => i.category_main === "food"));
   const drinkSections = sortDrinkSections(
@@ -243,7 +251,7 @@ export default async function DinnerMenuPage() {
           <p className="text-sm md:text-base text-muted mb-1">
             ディナータイム：17:00〜22:00（L.O. 21:30）
           </p>
-          <p className="text-xs md:text-sm text-muted/70 mb-8">
+          <p className="text-xs md:text-sm text-muted/90 mb-8">
             ※ 仕入れ状況により内容が変わる場合があります。最新情報は店頭にてご確認ください。
           </p>
 

@@ -403,7 +403,7 @@ export default async function Home() {
                   <span className="tabular-nums">{PHONE}</span>
                 </a>
 
-                <p className="text-sm text-muted/60 mt-5 leading-relaxed">
+                <p className="text-sm text-muted/90 mt-5 leading-relaxed">
                   ご予約時に「ホームページを見た」とお伝えください。
                   <br />
                   営業時間外（昼間・開店前）でも承ります。
