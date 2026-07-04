@@ -109,10 +109,18 @@ export default async function TakeoutPage() {
     listDocuments("takeout"),
   ]);
 
-  const galleryImages = takeoutDocs
+  const galleryDocs = takeoutDocs
     .filter((d) => d.isActive && d.resourceType === "image")
-    .sort((a, b) => a.sortOrder - b.sortOrder)
-    .map((d) => ({ url: d.fileUrl, alt: d.title }));
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+  const galleryImages = galleryDocs.map((d, i) => ({
+    url: d.fileUrl,
+    // alt は管理画面のドキュメント名を流用。未入力時は内容が伝わる説明文にフォールバック。
+    alt:
+      d.title.trim() ||
+      (galleryDocs.length > 1
+        ? `きたげんのテイクアウトメニュー表（${i + 1}枚目）`
+        : "きたげんのテイクアウトメニュー表"),
+  }));
 
   const menuSections = groupByCategorySub(items);
 
