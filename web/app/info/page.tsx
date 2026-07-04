@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import Image from "next/image";
 import { MapPin, ExternalLink, Phone } from "lucide-react";
 import { listDocuments } from "../lib/adminDocuments";
@@ -11,11 +10,13 @@ import {
   LUNCH_SUSPENDED,
   LUNCH_SUSPENDED_NOTICE,
 } from "../lib/businessHours";
+import { pageMetadata } from "../lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "店舗情報｜きたげん",
   description: "きたげんの営業時間・アクセス・席数・お支払い方法などをご確認いただけます。",
-};
+  path: "/info",
+});
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // 編集はここだけ

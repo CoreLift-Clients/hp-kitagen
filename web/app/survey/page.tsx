@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
 import { ClipboardList, MessageSquare, Sparkles, ExternalLink, CheckCircle } from "lucide-react";
+import { pageMetadata } from "../lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "アンケート｜きたげん",
   description: "きたげんへのご来店ありがとうございます。ご感想・ご意見をお聞かせください。",
-};
+  path: "/survey",
+});
 
 const SURVEY_URL = "https://www.corelift-platform.com/s/PyqS2z2U";
 

@@ -1,15 +1,16 @@
-import type { Metadata } from "next";
 import { Phone } from "lucide-react";
 import { getMenusForTakeout, groupByCategorySub } from "../lib/menus";
 import { listDocuments } from "../lib/adminDocuments";
 import ImageGallery from "../components/ImageGallery";
 import SectionInner from "../components/SectionInner";
 import { PHONE } from "../lib/contact";
+import { pageMetadata } from "../lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "テイクアウト｜きたげん",
   description: "きたげんの人気メニューをご自宅でもお楽しみいただけます。お電話でのご注文も可能です。",
-};
+  path: "/takeout",
+});
 
 type CategorySection = {
   heading: string;

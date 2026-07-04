@@ -1,9 +1,9 @@
-import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { Utensils, ShoppingBag, ArrowRight } from "lucide-react";
 import { getMenusForDinner, groupByCategorySub } from "../../lib/menus";
 import { listDocuments } from "../../lib/adminDocuments";
+import { pageMetadata } from "../../lib/seo";
 import ImageGallery from "../../components/ImageGallery";
 import SectionInner from "../../components/SectionInner";
 import { LUNCH_SUSPENDED } from "../../lib/businessHours";
@@ -47,10 +47,11 @@ function sortDrinkSections(sections: CategorySection[]): CategorySection[] {
   });
 }
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "ディナーメニュー｜きたげん",
   description: "きたげんのディナーフード・ドリンクメニューをご覧いただけます。",
-};
+  path: "/menu/dinner",
+});
 
 // 和紙テーマに馴染むカード枠（info頁と同じスケール感）
 const CARD =

@@ -1,13 +1,14 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { getAnnouncements } from "../lib/announcements";
 import NewsCard from "../components/NewsCard";
 import SectionInner from "../components/SectionInner";
+import { pageMetadata } from "../lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "お知らせ｜きたげん",
   description: "きたげんからのお知らせ・最新情報をご確認いただけます。",
-};
+  path: "/news",
+});
 
 const PER_PAGE = 10;
 

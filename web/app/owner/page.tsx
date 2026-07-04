@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -7,12 +6,14 @@ import {
   OWNER_PHOTO,
   OWNER_PHOTO_ALT,
 } from "../lib/owner";
+import { pageMetadata } from "../lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = pageMetadata({
   title: "店主紹介 | IZAKAYA きたげん",
   description:
     "桃谷で生まれ育った、居酒屋きたげんの店主より。みんなの居場所になる店を目指して。鉄鍋餃子や自家製しゅうまいへの想い、女性お一人でも入りやすい店づくりについてお話しします。",
-};
+  path: "/owner",
+});
 
 // プルクオートを挿入するセクションの区切り位置（このインデックスのセクションの直後）。
 // 本文の中盤に自然に置けるよう、想いを語ったセクションの後に差し込む。
