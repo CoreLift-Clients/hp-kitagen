@@ -4,6 +4,7 @@ import Link from "next/link";
 import { getMenusForLunch, groupByCategorySub } from "../../lib/menus";
 import { listDocuments } from "../../lib/adminDocuments";
 import ImageGallery from "../../components/ImageGallery";
+import BreadcrumbJsonLd from "../../components/BreadcrumbJsonLd";
 import { LUNCH_SUSPENDED, LUNCH_SUSPENDED_NOTICE } from "../../lib/businessHours";
 import { pageMetadata } from "../../lib/seo";
 
@@ -74,6 +75,12 @@ export default async function LunchMenuPage() {
 
   return (
     <div className="min-h-screen">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "トップ", path: "/" },
+          { name: "ランチメニュー", path: "/menu/lunch" },
+        ]}
+      />
 
       {/* ── ページヘッダー ─────────────────────────────────── */}
       <section className="section-warm border-b border-border py-16 px-4 text-center">

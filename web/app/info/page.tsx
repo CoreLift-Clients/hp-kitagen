@@ -11,6 +11,7 @@ import {
   LUNCH_SUSPENDED_NOTICE,
 } from "../lib/businessHours";
 import { pageMetadata } from "../lib/seo";
+import BreadcrumbJsonLd from "../components/BreadcrumbJsonLd";
 
 export const metadata = pageMetadata({
   title: "店舗情報｜きたげん",
@@ -88,6 +89,12 @@ export default async function InfoPage() {
 
   return (
     <div className="min-h-screen pt-16">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "トップ", path: "/" },
+          { name: "店舗情報", path: "/info" },
+        ]}
+      />
 
       {/* ── ページヘッダー ───────────────────────────────── */}
       <section className="section-warm py-16 md:py-20 border-b border-foreground/15">

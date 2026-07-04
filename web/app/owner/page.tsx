@@ -7,6 +7,7 @@ import {
   OWNER_PHOTO_ALT,
 } from "../lib/owner";
 import { pageMetadata } from "../lib/seo";
+import BreadcrumbJsonLd from "../components/BreadcrumbJsonLd";
 
 export const metadata = pageMetadata({
   title: "店主紹介 | IZAKAYA きたげん",
@@ -24,6 +25,12 @@ export default function OwnerPage() {
 
   return (
     <div className="min-h-screen pt-16">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "トップ", path: "/" },
+          { name: "店主紹介", path: "/owner" },
+        ]}
+      />
 
       {/* ── ページヘッダー ───────────────────────────────── */}
       <section className="section-warm py-16 px-4 text-center border-b border-foreground/10">

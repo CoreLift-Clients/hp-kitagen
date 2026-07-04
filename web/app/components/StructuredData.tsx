@@ -12,8 +12,7 @@
  */
 
 import { PHONE_INTL } from "../lib/contact";
-
-const SITE_URL = "https://www.kitagen-izakaya.com";
+import { SITE_URL } from "../lib/seo";
 
 const restaurantJsonLd = {
   "@context": "https://schema.org",
@@ -23,7 +22,11 @@ const restaurantJsonLd = {
   telephone: PHONE_INTL,
   image: `${SITE_URL}/og.png`,
   priceRange: "¥3,000〜4,000",
-  servesCuisine: ["居酒屋", "中華"],
+  // 日本語表記に加え、英語圏の検索・リッチリザルト向けに "Japanese" を併記。
+  servesCuisine: ["居酒屋", "中華", "Japanese"],
+  // メニューページ（実ページはディナー）。電話予約を受けるため予約可も明示。
+  menu: `${SITE_URL}/menu/dinner`,
+  acceptsReservations: true,
   address: {
     "@type": "PostalAddress",
     postalCode: "544-0033",
