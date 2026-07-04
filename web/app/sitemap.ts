@@ -26,12 +26,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'weekly',
       priority: 0.7,
     },
-    {
-      url: 'https://www.kitagen-izakaya.com/menu/lunch',
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.6,
-    },
+    // /menu/lunch はランチ臨時休業（lib/businessHours.ts の LUNCH_SUSPENDED）中のため、
+    // クロール誘導を避ける目的で意図的に除外している。ランチ再開時に再追加を検討する。
     {
       url: 'https://www.kitagen-izakaya.com/takeout',
       lastModified: new Date(),
