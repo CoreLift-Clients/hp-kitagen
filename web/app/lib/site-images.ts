@@ -4,6 +4,7 @@
  * 定数だけ必要な場合は site-image-defaults.ts を使うこと。
  */
 import "server-only";
+import { backendFetch } from "@/lib/backendFetch";
 import { DEFAULT_SITE_IMAGES } from "./site-image-defaults";
 
 export { DEFAULT_SITE_IMAGES };
@@ -40,10 +41,11 @@ export async function getSiteImages(): Promise<SiteImages> {
   try {
     // type="top" と type="shop" の両方を取得
     const [topRes, shopRes] = await Promise.all([
-      fetch(`${BASE_URL}/api/admin/documents?shopId=${SHOP_ID}&type=top`, {
+      // 資料の一覧は認証が要る（公式サイト専用の API キー）。認証なしの fetch だと 401 で既定の画像に落ちていた
+      backendFetch(`${BASE_URL}/api/admin/documents?shopId=${SHOP_ID}&type=top`, {
         next: { revalidate: 300 },
       }),
-      fetch(`${BASE_URL}/api/admin/documents?shopId=${SHOP_ID}&type=shop`, {
+      backendFetch(`${BASE_URL}/api/admin/documents?shopId=${SHOP_ID}&type=shop`, {
         next: { revalidate: 300 },
       }),
     ]);
