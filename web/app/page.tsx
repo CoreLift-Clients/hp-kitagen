@@ -53,8 +53,6 @@ export default async function Home() {
           │   ・PC横長  → web/public/images/hero/hero-pc.jpg           │
           │   ・SP縦長  → web/public/images/hero/hero-sp.jpg           │
           │ ※ 現状は仮画像。ファイル名は変えず同名で差し替えれば反映。 │
-          │ ※ 管理画面（口コミシステム）で hero.pc / hero.sp を        │
-          │    アップロードすると、そちらが自動で優先表示されます。    │
           │ ※ 構図の見え方（顔・料理の位置）は positionPc/positionSp   │
           │    の "center 40%" の数値で上下位置を微調整できます。      │
           └──────────────────────────────────────────────────────────┘ */}
