@@ -13,7 +13,4 @@ export const DEFAULT_SITE_IMAGES = {
   space: {
     counter: "/images/space/counter.jpg",
   },
-  takeout: {
-    hero: "/images/takeout/hero.jpg",
-  },
 } as const;
