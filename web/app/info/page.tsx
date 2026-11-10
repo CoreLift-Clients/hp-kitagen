@@ -4,6 +4,8 @@ import SectionInner from "../components/SectionInner";
 import { PHONE, INSTAGRAM_URL } from "../lib/contact";
 import {
   BUSINESS_HOURS,
+  isLunchSuspendedFor,
+  openTimeNow,
   REGULAR_CLOSED,
   LUNCH_SUSPENDED,
   LUNCH_SUSPENDED_NOTICE,
@@ -139,9 +141,17 @@ export default function InfoPage() {
                       className="grid grid-cols-[6rem_1fr] items-baseline gap-x-6 py-4 border-b border-dashed border-border first:pt-0"
                     >
                       <span className="text-sm md:text-base font-semibold text-foreground">{g.days}</span>
-                      <div className="flex items-baseline justify-between gap-4">
-                        <span className="text-base md:text-lg font-medium tabular-nums">{g.open}〜{g.close}</span>
-                        <span className="text-xs md:text-sm text-muted tabular-nums">L.O.&nbsp;{g.lo}</span>
+                      <div>
+                        {/* ランチ休止中の曜日は、いまの開店時刻（ディナーの開始）を出し、ランチは休止中と添える */}
+                        <div className="flex items-baseline justify-between gap-4">
+                          <span className="text-base md:text-lg font-medium tabular-nums">{openTimeNow(g)}〜{g.close}</span>
+                          <span className="text-xs md:text-sm text-muted tabular-nums">L.O.&nbsp;{g.lo}</span>
+                        </div>
+                        {isLunchSuspendedFor(g) && (
+                          <p className="text-xs md:text-sm text-accent-dark mt-1 tabular-nums">
+                            ランチ（{g.open}〜）は休止中
+                          </p>
+                        )}
                       </div>
                     </div>
                   ))}
