@@ -2,9 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Utensils, ShoppingBag, ArrowRight } from "lucide-react";
 import { getMenusForDinner, groupByCategorySub } from "../../lib/menus";
-import { listDocuments } from "../../lib/adminDocuments";
 import { pageMetadata } from "../../lib/seo";
-import ImageGallery from "../../components/ImageGallery";
 import BreadcrumbJsonLd from "../../components/BreadcrumbJsonLd";
 import SectionInner from "../../components/SectionInner";
 import { LUNCH_SUSPENDED } from "../../lib/businessHours";
@@ -223,23 +221,7 @@ function RecommendCard({
 }
 
 export default async function DinnerMenuPage() {
-  const [allItems, dinnerDocs] = await Promise.all([
-    getMenusForDinner(),
-    listDocuments("dinner"),
-  ]);
-
-  const galleryDocs = dinnerDocs
-    .filter((d) => d.isActive && d.resourceType === "image")
-    .sort((a, b) => a.sortOrder - b.sortOrder);
-  const galleryImages = galleryDocs.map((d, i) => ({
-    url: d.fileUrl,
-    // alt は管理画面のドキュメント名を流用。未入力時は内容が伝わる説明文にフォールバック。
-    alt:
-      d.title.trim() ||
-      (galleryDocs.length > 1
-        ? `きたげんのメニュー表（${i + 1}枚目）`
-        : "きたげんのメニュー表"),
-  }));
+  const allItems = await getMenusForDinner();
 
   const foodSections = groupByCategorySub(allItems.filter((i) => i.category_main === "food"));
   const drinkSections = sortDrinkSections(
@@ -387,22 +369,6 @@ export default async function DinnerMenuPage() {
           )}
         </SectionInner>
       </section>
-
-      {/* ── ④ 実際のメニュー表を見る（撮影画像ギャラリー） ──────── */}
-      {galleryImages.length > 0 && (
-        <section className="section-warm border-t border-border py-16 md:py-20">
-          <SectionInner>
-            <div className="mb-8 md:mb-10">
-              <p className="text-[10px] md:text-[11px] tracking-[0.55em] text-accent/70 mb-2">MENU</p>
-              <h2 className="text-3xl md:text-4xl font-bold">実際のメニュー表を見る</h2>
-              <p className="text-sm md:text-base text-muted mt-4">
-                店頭のメニュー表を撮影したものです。タップで拡大できます。
-              </p>
-            </div>
-            <ImageGallery images={galleryImages} />
-          </SectionInner>
-        </section>
-      )}
 
     </div>
   );

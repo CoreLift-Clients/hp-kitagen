@@ -1,7 +1,5 @@
 import Image from "next/image";
 import { MapPin, ExternalLink, Phone } from "lucide-react";
-import { listDocuments } from "../lib/adminDocuments";
-import CalendarViewer from "../components/CalendarViewer";
 import SectionInner from "../components/SectionInner";
 import { PHONE } from "../lib/contact";
 import {
@@ -83,10 +81,7 @@ const CARD =
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export default async function InfoPage() {
-  const calendarDocs   = await listDocuments("calendar");
-  const activeCalendar = calendarDocs.find((d) => d.isActive) ?? null;
-
+export default function InfoPage() {
   return (
     <div className="min-h-screen pt-16">
       <BreadcrumbJsonLd
@@ -175,19 +170,6 @@ export default async function InfoPage() {
                 <p className="text-sm text-muted/90 leading-relaxed">
                   ※ 急な営業時間の変更はInstagramでお知らせする場合があります
                 </p>
-
-                {activeCalendar && (
-                  <div className="space-y-3 pt-1">
-                    <p className="text-sm text-muted/90 leading-relaxed">
-                      ※ 営業日・臨時休業はカレンダーでご確認いただけます
-                    </p>
-                    <CalendarViewer
-                      fileUrl={activeCalendar.fileUrl}
-                      resourceType={activeCalendar.resourceType}
-                      format={activeCalendar.format}
-                    />
-                  </div>
-                )}
               </div>
 
             </div>
