@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Noto_Sans_JP } from "next/font/google";
 import Link from "next/link";
 import Header from "./components/Header";
-import ClientLayout from "./components/ClientLayout";
 import StructuredData from "./components/StructuredData";
 import { SITE_URL, OG_IMAGE } from "./lib/seo";
 import "./globals.css";
@@ -110,9 +109,9 @@ export default function RootLayout({
     <html lang="ja">
       <body className={`${notoSansJP.variable} font-sans antialiased`}>
         <StructuredData />
-        <ClientLayout header={<Header />} footer={<Footer />}>
-          {children}
-        </ClientLayout>
+        <Header />
+        <main className="pt-16">{children}</main>
+        <Footer />
       </body>
     </html>
   );
