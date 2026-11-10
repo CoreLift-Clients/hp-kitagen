@@ -5,7 +5,7 @@ import { getMenusForDinner, groupByCategorySub } from "../../lib/menus";
 import { pageMetadata } from "../../lib/seo";
 import BreadcrumbJsonLd from "../../components/BreadcrumbJsonLd";
 import SectionInner from "../../components/SectionInner";
-import { LUNCH_SUSPENDED } from "../../lib/businessHours";
+import { LUNCH_SUSPENDED, dinnerTimeLabel } from "../../lib/businessHours";
 import {
   RECOMMENDED_ITEMS,
   resolveRecommendedPrice,
@@ -253,7 +253,7 @@ export default async function DinnerMenuPage() {
             <div className="w-8 h-px bg-accent/50" />
           </div>
           <p className="text-sm md:text-base text-muted mb-1">
-            ディナータイム：17:00〜22:00（L.O. 21:30）
+            ディナータイム：{dinnerTimeLabel()}
           </p>
           <p className="text-xs md:text-sm text-muted/90 mb-8">
             ※ 仕入れ状況により内容が変わる場合があります。最新情報は店頭にてご確認ください。
