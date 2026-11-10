@@ -5,15 +5,16 @@
  * layout.tsx から全ページに出力している（1店舗のため内容は共通）。
  *
  * ── 更新のポイント ──────────────────────────────────────
- * ・営業時間は lib/businessHours.ts の BUSINESS_HOURS（通常営業）から作る
- *   （ランチ臨時休業などの一時的な状態は表示側でのみ出す方針）。
+ * ・営業時間は lib/businessHours.ts の BUSINESS_HOURS から作る。
+ *   開店時刻は openTimeNow() を使い、ランチ休止中（LUNCH_SUSPENDED）は
+ *   ランチの曜日もディナーの開始時刻（DINNER_START）からにする。
  * ・sameAs には公式・予約系アカウントのURLを入れる。分かった順に追記する。
  * ────────────────────────────────────────────────────────
  */
 
 import { PHONE_INTL, INSTAGRAM_URL } from "../lib/contact";
 import { SITE_URL, OG_IMAGE } from "../lib/seo";
-import { BUSINESS_HOURS } from "../lib/businessHours";
+import { BUSINESS_HOURS, openTimeNow } from "../lib/businessHours";
 
 const restaurantJsonLd = {
   "@context": "https://schema.org",
@@ -45,7 +46,7 @@ const restaurantJsonLd = {
   openingHoursSpecification: BUSINESS_HOURS.map((g) => ({
     "@type": "OpeningHoursSpecification",
     dayOfWeek: g.schemaDays,
-    opens: g.open,
+    opens: openTimeNow(g),
     closes: g.close,
   })),
   // ── 公式・予約系アカウント ──────────────────────────────
