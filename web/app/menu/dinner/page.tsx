@@ -14,7 +14,7 @@ import {
   type RecommendedItem,
 } from "../../lib/recommendedMenu";
 
-// ランチ営業のご案内で使用（info頁・構造化データと同じ公式アカウント）
+// ランチ営業のご案内・メニュー準備中の案内で使用（info頁・構造化データと同じ公式アカウント）
 const INSTAGRAM_URL = "https://www.instagram.com/izakaya_kitagen";
 
 // ドリンクカテゴリの表示順（居酒屋として自然な並び）
@@ -133,6 +133,28 @@ function MenuTable({ sections }: { sections: CategorySection[] }) {
   );
 }
 
+// メニューのデータが空のときの案内（欄ごと消さずに、Instagram へ案内する）
+function MenuPreparingNotice() {
+  return (
+    <div className={`${CARD} text-center`}>
+      <p className="text-sm md:text-base text-muted leading-relaxed">
+        メニューは準備中です。
+        <br className="sm:hidden" />
+        最新情報は
+        <a
+          href={INSTAGRAM_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-accent underline underline-offset-2 decoration-accent/40 hover:decoration-accent transition-colors"
+        >
+          Instagram
+        </a>
+        でお知らせしています。
+      </p>
+    </div>
+  );
+}
+
 // 名物・おすすめカード（写真は後入れ。無い間はプレースホルダー）
 function RecommendCard({
   item,
@@ -224,7 +246,7 @@ export default async function DinnerMenuPage() {
     groupByCategorySub(allItems.filter((i) => i.category_main === "drink")),
   );
 
-  // 名物・おすすめの価格はAPIメニューから品名一致で引く
+  // 名物・おすすめの価格はメニューのデータ（app/content/menus.ts）から品名一致で引く
   const featuredItems = RECOMMENDED_ITEMS.filter((i) => i.featured);
   const otherItems = RECOMMENDED_ITEMS.filter((i) => !i.featured);
   const priceOf = (item: RecommendedItem) => resolveRecommendedPrice(item, allItems);
@@ -343,24 +365,28 @@ export default async function DinnerMenuPage() {
       </section>
 
       {/* ── ② フード ───────────────────────────────────────── */}
-      {foodSections.length > 0 && (
-        <section id="food" className="section-warm scroll-mt-32 py-16 md:py-20">
-          <SectionInner>
-            <SectionLabel en="FOOD" ja="フード" />
+      <section id="food" className="section-warm scroll-mt-32 py-16 md:py-20">
+        <SectionInner>
+          <SectionLabel en="FOOD" ja="フード" />
+          {foodSections.length > 0 ? (
             <MenuTable sections={foodSections} />
-          </SectionInner>
-        </section>
-      )}
+          ) : (
+            <MenuPreparingNotice />
+          )}
+        </SectionInner>
+      </section>
 
       {/* ── ③ ドリンク ─────────────────────────────────────── */}
-      {drinkSections.length > 0 && (
-        <section id="drink" className="section-light scroll-mt-32 py-16 md:py-20">
-          <SectionInner>
-            <SectionLabel en="DRINK" ja="ドリンク" />
+      <section id="drink" className="section-light scroll-mt-32 py-16 md:py-20">
+        <SectionInner>
+          <SectionLabel en="DRINK" ja="ドリンク" />
+          {drinkSections.length > 0 ? (
             <MenuTable sections={drinkSections} />
-          </SectionInner>
-        </section>
-      )}
+          ) : (
+            <MenuPreparingNotice />
+          )}
+        </SectionInner>
+      </section>
 
       {/* ── ④ 実際のメニュー表を見る（撮影画像ギャラリー） ──────── */}
       {galleryImages.length > 0 && (

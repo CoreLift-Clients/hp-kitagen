@@ -2,7 +2,7 @@
 //
 // ディナーメニュー先頭の「名物・おすすめ」セクションで見せる指定8品。
 // 料理写真は「フォルダ方式」（owner.ts / gallery.ts と同じ考え方）で後入れする。
-// 価格は口コミシステムのAPIメニュー（display=dinner）を正とし、品名一致で引く。
+// 価格はメニューのデータ（app/content/menus.ts の dinner）を正とし、品名一致で引く。
 //
 // ─────────────────────────────────────────────────────────────
 // 【料理写真が届いたときの反映手順】
@@ -15,14 +15,14 @@
 //     多少の縦横比のズレは破綻しない。
 //
 // 【価格について】
-//   price は基本的にAPI（basePrice）から品名一致で自動取得する。
-//   APIに該当品が無い・品名が大きく異なる場合は値段欄が空になる（品名のみ表示）。
+//   price は基本的にメニューのデータから品名一致で自動取得する。
+//   データに該当品が無い・品名が大きく異なる場合は値段欄が空になる（品名のみ表示）。
 //   どうしても固定価格を出したいときは fallbackPrice に "¥000〜" 形式で入れる。
-//   （API価格が優先。fallbackPrice はAPIで引けなかった場合のみ使用）
+//   （データの価格が優先。fallbackPrice はデータで引けなかった場合のみ使用）
 // ─────────────────────────────────────────────────────────────
 
 export type RecommendedItem = {
-  /** 表示品名。価格を引くためのAPI検索キーも兼ねる。 */
+  /** 表示品名。価格を引くための検索キーも兼ねる。 */
   name: string;
   /** public/ からの写真パス（未配置でもよい）。 */
   photo: string;
@@ -34,7 +34,7 @@ export type RecommendedItem = {
   featured?: boolean;
   /** 名物カードに付けるバッジ文言（例:「店主の一番の自慢」）。 */
   badge?: string;
-  /** APIで価格が引けなかった場合の保険。通常は未設定でよい。 */
+  /** メニューのデータで価格が引けなかった場合の保険。通常は未設定でよい。 */
   fallbackPrice?: string;
 };
 
@@ -48,7 +48,7 @@ export const RECOMMENDED_ITEMS: RecommendedItem[] = [
     hasPhoto: false,
     featured: true,
     badge: "店主の一番の自慢",
-    // APIの display=dinner に該当品が無いため、実物メニュー表の税込価格を保険に。
+    // メニューのデータで品名が一致しない場合に備え、実物メニュー表の税込価格を保険に。
     // メニュー表記「鉄鍋ぎょうざ(8個) 640円」
     fallbackPrice: "¥640〜",
   },
@@ -59,7 +59,7 @@ export const RECOMMENDED_ITEMS: RecommendedItem[] = [
     hasPhoto: false,
     featured: true,
     badge: "名物",
-    // APIは「しゅうまい蒸し野菜セット」しか無いため、単品の実価格を保険に。
+    // メニューのデータで単品が引けない場合に備え、単品の実価格を保険に。
     // メニュー表記「自家製しゅうまい 単品(4個) 390円」
     fallbackPrice: "¥390〜",
   },
@@ -100,7 +100,7 @@ export const RECOMMENDED_ITEMS: RecommendedItem[] = [
     photo: "/images/food/salmon-cream-cheese.jpg",
     alt: "サーモンクリームチーズ",
     hasPhoto: false,
-    // APIの display=dinner に該当品が無いため、実物メニュー表の税込価格を保険に。
+    // メニューのデータで品名が一致しない場合に備え、実物メニュー表の税込価格を保険に。
     // メニュー表記「サーモンクリームチーズ 490円」
     fallbackPrice: "¥490〜",
   },
@@ -115,8 +115,8 @@ function normalizeName(s: string): string {
 }
 
 /**
- * おすすめ品の価格をAPIメニューから引く。
- * 完全一致 →（括弧・空白を無視した）正規化一致 → API名が品名を包含、の順で探す。
+ * おすすめ品の価格をメニューのデータから引く。
+ * 完全一致 →（括弧・空白を無視した）正規化一致 → データの品名が品名を包含、の順で探す。
  * 見つからなければ fallbackPrice、それも無ければ undefined（＝値段欄は空）。
  */
 export function resolveRecommendedPrice(
