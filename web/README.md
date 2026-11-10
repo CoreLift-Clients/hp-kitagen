@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# きたげん 公式サイト（web）
 
-## Getting Started
+居酒屋「IZAKAYA きたげん」（大阪・桃谷）の公式サイトです。
+https://www.kitagen-izakaya.com
 
-First, run the development server:
+- Next.js（App Router）/ TypeScript / Tailwind CSS。Vercel で公開
+- 外部の API・DB には頼らず、単独で動く
+- 管理画面は持たない
+
+## 開発
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3002
+npm run build      # 本番ビルド
+npx tsc --noEmit   # 型の確認
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## データの置き場所
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| 内容 | 場所 |
+|---|---|
+| メニュー | `app/content/menus.ts` |
+| お知らせ | `app/content/news.ts` |
+| データの読み込み口 | `app/content/index.ts` |
+| 写真 | `public/images/` |
+| 営業時間・定休日 | `app/lib/businessHours.ts` |
+| 電話番号・Instagram | `app/lib/contact.ts` |
+| SEO（title・OGP など） | `app/lib/seo.ts`・`app/layout.tsx` |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 更新のしかた
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- メニューの変更は CoreLiftSystem がコードを直して反映する
+- お知らせ・写真は Instagram につなぐ予定（第2段）。そのときは `app/content/index.ts` の中身を差し替える

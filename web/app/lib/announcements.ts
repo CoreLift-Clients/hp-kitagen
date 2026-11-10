@@ -1,12 +1,10 @@
 // web/app/lib/announcements.ts
 //
-// 口コミ案内サポートシステムの public API からお知らせを取得するデータ層。
+// お知らせのデータ層。データはリポジトリの中（app/content/news.ts）にあり、
+// 読み込み口（app/content/index.ts）から取る。外部の API には頼らない。
 // Next.js Server Component から呼び出す（client component からは呼ばない）。
-//
-// 環境変数：MENU_API_BASE_URL（.env.local に設定済み）
 
-const BASE_URL = process.env.MENU_API_BASE_URL ?? "http://localhost:3000";
-const SHOP_ID = "kitagen";
+import { getAnnouncements as loadAnnouncements } from "../content";
 
 // ── 型定義 ─────────────────────────────────────────────────────
 
@@ -30,27 +28,10 @@ function isVisibleNow(item: PublicAnnouncement): boolean {
   return new Date(item.publishAt) <= new Date();
 }
 
-// ── API 取得 ───────────────────────────────────────────────────
+// ── 取得 ───────────────────────────────────────────────────────
 
 export async function getAnnouncements(): Promise<PublicAnnouncement[]> {
-  const url = `${BASE_URL}/api/public/announcements?shopId=${SHOP_ID}`;
-
-  try {
-    // キャッシュ時間を短めに設定し、予約公開が遅れすぎないようにする
-    const res = await fetch(url, { next: { revalidate: 60 } });
-
-    if (!res.ok) {
-      console.error(`[announcements] fetch failed: status=${res.status}`);
-      return [];
-    }
-
-    const data = await res.json();
-    const items = (data.items ?? []) as PublicAnnouncement[];
-
-    // publishAt による表示フィルタリング
-    return items.filter(isVisibleNow);
-  } catch (e) {
-    console.error("[announcements] fetch error:", e);
-    return [];
-  }
+  const items = await loadAnnouncements();
+  // publishAt による表示フィルタリング
+  return items.filter(isVisibleNow);
 }

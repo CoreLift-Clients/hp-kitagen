@@ -2,8 +2,6 @@ import Image from "next/image";
 import { Utensils } from "lucide-react";
 import Link from "next/link";
 import { getMenusForLunch, groupByCategorySub } from "../../lib/menus";
-import { listDocuments } from "../../lib/adminDocuments";
-import ImageGallery from "../../components/ImageGallery";
 import BreadcrumbJsonLd from "../../components/BreadcrumbJsonLd";
 import { LUNCH_SUSPENDED, LUNCH_SUSPENDED_NOTICE } from "../../lib/businessHours";
 import { pageMetadata } from "../../lib/seo";
@@ -62,22 +60,7 @@ function MenuItemRow({
 }
 
 export default async function LunchMenuPage() {
-  const [allItems, lunchDocs] = await Promise.all([
-    getMenusForLunch(),
-    listDocuments("lunch"),
-  ]);
-  const galleryDocs = lunchDocs
-    .filter((d) => d.isActive && d.resourceType === "image")
-    .sort((a, b) => a.sortOrder - b.sortOrder);
-  const galleryImages = galleryDocs.map((d, i) => ({
-    url: d.fileUrl,
-    // alt は管理画面のドキュメント名を流用。未入力時は内容が伝わる説明文にフォールバック。
-    alt:
-      d.title.trim() ||
-      (galleryDocs.length > 1
-        ? `きたげんのランチメニュー表（${i + 1}枚目）`
-        : "きたげんのランチメニュー表"),
-  }));
+  const allItems = await getMenusForLunch();
   const foodSections = groupByCategorySub(allItems.filter((i) => i.category_main === "food"));
   const hasItems = allItems.length > 0;
 
@@ -152,19 +135,6 @@ export default async function LunchMenuPage() {
               ランチの詳細メニューは現在準備中です。<br />
               最新情報はInstagramまたは店頭にてご確認ください。
             </p>
-          </div>
-        </section>
-      )}
-
-      {/* ── メニュー画像ギャラリー ───────────────────────────── */}
-      {galleryImages.length > 0 && (
-        <section className="py-16 px-4 section-warm border-t border-border">
-          <div className="max-w-3xl mx-auto">
-            <div className="text-center mb-8">
-              <p className="text-xs tracking-[0.4em] text-accent/80 mb-3">MENU</p>
-              <h2 className="text-xl font-bold text-foreground">ランチメニューを見る</h2>
-            </div>
-            <ImageGallery images={galleryImages} />
           </div>
         </section>
       )}

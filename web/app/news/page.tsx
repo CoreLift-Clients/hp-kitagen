@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getAnnouncements } from "../lib/announcements";
 import NewsCard from "../components/NewsCard";
+import NewsEmptyNotice from "../components/NewsEmptyNotice";
 import SectionInner from "../components/SectionInner";
 import BreadcrumbJsonLd from "../components/BreadcrumbJsonLd";
 import { pageMetadata } from "../lib/seo";
@@ -54,8 +55,9 @@ export default async function NewsPage({
         <SectionInner maxW="max-w-4xl">
 
           {allItems.length === 0 ? (
-            <div className="text-center py-16">
+            <div className="text-center py-6">
               <p className="text-muted text-sm">現在お知らせはありません。</p>
+              <NewsEmptyNotice />
             </div>
           ) : (
             <>

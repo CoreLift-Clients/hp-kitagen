@@ -2,20 +2,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { Utensils, ShoppingBag, ArrowRight } from "lucide-react";
 import { getMenusForDinner, groupByCategorySub } from "../../lib/menus";
-import { listDocuments } from "../../lib/adminDocuments";
 import { pageMetadata } from "../../lib/seo";
-import ImageGallery from "../../components/ImageGallery";
 import BreadcrumbJsonLd from "../../components/BreadcrumbJsonLd";
 import SectionInner from "../../components/SectionInner";
-import { LUNCH_SUSPENDED } from "../../lib/businessHours";
+import { INSTAGRAM_URL } from "../../lib/contact";
+import { LUNCH_SUSPENDED, dinnerTimeLabel } from "../../lib/businessHours";
 import {
   RECOMMENDED_ITEMS,
   resolveRecommendedPrice,
   type RecommendedItem,
 } from "../../lib/recommendedMenu";
-
-// ランチ営業のご案内で使用（info頁・構造化データと同じ公式アカウント）
-const INSTAGRAM_URL = "https://www.instagram.com/izakaya_kitagen";
 
 // ドリンクカテゴリの表示順（居酒屋として自然な並び）
 const DRINK_CATEGORY_ORDER = [
@@ -133,6 +129,28 @@ function MenuTable({ sections }: { sections: CategorySection[] }) {
   );
 }
 
+// メニューのデータが空のときの案内（欄ごと消さずに、Instagram へ案内する）
+function MenuPreparingNotice() {
+  return (
+    <div className={`${CARD} text-center`}>
+      <p className="text-sm md:text-base text-muted leading-relaxed">
+        メニューは準備中です。
+        <br className="sm:hidden" />
+        最新情報は
+        <a
+          href={INSTAGRAM_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-accent underline underline-offset-2 decoration-accent/40 hover:decoration-accent transition-colors"
+        >
+          Instagram
+        </a>
+        でお知らせしています。
+      </p>
+    </div>
+  );
+}
+
 // 名物・おすすめカード（写真は後入れ。無い間はプレースホルダー）
 function RecommendCard({
   item,
@@ -201,30 +219,14 @@ function RecommendCard({
 }
 
 export default async function DinnerMenuPage() {
-  const [allItems, dinnerDocs] = await Promise.all([
-    getMenusForDinner(),
-    listDocuments("dinner"),
-  ]);
-
-  const galleryDocs = dinnerDocs
-    .filter((d) => d.isActive && d.resourceType === "image")
-    .sort((a, b) => a.sortOrder - b.sortOrder);
-  const galleryImages = galleryDocs.map((d, i) => ({
-    url: d.fileUrl,
-    // alt は管理画面のドキュメント名を流用。未入力時は内容が伝わる説明文にフォールバック。
-    alt:
-      d.title.trim() ||
-      (galleryDocs.length > 1
-        ? `きたげんのメニュー表（${i + 1}枚目）`
-        : "きたげんのメニュー表"),
-  }));
+  const allItems = await getMenusForDinner();
 
   const foodSections = groupByCategorySub(allItems.filter((i) => i.category_main === "food"));
   const drinkSections = sortDrinkSections(
     groupByCategorySub(allItems.filter((i) => i.category_main === "drink")),
   );
 
-  // 名物・おすすめの価格はAPIメニューから品名一致で引く
+  // 名物・おすすめの価格はメニューのデータ（app/content/menus.ts）から品名一致で引く
   const featuredItems = RECOMMENDED_ITEMS.filter((i) => i.featured);
   const otherItems = RECOMMENDED_ITEMS.filter((i) => !i.featured);
   const priceOf = (item: RecommendedItem) => resolveRecommendedPrice(item, allItems);
@@ -249,7 +251,7 @@ export default async function DinnerMenuPage() {
             <div className="w-8 h-px bg-accent/50" />
           </div>
           <p className="text-sm md:text-base text-muted mb-1">
-            ディナータイム：17:00〜22:00（L.O. 21:30）
+            ディナータイム：{dinnerTimeLabel()}
           </p>
           <p className="text-xs md:text-sm text-muted/90 mb-8">
             ※ 仕入れ状況により内容が変わる場合があります。最新情報は店頭にてご確認ください。
@@ -343,40 +345,28 @@ export default async function DinnerMenuPage() {
       </section>
 
       {/* ── ② フード ───────────────────────────────────────── */}
-      {foodSections.length > 0 && (
-        <section id="food" className="section-warm scroll-mt-32 py-16 md:py-20">
-          <SectionInner>
-            <SectionLabel en="FOOD" ja="フード" />
+      <section id="food" className="section-warm scroll-mt-32 py-16 md:py-20">
+        <SectionInner>
+          <SectionLabel en="FOOD" ja="フード" />
+          {foodSections.length > 0 ? (
             <MenuTable sections={foodSections} />
-          </SectionInner>
-        </section>
-      )}
+          ) : (
+            <MenuPreparingNotice />
+          )}
+        </SectionInner>
+      </section>
 
       {/* ── ③ ドリンク ─────────────────────────────────────── */}
-      {drinkSections.length > 0 && (
-        <section id="drink" className="section-light scroll-mt-32 py-16 md:py-20">
-          <SectionInner>
-            <SectionLabel en="DRINK" ja="ドリンク" />
+      <section id="drink" className="section-light scroll-mt-32 py-16 md:py-20">
+        <SectionInner>
+          <SectionLabel en="DRINK" ja="ドリンク" />
+          {drinkSections.length > 0 ? (
             <MenuTable sections={drinkSections} />
-          </SectionInner>
-        </section>
-      )}
-
-      {/* ── ④ 実際のメニュー表を見る（撮影画像ギャラリー） ──────── */}
-      {galleryImages.length > 0 && (
-        <section className="section-warm border-t border-border py-16 md:py-20">
-          <SectionInner>
-            <div className="mb-8 md:mb-10">
-              <p className="text-[10px] md:text-[11px] tracking-[0.55em] text-accent/70 mb-2">MENU</p>
-              <h2 className="text-3xl md:text-4xl font-bold">実際のメニュー表を見る</h2>
-              <p className="text-sm md:text-base text-muted mt-4">
-                店頭のメニュー表を撮影したものです。タップで拡大できます。
-              </p>
-            </div>
-            <ImageGallery images={galleryImages} />
-          </SectionInner>
-        </section>
-      )}
+          ) : (
+            <MenuPreparingNotice />
+          )}
+        </SectionInner>
+      </section>
 
     </div>
   );

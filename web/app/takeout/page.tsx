@@ -1,7 +1,5 @@
 import { Phone } from "lucide-react";
 import { getMenusForTakeout, groupByCategorySub } from "../lib/menus";
-import { listDocuments } from "../lib/adminDocuments";
-import ImageGallery from "../components/ImageGallery";
 import BreadcrumbJsonLd from "../components/BreadcrumbJsonLd";
 import SectionInner from "../components/SectionInner";
 import { PHONE } from "../lib/contact";
@@ -104,23 +102,7 @@ function MenuTable({ sections }: { sections: CategorySection[] }) {
 }
 
 export default async function TakeoutPage() {
-  const [items, takeoutDocs] = await Promise.all([
-    getMenusForTakeout(),
-    listDocuments("takeout"),
-  ]);
-
-  const galleryDocs = takeoutDocs
-    .filter((d) => d.isActive && d.resourceType === "image")
-    .sort((a, b) => a.sortOrder - b.sortOrder);
-  const galleryImages = galleryDocs.map((d, i) => ({
-    url: d.fileUrl,
-    // alt は管理画面のドキュメント名を流用。未入力時は内容が伝わる説明文にフォールバック。
-    alt:
-      d.title.trim() ||
-      (galleryDocs.length > 1
-        ? `きたげんのテイクアウトメニュー表（${i + 1}枚目）`
-        : "きたげんのテイクアウトメニュー表"),
-  }));
+  const items = await getMenusForTakeout();
 
   const menuSections = groupByCategorySub(items);
 
@@ -162,14 +144,14 @@ export default async function TakeoutPage() {
             <div className={`${CARD} text-center`}>
               <p className="text-sm md:text-base text-muted leading-relaxed">
                 ただいまテイクアウトメニューを準備中です。<br />
-                下のメニュー表、またはお電話にてご確認ください。
+                お電話にてご確認ください。
               </p>
             </div>
           )}
 
           <p className="text-xs md:text-sm text-muted text-center mt-6 leading-relaxed">
             ※ 表示価格は目安です。内容・サイズにより前後する場合がございます。<br />
-            この他にもテイクアウトメニューがございます。詳細は下のメニュー表をご確認ください。
+            この他にもテイクアウトメニューがございます。詳細はお電話にてお問い合わせください。
           </p>
         </SectionInner>
       </section>
@@ -198,22 +180,6 @@ export default async function TakeoutPage() {
           </div>
         </SectionInner>
       </section>
-
-      {/* ── 実際のメニュー表を見る（撮影画像ギャラリー） ──────────── */}
-      {galleryImages.length > 0 && (
-        <section className="section-light border-t border-border py-24 md:py-28">
-          <SectionInner>
-            <div className="mb-8 md:mb-10">
-              <p className="text-[10px] md:text-[11px] tracking-[0.55em] text-accent/70 mb-2">MENU</p>
-              <h2 className="text-3xl md:text-4xl font-bold">実際のメニュー表を見る</h2>
-              <p className="text-sm md:text-base text-muted mt-4">
-                店頭のテイクアウトメニュー表を撮影したものです。タップで拡大できます。
-              </p>
-            </div>
-            <ImageGallery images={galleryImages} />
-          </SectionInner>
-        </section>
-      )}
 
     </div>
   );

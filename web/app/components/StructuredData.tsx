@@ -5,14 +5,16 @@
  * layout.tsx から全ページに出力している（1店舗のため内容は共通）。
  *
  * ── 更新のポイント ──────────────────────────────────────
- * ・営業時間は「通常営業」を記載する（ランチ臨時休業などの一時的な状態は
- *   表示側でのみ出し、この構造化データは通常営業のまま維持する方針）。
+ * ・営業時間は lib/businessHours.ts の BUSINESS_HOURS から作る。
+ *   開店時刻は openTimeNow() を使い、ランチ休止中（LUNCH_SUSPENDED）は
+ *   ランチの曜日もディナーの開始時刻（DINNER_START）からにする。
  * ・sameAs には公式・予約系アカウントのURLを入れる。分かった順に追記する。
  * ────────────────────────────────────────────────────────
  */
 
-import { PHONE_INTL } from "../lib/contact";
-import { SITE_URL } from "../lib/seo";
+import { PHONE_INTL, INSTAGRAM_URL } from "../lib/contact";
+import { SITE_URL, OG_IMAGE } from "../lib/seo";
+import { BUSINESS_HOURS, openTimeNow } from "../lib/businessHours";
 
 const restaurantJsonLd = {
   "@context": "https://schema.org",
@@ -20,7 +22,7 @@ const restaurantJsonLd = {
   name: "IZAKAYA きたげん",
   url: SITE_URL,
   telephone: PHONE_INTL,
-  image: `${SITE_URL}/og.png`,
+  image: `${SITE_URL}${OG_IMAGE}`,
   priceRange: "¥3,000〜4,000",
   // 日本語表記に加え、英語圏の検索・リッチリザルト向けに "Japanese" を併記。
   servesCuisine: ["居酒屋", "中華", "Japanese"],
@@ -41,31 +43,17 @@ const restaurantJsonLd = {
     longitude: 135.5293742,
   },
   // 通常営業時間（曜日ごと）。臨時休業などの一時的な状態はここには反映しない。
-  openingHoursSpecification: [
-    {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: ["Monday", "Wednesday", "Saturday"],
-      opens: "11:30",
-      closes: "22:00",
-    },
-    {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: ["Tuesday", "Thursday", "Friday"],
-      opens: "17:00",
-      closes: "22:00",
-    },
-    {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: ["Sunday", "PublicHolidays"],
-      opens: "15:00",
-      closes: "22:00",
-    },
-  ],
+  openingHoursSpecification: BUSINESS_HOURS.map((g) => ({
+    "@type": "OpeningHoursSpecification",
+    dayOfWeek: g.schemaDays,
+    opens: openTimeNow(g),
+    closes: g.close,
+  })),
   // ── 公式・予約系アカウント ──────────────────────────────
   // 注意: ぐるなび掲載の電話番号(050-5488-5660)は転送番号のため使用しない。
   //       電話は telephone / サイト表示ともに 070-1744-2839 で統一する。
   sameAs: [
-    "https://www.instagram.com/izakaya_kitagen",
+    INSTAGRAM_URL,
     "https://tabelog.com/osaka/A2701/A270205/27146445/",
     "https://www.hotpepper.jp/strJ003784147/",
     "https://r.gnavi.co.jp/6yktmbzh0000/",

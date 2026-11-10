@@ -1,11 +1,11 @@
 import Image from "next/image";
 import { MapPin, ExternalLink, Phone } from "lucide-react";
-import { listDocuments } from "../lib/adminDocuments";
-import CalendarViewer from "../components/CalendarViewer";
 import SectionInner from "../components/SectionInner";
-import { PHONE } from "../lib/contact";
+import { PHONE, INSTAGRAM_URL } from "../lib/contact";
 import {
   BUSINESS_HOURS,
+  isLunchSuspendedFor,
+  openTimeNow,
   REGULAR_CLOSED,
   LUNCH_SUSPENDED,
   LUNCH_SUSPENDED_NOTICE,
@@ -53,8 +53,6 @@ const ACCESS = {
   mapUrl:      "https://www.google.co.jp/maps/place/IZAKAYA+%E3%81%8D%E3%81%9F%E3%81%92%E3%82%93/@34.6574683,135.5267993,17z/data=!3m1!4b1!4m6!3m5!1s0x6000df000a517bf7:0x81ed5ec961cb5e!8m2!3d34.6574639!4d135.5293742!16s%2Fg%2F11vwjd2bch?entry=ttu&g_ep=EgoyMDI2MDMwOS4wIKXMDSoASAFQAw%3D%3D",
 };
 
-const INSTAGRAM_URL = "https://www.instagram.com/izakaya_kitagen";
-
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 // セクション見出し（ページ主要セクション用の大きい見出し）
@@ -83,10 +81,7 @@ const CARD =
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-export default async function InfoPage() {
-  const calendarDocs   = await listDocuments("calendar");
-  const activeCalendar = calendarDocs.find((d) => d.isActive) ?? null;
-
+export default function InfoPage() {
   return (
     <div className="min-h-screen pt-16">
       <BreadcrumbJsonLd
@@ -146,9 +141,17 @@ export default async function InfoPage() {
                       className="grid grid-cols-[6rem_1fr] items-baseline gap-x-6 py-4 border-b border-dashed border-border first:pt-0"
                     >
                       <span className="text-sm md:text-base font-semibold text-foreground">{g.days}</span>
-                      <div className="flex items-baseline justify-between gap-4">
-                        <span className="text-base md:text-lg font-medium tabular-nums">{g.open}〜{g.close}</span>
-                        <span className="text-xs md:text-sm text-muted tabular-nums">L.O.&nbsp;{g.lo}</span>
+                      <div>
+                        {/* ランチ休止中の曜日は、いまの開店時刻（ディナーの開始）を出し、ランチは休止中と添える */}
+                        <div className="flex items-baseline justify-between gap-4">
+                          <span className="text-base md:text-lg font-medium tabular-nums">{openTimeNow(g)}〜{g.close}</span>
+                          <span className="text-xs md:text-sm text-muted tabular-nums">L.O.&nbsp;{g.lo}</span>
+                        </div>
+                        {isLunchSuspendedFor(g) && (
+                          <p className="text-xs md:text-sm text-accent-dark mt-1 tabular-nums">
+                            ランチ（{g.open}〜）は休止中
+                          </p>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -175,19 +178,6 @@ export default async function InfoPage() {
                 <p className="text-sm text-muted/90 leading-relaxed">
                   ※ 急な営業時間の変更はInstagramでお知らせする場合があります
                 </p>
-
-                {activeCalendar && (
-                  <div className="space-y-3 pt-1">
-                    <p className="text-sm text-muted/90 leading-relaxed">
-                      ※ 営業日・臨時休業はカレンダーでご確認いただけます
-                    </p>
-                    <CalendarViewer
-                      fileUrl={activeCalendar.fileUrl}
-                      resourceType={activeCalendar.resourceType}
-                      format={activeCalendar.format}
-                    />
-                  </div>
-                )}
               </div>
 
             </div>

@@ -1,7 +1,9 @@
 // web/app/lib/menus.ts
+//
+// メニューのデータ層。データはリポジトリの中（app/content/menus.ts）にあり、
+// 読み込み口（app/content/index.ts）の getMenus() から取る。外部の API には頼らない。
 
-const BASE_URL = process.env.MENU_API_BASE_URL ?? "";
-const SHOP_ID = "kitagen";
+import { getMenus } from "../content";
 
 export interface PublicMenuItem {
   id: string;
@@ -15,85 +17,11 @@ export interface PublicMenuItem {
   isNew: boolean;
 }
 
-function mapApiItem(raw: Record<string, unknown>): PublicMenuItem {
-  const record = raw as {
-    id?: string;
-    _id?: string;
-    name?: string;
-    description?: string;
-    basePrice?: number | string;
-    imageUrl?: string;
-    category?: string;
-    category_main?: string;
-    subCategory?: string;
-    category_sub?: string;
-    sortOrder?: number | string;
-    isNew?: boolean;
-  };
-
-  const basePrice = record.basePrice;
-  const imageUrl = record.imageUrl;
-
-  return {
-    id: String(record.id ?? record._id ?? ""),
-    name: String(record.name ?? ""),
-    description: record.description ? String(record.description) : undefined,
-    price:
-      basePrice != null && basePrice !== ""
-        ? `¥${Number(basePrice).toLocaleString("ja-JP")}〜`
-        : undefined,
-    image: imageUrl && String(imageUrl).trim() !== "" ? String(imageUrl) : null,
-    category_main: String(record.category ?? record.category_main ?? ""),
-    category_sub: String(record.subCategory ?? record.category_sub ?? ""),
-    sortOrder: Number(record.sortOrder ?? 0),
-    isNew: record.isNew === true,
-  };
-}
-
-async function fetchMenus(
-  display: "top" | "menu" | "takeout" | "lunch" | "dinner",
-): Promise<PublicMenuItem[]> {
-  if (!BASE_URL) {
-    console.warn("[menus] MENU_API_BASE_URL が未設定です");
-    return [];
-  }
-
-  const url = `${BASE_URL}/api/public/menus?shopId=${SHOP_ID}&display=${display}`;
-
-  try {
-    const fetchOptions =
-      process.env.NODE_ENV === "development"
-        ? { cache: "no-store" as const }
-        : { next: { revalidate: 300 } };
-    const res = await fetch(url, fetchOptions);
-
-    if (!res.ok) {
-      console.error(
-        `[menus] fetch failed: display=${display} status=${res.status}`,
-      );
-      return [];
-    }
-
-    const data = await res.json();
-
-    const items = Array.isArray(data)
-      ? data
-      : Array.isArray((data as { items?: unknown[] }).items)
-        ? (data as { items: unknown[] }).items
-        : [];
-
-    return items.map((item) => mapApiItem(item as Record<string, unknown>));
-  } catch (e) {
-    console.error(`[menus] fetch error: display=${display}`, e);
-    return [];
-  }
-}
-
-export const getMenusForTop = () => fetchMenus("top");
-export const getMenusForMenuPage = () => fetchMenus("menu");
-export const getMenusForTakeout = () => fetchMenus("takeout");
-export const getMenusForLunch = () => fetchMenus("lunch");
-export const getMenusForDinner = () => fetchMenus("dinner");
+export const getMenusForTop = () => getMenus("top");
+export const getMenusForMenuPage = () => getMenus("menu");
+export const getMenusForTakeout = () => getMenus("takeout");
+export const getMenusForLunch = () => getMenus("lunch");
+export const getMenusForDinner = () => getMenus("dinner");
 
 export function groupByCategorySub(
   items: PublicMenuItem[],

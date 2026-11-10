@@ -8,6 +8,7 @@ import ParallaxHero from "./components/ParallaxHero";
 import ScrollReveal from "./components/ScrollReveal";
 import PhotoStrip from "./components/PhotoStrip";
 import NewsCard from "./components/NewsCard";
+import NewsEmptyNotice from "./components/NewsEmptyNotice";
 import SectionInner from "./components/SectionInner";
 import { PHONE } from "./lib/contact";
 
@@ -52,8 +53,6 @@ export default async function Home() {
           │   ・PC横長  → web/public/images/hero/hero-pc.jpg           │
           │   ・SP縦長  → web/public/images/hero/hero-sp.jpg           │
           │ ※ 現状は仮画像。ファイル名は変えず同名で差し替えれば反映。 │
-          │ ※ 管理画面（口コミシステム）で hero.pc / hero.sp を        │
-          │    アップロードすると、そちらが自動で優先表示されます。    │
           │ ※ 構図の見え方（顔・料理の位置）は positionPc/positionSp   │
           │    の "center 40%" の数値で上下位置を微調整できます。      │
           └──────────────────────────────────────────────────────────┘ */}
@@ -286,26 +285,27 @@ export default async function Home() {
         </section>
       )}
 
-      {/* ── ⑥ お知らせ ──────────────────────────────────────── */}
-      {recentNews.length > 0 && (
-        <section className="py-24 md:py-28 section-light">
-          <SectionInner maxW="max-w-4xl">
-            <ScrollReveal>
-              <div className="text-center mb-12">
-                <p className="text-[10px] tracking-[0.5em] text-accent/70 mb-2">
-                  NEWS
-                </p>
-                <h2 className="text-3xl md:text-4xl font-bold tracking-wide">お知らせ</h2>
-                <div className="flex items-center justify-center gap-3 mt-4">
-                  <div className="w-8 h-px bg-accent/50" />
-                  <div className="w-1 h-1 rounded-full bg-accent/70" />
-                  <div className="w-8 h-px bg-accent/50" />
-                </div>
-                <p className="text-sm text-muted mt-4 tracking-wider">
-                  きたげんからのご案内
-                </p>
+      {/* ── ⑥ お知らせ ──────────────────────────────────────────
+          お知らせが無い間も欄は残し、「最新情報は Instagram で」と案内する。 */}
+      <section className="py-24 md:py-28 section-light">
+        <SectionInner maxW="max-w-4xl">
+          <ScrollReveal>
+            <div className="text-center mb-12">
+              <p className="text-[10px] tracking-[0.5em] text-accent/70 mb-2">
+                NEWS
+              </p>
+              <h2 className="text-3xl md:text-4xl font-bold tracking-wide">お知らせ</h2>
+              <div className="flex items-center justify-center gap-3 mt-4">
+                <div className="w-8 h-px bg-accent/50" />
+                <div className="w-1 h-1 rounded-full bg-accent/70" />
+                <div className="w-8 h-px bg-accent/50" />
               </div>
-            </ScrollReveal>
+              <p className="text-sm text-muted mt-4 tracking-wider">
+                きたげんからのご案内
+              </p>
+            </div>
+          </ScrollReveal>
+          {recentNews.length > 0 ? (
             <div className="space-y-4">
               {recentNews.map((item, i) => (
                 <ScrollReveal key={item.id} delay={i * 80}>
@@ -313,9 +313,11 @@ export default async function Home() {
                 </ScrollReveal>
               ))}
             </div>
-          </SectionInner>
-        </section>
-      )}
+          ) : (
+            <NewsEmptyNotice />
+          )}
+        </SectionInner>
+      </section>
 
       {/* ── ⑦ はじめてのお客様へ ────────────────────────────── */}
       <section className="py-24 md:py-28 section-warm">

@@ -1,4 +1,4 @@
-/** ブラウザ・サーバー両方から安全にインポートできる定数のみ */
+/** サイトの写真のパス（public/ からのパス）。差し替えは同じ名前のファイルを上書きする。 */
 export const DEFAULT_SITE_IMAGES = {
   hero: {
     sp: "/images/hero/hero-sp.jpg",
@@ -12,8 +12,5 @@ export const DEFAULT_SITE_IMAGES = {
   },
   space: {
     counter: "/images/space/counter.jpg",
-  },
-  takeout: {
-    hero: "/images/takeout/hero.jpg",
   },
 } as const;

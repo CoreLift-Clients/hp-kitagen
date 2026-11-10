@@ -3,7 +3,33 @@
 このプロジェクトは居酒屋 **「きたげん」** の公式サイトです。
 
 目的は、初来店の人に「入りやすそう」「ちゃんとしてそう」と感じてもらい、  
-**メニュー / 店舗情報 / アンケート**へ自然に誘導することです。
+**メニュー / 店舗情報 / Instagram**へ自然に誘導することです。
+
+---
+
+# 開発のコマンド
+
+```bash
+npm install
+npm run dev        # 開発サーバー http://localhost:3002
+npm run build      # 本番ビルド
+npx tsc --noEmit   # 型の確認（package.json に lint のスクリプトは無い）
+```
+
+---
+
+# データと更新のしかた
+
+- サイトは単独で動く。外部の API・DB には頼らない（口コミ案内サポートの API は使わない）
+- メニュー・お知らせ・写真はリポジトリの中で持つ
+  - `app/content/menus.ts` … メニュー
+  - `app/content/news.ts` … お知らせ
+  - `app/content/index.ts` … 読み込み口（ページや `app/lib/` はここから取る）
+  - `public/images/` … 写真
+  - 営業時間は `app/lib/businessHours.ts`、電話・Instagram の URL は `app/lib/contact.ts`
+- 管理画面（CMS）は持たない
+- お知らせ・写真の更新は Instagram につなぐ（第2段）。差し替えは `app/content/index.ts` の中身だけを変える
+- メニューの変更は CoreLiftSystem がコードを直して反映する
 
 ---
 
@@ -44,28 +70,34 @@
 - ヒーロー（写真 / 店名 / キャッチコピー）
 - メニュー導線
 - 店舗情報導線
-- アンケート導線
+- お知らせ（無いときは Instagram へ案内）
 
-メニュー `/menu`
+メニュー `/menu/dinner`（`/menu` は `/menu/dinner` へ転送）
 
-- フード / ドリンク
+- 名物・おすすめ / フード / ドリンク
 - HTMLベースの見やすいメニュー
-- 必要に応じてPDFリンク
+- データが空のときは「準備中・最新情報は Instagram で」と案内
+
+ランチ `/menu/lunch`（ランチ臨時休業中。ナビ・sitemap には出さない）
+
+テイクアウト `/takeout`
 
 店舗情報 `/info`
 
-- 営業時間
+- 営業時間・定休日（急な変更は Instagram へ案内）
 - アクセス
 - 店舗外観写真
+
+店主紹介 `/owner`
 
 お知らせ `/news`
 
 - シンプルな一覧
 
-アンケート `/survey`
+外したページ
 
-- アンケート説明
-- 外部リンクまたは内部導線
+- `/survey` … `/` へ恒久転送（next.config の redirects）
+- `/portal`・`/admin`（管理画面）… ページごと外した（404）
 
 ---
 
@@ -104,7 +136,7 @@
 
 - メニュー
 - 店舗情報
-- アンケート
+- Instagram
 
 ---
 
