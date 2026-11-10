@@ -10,3 +10,9 @@
 export const PHONE = "070-1744-2839";
 
 export const PHONE_INTL = "+81-70-1744-2839";
+
+/**
+ * 公式 Instagram。最新情報・急な営業の変更はここで発信している。
+ * 店舗情報・ディナーメニュー・お知らせの案内・構造化データ（sameAs）はこの定数を使う。
+ */
+export const INSTAGRAM_URL = "https://www.instagram.com/izakaya_kitagen";

@@ -1,7 +1,7 @@
 // お知らせが無いときの案内（トップのお知らせ欄・/news 共通）。
 // 最新情報は Instagram で発信しているため、そちらへ案内する。
 
-const INSTAGRAM_URL = "https://www.instagram.com/izakaya_kitagen";
+import { INSTAGRAM_URL } from "../lib/contact";
 
 export default function NewsEmptyNotice() {
   return (

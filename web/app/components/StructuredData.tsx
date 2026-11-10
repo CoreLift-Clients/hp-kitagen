@@ -11,7 +11,7 @@
  * ────────────────────────────────────────────────────────
  */
 
-import { PHONE_INTL } from "../lib/contact";
+import { PHONE_INTL, INSTAGRAM_URL } from "../lib/contact";
 import { SITE_URL } from "../lib/seo";
 import { BUSINESS_HOURS } from "../lib/businessHours";
 
@@ -52,7 +52,7 @@ const restaurantJsonLd = {
   // 注意: ぐるなび掲載の電話番号(050-5488-5660)は転送番号のため使用しない。
   //       電話は telephone / サイト表示ともに 070-1744-2839 で統一する。
   sameAs: [
-    "https://www.instagram.com/izakaya_kitagen",
+    INSTAGRAM_URL,
     "https://tabelog.com/osaka/A2701/A270205/27146445/",
     "https://www.hotpepper.jp/strJ003784147/",
     "https://r.gnavi.co.jp/6yktmbzh0000/",

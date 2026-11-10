@@ -5,15 +5,13 @@ import { getMenusForDinner, groupByCategorySub } from "../../lib/menus";
 import { pageMetadata } from "../../lib/seo";
 import BreadcrumbJsonLd from "../../components/BreadcrumbJsonLd";
 import SectionInner from "../../components/SectionInner";
+import { INSTAGRAM_URL } from "../../lib/contact";
 import { LUNCH_SUSPENDED, dinnerTimeLabel } from "../../lib/businessHours";
 import {
   RECOMMENDED_ITEMS,
   resolveRecommendedPrice,
   type RecommendedItem,
 } from "../../lib/recommendedMenu";
-
-// ランチ営業のご案内・メニュー準備中の案内で使用（info頁・構造化データと同じ公式アカウント）
-const INSTAGRAM_URL = "https://www.instagram.com/izakaya_kitagen";
 
 // ドリンクカテゴリの表示順（居酒屋として自然な並び）
 const DRINK_CATEGORY_ORDER = [
