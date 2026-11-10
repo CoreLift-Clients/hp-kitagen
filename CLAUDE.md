@@ -11,9 +11,9 @@ The main application code is in the `web/` directory. All development commands s
 ```bash
 cd web
 npm install
-npm run dev      # Start development server at http://localhost:3001
-npm run build    # Production build
-npm run lint     # Run ESLint
+npm run dev        # Start development server at http://localhost:3002
+npm run build      # Production build
+npx tsc --noEmit   # Type check (there is no lint script in package.json)
 ```
 
 ## Project Overview
@@ -23,9 +23,20 @@ This is the official website for **きたげん（居酒屋）** - a Japanese iz
 **Purpose:**
 - Convey the restaurant's atmosphere to first-time visitors
 - Create trust and a "proper, reliable shop" impression
-- Serve as entry point to the customer survey system
+- Guide visitors to the menu, shop info and Instagram
 
-**Planned pages:** Top, Menu, Shop Info, News/Announcements, Survey Link
+**Pages:** Top, Menu (dinner / lunch), Takeout, Shop Info, Owner, News
+
+## Content and Updates
+
+- The site runs standalone. It does not depend on any external API or database
+  (the former review-support API is no longer used).
+- Menus, news and photos live in the repository:
+  - `web/app/content/` — data files (`menus.ts`, `news.ts`) and the single loader (`index.ts`)
+  - `web/public/images/` — photos
+- There is no admin screen (CMS). News and photos will be connected to Instagram (phase 2);
+  the loader in `web/app/content/index.ts` is the place to switch the source.
+- Menu changes are handled by CoreLiftSystem by editing the code.
 
 ## Technical Stack
 
@@ -36,6 +47,6 @@ This is the official website for **きたげん（居酒屋）** - a Japanese iz
 ## Design Principles
 
 - Simple and stable over advanced features
-- Easy for non-technical owner to edit text/images
-- No complex CMS or state management
+- Content is kept in plain TS files and `public/` images
+- No CMS, admin screen or complex state management
 - Avoid over-engineering
