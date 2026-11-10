@@ -14,12 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.6,
     },
-    {
-      url: 'https://www.kitagen-izakaya.com/menu',
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
+    // /menu は /menu/dinner へ転送するだけのページなので載せない。
     {
       url: 'https://www.kitagen-izakaya.com/menu/dinner',
       lastModified: new Date(),
