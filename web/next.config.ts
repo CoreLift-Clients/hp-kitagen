@@ -47,6 +47,12 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];
   },
+  async redirects() {
+    return [
+      // アンケートのページは外した。古いリンク・QR から来た人はトップへ（恒久転送）。
+      { source: "/survey", destination: "/", permanent: true },
+    ];
+  },
   images: {
     remotePatterns: [
       ...getRemotePatterns(),

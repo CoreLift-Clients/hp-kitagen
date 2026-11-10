@@ -68,8 +68,8 @@ function Footer() {
             <p className="text-lg font-bold text-accent">きたげん</p>
             <p className="text-sm text-muted">落ち着いて飲める、ちゃんとした居酒屋。</p>
           </div>
-          {/* ヘッダーを4タブに絞ったため、外したトップ・お知らせ・アンケートは
-              フッターから辿れるようにまとめる。項目が増えたので折り返し可に。 */}
+          {/* ヘッダーを4タブに絞ったため、外したトップ・お知らせは
+              フッターから辿れるようにまとめる。項目が増えたら折り返す。 */}
           <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-muted">
             <li>
               <Link href="/" className="hover:text-foreground transition-colors">
@@ -89,11 +89,6 @@ function Footer() {
             <li>
               <Link href="/news" className="hover:text-foreground transition-colors">
                 お知らせ
-              </Link>
-            </li>
-            <li>
-              <Link href="/survey" className="hover:text-foreground transition-colors">
-                アンケート
               </Link>
             </li>
           </ul>
