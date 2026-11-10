@@ -12,7 +12,7 @@ import type { Metadata } from "next";
 // トップページのcanonical・構造化データと同じ正規ドメイン。
 export const SITE_URL = "https://www.kitagen-izakaya.com";
 export const SITE_NAME = "きたげん";
-export const OG_IMAGE = "/og.png";
+export const OG_IMAGE = "/og.jpg";
 
 type PageMetaInput = {
   /** ページのtitle（<title> と og:title に使用） */

@@ -12,7 +12,7 @@
  */
 
 import { PHONE_INTL, INSTAGRAM_URL } from "../lib/contact";
-import { SITE_URL } from "../lib/seo";
+import { SITE_URL, OG_IMAGE } from "../lib/seo";
 import { BUSINESS_HOURS } from "../lib/businessHours";
 
 const restaurantJsonLd = {
@@ -21,7 +21,7 @@ const restaurantJsonLd = {
   name: "IZAKAYA きたげん",
   url: SITE_URL,
   telephone: PHONE_INTL,
-  image: `${SITE_URL}/og.png`,
+  image: `${SITE_URL}${OG_IMAGE}`,
   priceRange: "¥3,000〜4,000",
   // 日本語表記に加え、英語圏の検索・リッチリザルト向けに "Japanese" を併記。
   servesCuisine: ["居酒屋", "中華", "Japanese"],
