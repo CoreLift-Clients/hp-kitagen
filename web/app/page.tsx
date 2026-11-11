@@ -69,10 +69,12 @@ function proseLines(lines: readonly ProseLine[]): ReactNode[] {
   return out;
 }
 
-// 明朝体の見出し・本文に付けるクラス（太さは読み込んでいる 700・600 に合わせる）。
-// word-break: auto-phrase が効かないブラウザでは普通の折り返しになる
+// 見出し・本文の字（OUR STORY 以外の欄）。word-break: auto-phrase が効かないブラウザでは普通の折り返しになる
+// ・見出し … すべての画面の幅で明朝体 700
+// ・本文 … lg より狭い画面（スマホ・タブレット）はゴシック体 400、lg 以上は明朝体 600。
+//   lg より狭い画面では明朝体の本文用の太さ（500・600）のファイルを読まない
 const SERIF_HEADING = "font-serif font-bold [word-break:auto-phrase]";
-const SERIF_BODY = "font-serif font-semibold [word-break:auto-phrase]";
+const BODY_FONT = "font-sans font-normal lg:font-serif lg:font-semibold [word-break:auto-phrase]";
 
 // ほかの欄の本文の大きさと色（OUR STORY 以外）。色は OUR STORY と同じ foreground。
 // ・BODY_TEXT … スマホ 17px、md 以上 19px（INSTAGRAM・GALLERY・OWNER）
@@ -172,7 +174,8 @@ export default async function Home() {
           ・スマホ・md：見出しだけ縦書きで中央に大きく、本文は横書き。
             本文は段落ごとに行をつなげて1つの文章にし、自然に折り返す（auto-phrase・text-wrap: pretty）
           ・lg（1024px）以上：見出しも本文も縦書き。右から左へ読み、見出しが右端
-          ・字は明朝体（font-serif）。見出し 700、本文 500（ほかの欄の本文 600 より一段細くし、主張を抑える）
+          ・見出しは明朝体 700（すべての画面の幅）。
+            本文は lg より狭い画面ではゴシック体 400、lg 以上は明朝体 500（ほかの欄の本文 600 より一段細くし、主張を抑える）
           ・lg より狭い画面の本文：左右の余白（24px）いっぱいの幅で左揃え。
             md では1行が長くなりすぎないよう、幅の上限を 33em（1行 約32字）にして横の真ん中に置く
           ・本文の大きさ：lg より狭い画面 18px、lg 16px、xl 19px。
@@ -202,7 +205,7 @@ export default async function Home() {
                     ))}
                   </h2>
                 </div>
-                <div className="mx-auto max-w-[33em] lg:mx-0 lg:max-w-none text-start text-[18px] lg:text-[16px] xl:text-[19px] font-medium text-foreground leading-[2] lg:leading-[1.95] tracking-wide lg:tracking-[0.12em] max-lg:[word-break:auto-phrase] max-lg:text-pretty">
+                <div className="mx-auto max-w-[33em] lg:mx-0 lg:max-w-none text-start text-[18px] lg:text-[16px] xl:text-[19px] font-sans font-normal lg:font-serif lg:font-medium text-foreground leading-[2] lg:leading-[1.95] tracking-wide lg:tracking-[0.12em] max-lg:[word-break:auto-phrase] max-lg:text-pretty">
                   {STORY.paragraphs.map((para, i) => (
                     <p
                       key={i}
@@ -248,7 +251,7 @@ export default async function Home() {
                   うまい一品。
                 </h2>
                 <SectionDivider />
-                <p className={`${BODY_TEXT_SPLIT} leading-[2.1] md:leading-[2.2] mb-8 ${SERIF_BODY}`}>
+                <p className={`${BODY_TEXT_SPLIT} leading-[2.1] md:leading-[2.2] mb-8 ${BODY_FONT}`}>
                   {proseLines([
                     "きたげんの名物は、自家製のしゅうまいと鉄鍋餃子。",
                     "手間を惜しまず作る一品は、派手さはないけれど、",
@@ -291,7 +294,7 @@ export default async function Home() {
                   <div className="w-1 h-1 rounded-full bg-accent/70" />
                   <div className="w-8 h-px bg-accent/50" />
                 </div>
-                <p className={`${BODY_TEXT} mt-4 ${SERIF_BODY}`}>
+                <p className={`${BODY_TEXT} mt-4 ${BODY_FONT}`}>
                   定番から季節のひと品まで。
                 </p>
               </div>
@@ -319,7 +322,7 @@ export default async function Home() {
               <div className="w-1 h-1 rounded-full bg-accent/70" />
               <div className="w-8 h-px bg-accent/50" />
             </div>
-            <p className={`${BODY_TEXT} leading-[2.1] mt-6 mb-9 ${SERIF_BODY}`}>
+            <p className={`${BODY_TEXT} leading-[2.1] mt-6 mb-9 ${BODY_FONT}`}>
               日々の料理や、急な営業の変更は
               <br />
               Instagram でお知らせしています。
@@ -356,7 +359,7 @@ export default async function Home() {
                   居心地の良い空間。
                 </h2>
                 <SectionDivider />
-                <p className={`${BODY_TEXT_SPLIT} leading-[2.1] md:leading-[2.2] mb-8 ${SERIF_BODY}`}>
+                <p className={`${BODY_TEXT_SPLIT} leading-[2.1] md:leading-[2.2] mb-8 ${BODY_FONT}`}>
                   {proseLines([
                     "気の向くままに使える、そんな居心地を大事にしています。",
                     "カウンターは、お一人でも仕事帰りでも、",
@@ -413,7 +416,7 @@ export default async function Home() {
               <p className={`text-lg text-foreground mb-1.5 ${SERIF_HEADING}`}>
                 ご宴会・団体でのご利用は
               </p>
-              <p className={`text-[15px] text-foreground mb-7 leading-relaxed ${SERIF_BODY}`}>
+              <p className={`text-[15px] text-foreground mb-7 leading-relaxed ${BODY_FONT}`}>
                 お席をご用意しますので、お電話ください。
               </p>
 
@@ -433,7 +436,7 @@ export default async function Home() {
                 <span className="tabular-nums">{PHONE}</span>
               </a>
 
-              <p className={`text-sm text-muted/90 mt-5 leading-relaxed ${SERIF_BODY}`}>
+              <p className={`text-sm text-muted/90 mt-5 leading-relaxed ${BODY_FONT}`}>
                 {proseLines([
                   "ご予約時に「ホームページを見た」とお伝えください。",
                   "営業時間外（昼間・開店前）でも承ります。",
@@ -451,7 +454,7 @@ export default async function Home() {
             <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-3">
               OWNER
             </p>
-            <p className={`${BODY_TEXT} mb-5 ${SERIF_BODY}`}>
+            <p className={`${BODY_TEXT} mb-5 ${BODY_FONT}`}>
               きたげんの店主について。
             </p>
             <Link
