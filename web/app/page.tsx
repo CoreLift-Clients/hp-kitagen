@@ -84,6 +84,14 @@ const BODY_FONT = "font-sans font-normal lg:font-serif lg:font-semibold [word-br
 const BODY_TEXT = "text-[17px] md:text-[19px] text-foreground";
 const BODY_TEXT_SPLIT = "text-[17px] md:text-[18px] text-foreground";
 
+// 写真のない欄（INSTAGRAM・PARTY & GROUP・OWNER）と、写真だけの欄（GALLERY）の見出しまわりの揃え方
+// ・lg（1024px）以上 … 英字の小見出し・見出し・飾り・本文・ボタンを横の真ん中にそろえる
+// ・lg より狭い画面（スマホ・タブレット）… 今までどおり左揃え
+// ・飾り（線・点・線）は CENTER_PC_DIVIDER を flex の囲みに付けて真ん中に置く
+// 写真と文章が左右に並ぶ欄（FOOD・SPACE）には使わない
+const CENTER_PC = "lg:text-center";
+const CENTER_PC_DIVIDER = "lg:justify-center";
+
 // セクション見出しの装飾ライン
 function SectionDivider() {
   return (
@@ -284,12 +292,12 @@ export default async function Home() {
         <section className="py-24 md:py-28 section-deep">
           <SectionInner>
             <div>
-              <div className="mb-10">
+              <div className={`mb-10 ${CENTER_PC}`}>
                 <p className="text-[10px] tracking-[0.45em] text-accent/80 mb-2">
                   GALLERY
                 </p>
                 <h2 className={`text-3xl md:text-4xl ${SERIF_HEADING}`}>きたげんの料理</h2>
-                <div className="flex items-center gap-3 mt-4">
+                <div className={`flex items-center gap-3 mt-4 ${CENTER_PC_DIVIDER}`}>
                   <div className="w-8 h-px bg-accent/50" />
                   <div className="w-1 h-1 rounded-full bg-accent/70" />
                   <div className="w-8 h-px bg-accent/50" />
@@ -309,15 +317,16 @@ export default async function Home() {
       {/* ── ⑥ Instagram ──────────────────────────────────────
           最新情報・急な営業の変更は Instagram で発信している。URL は lib/contact.ts。
           お知らせの一覧は /news のページに残している。
-          左揃え。左の端をほかの欄とそろえるため、幅は SectionInner の標準（max-w-6xl）。 */}
+          lg より狭い画面は左揃え（左の端をほかの欄とそろえるため、幅は SectionInner の標準 max-w-6xl）。
+          lg 以上は横の真ん中にそろえる。本文の改行の位置は同じまま、各行を真ん中にそろえる。 */}
       <section className="py-24 md:py-28 section-light">
         <SectionInner>
-          <div>
+          <div className={CENTER_PC}>
             <p className="text-[10px] tracking-[0.5em] text-accent/70 mb-2">
               INSTAGRAM
             </p>
             <h2 className={`text-3xl md:text-4xl tracking-wide ${SERIF_HEADING}`}>最新情報</h2>
-            <div className="flex items-center gap-3 mt-4">
+            <div className={`flex items-center gap-3 mt-4 ${CENTER_PC_DIVIDER}`}>
               <div className="w-8 h-px bg-accent/50" />
               <div className="w-1 h-1 rounded-full bg-accent/70" />
               <div className="w-8 h-px bg-accent/50" />
@@ -404,12 +413,13 @@ export default async function Home() {
 
       {/* ── ⑧ 団体・宴会のご予約 ──────────────────────────────
           SPACE の文中リンク（/#group-reservation）の飛び先。
-          囲みは横の真ん中（mx-auto）、囲みの中の文字は左揃え（電話のボタンは囲みの幅いっぱいのまま）。
+          囲みは横の真ん中（mx-auto）。囲みの中の文字は lg より狭い画面は左揃え、lg 以上は真ん中
+          （電話のボタンは囲みの幅いっぱいのまま）。
           下の注意書き（ご予約時に〜）は小さく薄い色のまま。 */}
       <section id="group-reservation" className="py-20 md:py-24 section-light scroll-mt-24">
         <SectionInner>
           <div>
-            <div className="rounded-xl border border-border bg-background/70 p-7 sm:p-8 max-w-xl mx-auto">
+            <div className={`rounded-xl border border-border bg-background/70 p-7 sm:p-8 max-w-xl mx-auto ${CENTER_PC}`}>
               <p className="text-[9px] tracking-[0.55em] text-accent/70 font-medium mb-3">
                 PARTY &amp; GROUP
               </p>
@@ -447,10 +457,11 @@ export default async function Home() {
         </SectionInner>
       </section>
 
-      {/* ── ⑨ 店主紹介へのリンク ──────────────────────────────── */}
+      {/* ── ⑨ 店主紹介へのリンク ────────────────────────────────
+          lg より狭い画面は左揃え、lg 以上は横の真ん中にそろえる */}
       <section className="py-14 md:py-16 section-warm">
         <SectionInner>
-          <div>
+          <div className={CENTER_PC}>
             <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-3">
               OWNER
             </p>
