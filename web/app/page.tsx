@@ -1,3 +1,4 @@
+import { Fragment, type ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Phone, ExternalLink } from "lucide-react";
@@ -9,11 +10,20 @@ import SectionInner from "./components/SectionInner";
 import { PHONE, INSTAGRAM_URL } from "./lib/contact";
 import { STORY } from "./content/story";
 
+// 明朝体（Noto Serif JP）。このページでだけ読み込む。
+// 太さは使うものだけ：OUR STORY の本文 500、ほかの欄の本文 600、見出し 700。字の並び（読み込めないときの代わりの明朝体）は
+// globals.css の --font-noto-serif-jp。Tailwind の font-serif で当てる。
+import "@fontsource/noto-serif-jp/500.css";
+import "@fontsource/noto-serif-jp/600.css";
+import "@fontsource/noto-serif-jp/700.css";
+
 // 左右分割セクションの画像コンポーネント
 // public/ に画像を配置すれば自動で表示されます
+// スマホ（sm より狭い画面）では画面の幅いっぱいに出すので、角の丸みと枠を付けない
+// （左右の余白を消すのは呼び出し側の -mx-6 sm:mx-0）。
 function SplitImage({ src, alt }: { src: string; alt: string }) {
   return (
-    <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-card-bg border border-border/40">
+    <div className="relative aspect-[4/3] overflow-hidden bg-card-bg sm:rounded-lg sm:border sm:border-border/40">
       <Image
         src={src}
         alt={alt}
@@ -24,6 +34,55 @@ function SplitImage({ src, alt }: { src: string; alt: string }) {
     </div>
   );
 }
+
+// ─── 明朝体の文章（OUR STORY 以外の欄） ───
+// ・パソコン（sm 以上）… 配列の1つが1行。今までの <br className="hidden sm:block" /> と同じ位置で改行する
+// ・スマホ（sm より狭い）… 行の区切りは使わず、「。」で終わるところごとに段落を分け、
+//   段落の間を 1.75 字分あける。段落の中は自然に折り返す（word-break: auto-phrase は呼び出し側の p）
+// ・リンクなど文字列でない行は { node } で渡す。その行は「。」で終わる1文として扱う
+type ProseLine = string | { node: ReactNode };
+
+// スマホでだけ出す、段落の間のあき
+function MobileParaBreak() {
+  return <span aria-hidden="true" className="block h-[1.75em] sm:hidden" />;
+}
+
+function proseLines(lines: readonly ProseLine[]): ReactNode[] {
+  const out: ReactNode[] = [];
+  lines.forEach((line, i) => {
+    const isLastLine = i === lines.length - 1;
+    if (typeof line === "string") {
+      const parts = line.split(/(?<=。)/);
+      parts.forEach((part, j) => {
+        out.push(<Fragment key={`${i}-${j}`}>{part}</Fragment>);
+        const isEnd = isLastLine && j === parts.length - 1;
+        if (part.endsWith("。") && !isEnd) {
+          out.push(<MobileParaBreak key={`${i}-${j}-p`} />);
+        }
+      });
+    } else {
+      out.push(<Fragment key={i}>{line.node}</Fragment>);
+      if (!isLastLine) out.push(<MobileParaBreak key={`${i}-p`} />);
+    }
+    if (!isLastLine) out.push(<br key={`${i}-br`} className="hidden sm:block" />);
+  });
+  return out;
+}
+
+// 見出し・本文の字（OUR STORY 以外の欄）。word-break: auto-phrase が効かないブラウザでは普通の折り返しになる
+// ・見出し … すべての画面の幅で明朝体 700
+// ・本文 … lg より狭い画面（スマホ・タブレット）はゴシック体 400、lg 以上は明朝体 600。
+//   lg より狭い画面では明朝体の本文用の太さ（500・600）のファイルを読まない
+const SERIF_HEADING = "font-serif font-bold [word-break:auto-phrase]";
+const BODY_FONT = "font-sans font-normal lg:font-serif lg:font-semibold [word-break:auto-phrase]";
+
+// ほかの欄の本文の大きさと色（OUR STORY 以外）。色は OUR STORY と同じ foreground。
+// ・BODY_TEXT … スマホ 17px、md 以上 19px（INSTAGRAM・GALLERY・OWNER）
+// ・BODY_TEXT_SPLIT … スマホ 17px、md 以上 18px（写真と左右に並ぶ FOOD・SPACE）。
+//   文章の列は最大で約 420px。19px だと 23 字の行（「手間を惜しまず作る一品は、派手さはないけれど、」など）が
+//   入りきらず、パソコンの改行の位置が崩れるため 18px のままにしている
+const BODY_TEXT = "text-[17px] md:text-[19px] text-foreground";
+const BODY_TEXT_SPLIT = "text-[17px] md:text-[18px] text-foreground";
 
 // セクション見出しの装飾ライン
 function SectionDivider() {
@@ -111,22 +170,34 @@ export default async function Home() {
       <div className="relative z-10 shadow-[0_-10px_28px_rgba(47,36,28,0.16)]">
 
       {/* ── ③ OUR STORY ──────────────────────────────────────
-          文章は content/story.ts。配列の1つが1行（ここで行を区切る）。
-          ・スマホ：見出しだけ縦書きで中央に大きく、本文は横書き
-          ・パソコン（md 以上）：見出しも本文も縦書き。右から左へ読み、見出しが右端
-          ・文字の大きさ：本文はスマホ 17px（幅 320px でもいちばん長い15字の行が収まる）、
-            lg 18px。md（768〜1023px）は縦書きの横幅が画面に収まるよう、画面の幅に合わせて
-            14px〜16px（約 863px 以上で 16px）。文章を足して行が増えたら、ここの計算を見直すこと */}
+          文章は content/story.ts。見出しは配列の1つが1行。本文は lg 以上でだけ配列の1つが1行。
+          ・スマホ・md：見出しだけ縦書きで中央に大きく、本文は横書き。
+            本文は段落ごとに行をつなげて1つの文章にし、自然に折り返す（auto-phrase・text-wrap: pretty）
+          ・lg（1024px）以上：見出しも本文も縦書き。右から左へ読み、見出しが右端
+          ・見出しは明朝体 700（すべての画面の幅）。
+            本文は lg より狭い画面ではゴシック体 400、lg 以上は明朝体 500（ほかの欄の本文 600 より一段細くし、主張を抑える）
+          ・lg より狭い画面の本文：左右の余白（24px）いっぱいの幅で左揃え。
+            md では1行が長くなりすぎないよう、幅の上限を 33em（1行 約32字）にして横の真ん中に置く
+          ・本文の大きさ：lg より狭い画面 18px、lg 16px、xl 19px。
+            行の間隔は lg より狭い画面 2.0、lg 以上 1.95。段落の間は 2〜2.25 字分。
+            lg の縦書きは 1024px の画面で横幅が約 924px（使える幅は約 943px）。
+            xl の縦書きは横幅が約 1081px（使える幅は 1088px）。どちらも余裕が少ない。
+            文章を足して行や段落が増えたら、ここの計算を見直すこと */}
       <section className="py-24 md:py-28 section-light story-glass">
         <SectionInner>
           <div>
-            <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-10 md:mb-14 text-center">
+            <p className="text-[10px] tracking-[0.5em] text-accent/80 text-center">
               OUR STORY
             </p>
-            <div className="md:flex md:justify-center">
-              <div className="md:[writing-mode:vertical-rl]">
-                <div className="flex justify-center md:block [margin-block-end:3rem] md:[margin-block-end:2.5rem] lg:[margin-block-end:4rem]">
-                  <h2 className="[writing-mode:vertical-rl] text-[2.25rem] md:text-3xl lg:text-4xl font-bold leading-[1.7] tracking-[0.18em]">
+            <div className="flex items-center justify-center gap-3 mt-4 mb-10 md:mb-14">
+              <div className="w-8 h-px bg-accent/50" />
+              <div className="w-1 h-1 rounded-full bg-accent/70" />
+              <div className="w-8 h-px bg-accent/50" />
+            </div>
+            <div className="font-serif lg:flex lg:justify-center">
+              <div className="lg:[writing-mode:vertical-rl]">
+                <div className="flex justify-center lg:block [margin-block-end:3.5rem] md:[margin-block-end:4rem] lg:[margin-block-end:5rem] xl:[margin-block-end:5.5rem]">
+                  <h2 className="[writing-mode:vertical-rl] text-[2.25rem] md:text-[2.5rem] lg:text-4xl xl:text-[2.5rem] font-bold leading-[1.7] tracking-[0.18em]">
                     {STORY.heading.map((line) => (
                       <span key={line} className="block whitespace-nowrap">
                         {line}
@@ -134,14 +205,16 @@ export default async function Home() {
                     ))}
                   </h2>
                 </div>
-                <div className="text-center md:text-start text-[17px] md:text-[length:clamp(14px,calc(2.55vw_-_6px),16px)] lg:text-[18px] text-foreground leading-[2.1] md:leading-[1.85] lg:leading-[1.95] tracking-wide md:tracking-[0.12em]">
+                <div className="mx-auto max-w-[33em] lg:mx-0 lg:max-w-none text-start text-[18px] lg:text-[16px] xl:text-[19px] font-sans font-normal lg:font-serif lg:font-medium text-foreground leading-[2] lg:leading-[1.95] tracking-wide lg:tracking-[0.12em] max-lg:[word-break:auto-phrase] max-lg:text-pretty">
                   {STORY.paragraphs.map((para, i) => (
                     <p
                       key={i}
-                      className="[margin-block-end:1.6em] md:[margin-block-end:1.1em] lg:[margin-block-end:1.2em] last:[margin-block-end:0]"
+                      className="[margin-block-end:2.25em] lg:[margin-block-end:2em] last:[margin-block-end:0]"
                     >
+                      {/* lg より狭い画面は行をつなげる（span は inline、間に空白は入れない）。
+                          lg 以上は1行ずつ（block・折り返さない） */}
                       {para.map((line) => (
-                        <span key={line} className="block whitespace-nowrap">
+                        <span key={line} className="lg:block lg:whitespace-nowrap">
                           {line}
                         </span>
                       ))}
@@ -154,45 +227,41 @@ export default async function Home() {
         </SectionInner>
       </section>
 
-      {/* ── ④ こだわりの料理（画像左・テキスト右） ─────────── */}
+      {/* ── ④ こだわりの料理（画像左・テキスト右） ─────────────
+          md 未満：写真 → FOOD → 見出し → 文章 → ボタン。スマホの写真は幅いっぱい */}
       <section className="py-24 md:py-28 section-warm">
         <SectionInner>
           <div>
             {/* 写真=7 / テキスト=5：PCでは写真が左・大きく、テキストが右 */}
             <div className="grid grid-cols-1 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] gap-12 md:gap-20 items-center">
-              {/* 画像（スマホでは下に、PCでは左に） */}
+              {/* 画像（スマホでは上に、PCでは左に） */}
               {/* public/food-main.jpg を配置してください */}
-              <div className="order-2 md:order-1">
+              <div className="-mx-6 sm:mx-0">
                 <SplitImage src={SITE_IMAGES.food.main} alt="きたげんの料理" />
               </div>
 
-              {/* テキスト（スマホでは上に、PCでは右に） */}
-              <div className="order-1 md:order-2">
+              {/* テキスト（スマホでは下に、PCでは右に） */}
+              <div>
                 <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-3">
                   FOOD
                 </p>
-                <h2 className="text-3xl md:text-4xl font-bold leading-snug">
+                <h2 className={`text-3xl md:text-4xl leading-snug ${SERIF_HEADING}`}>
                   手作りにこだわった、
                   <br />
                   うまい一品。
                 </h2>
                 <SectionDivider />
-                <p className="text-base md:text-lg text-muted leading-[2.1] md:leading-[2.2] mb-8">
-                  きたげんの名物は、自家製のしゅうまいと鉄鍋餃子。
-                  <br className="hidden sm:block" />
-                  手間を惜しまず作る一品は、派手さはないけれど、
-                  <br className="hidden sm:block" />
-                  また食べたくなる味です。蒸したてのしゅうまい、
-                  <br className="hidden sm:block" />
-                  こんがり焼けた餃子を肴に、まずは一杯。
-                  <br className="hidden sm:block" />
-                  からあげ、豚の角煮、串の盛り合わせと、
-                  <br className="hidden sm:block" />
-                  箸もお酒も進む料理を取り揃えています。
-                  <br className="hidden sm:block" />
-                  飾らないけれど、&ldquo;ちゃんとうまい&rdquo;。
-                  <br className="hidden sm:block" />
-                  それがきたげんの一品です。
+                <p className={`${BODY_TEXT_SPLIT} leading-[2.1] md:leading-[2.2] mb-8 ${BODY_FONT}`}>
+                  {proseLines([
+                    "きたげんの名物は、自家製のしゅうまいと鉄鍋餃子。",
+                    "手間を惜しまず作る一品は、派手さはないけれど、",
+                    "また食べたくなる味です。蒸したてのしゅうまい、",
+                    "こんがり焼けた餃子を肴に、まずは一杯。",
+                    "からあげ、豚の角煮、串の盛り合わせと、",
+                    "箸もお酒も進む料理を取り揃えています。",
+                    "飾らないけれど、“ちゃんとうまい”。",
+                    "それがきたげんの一品です。",
+                  ])}
                 </p>
                 <Link
                   href="/menu"
@@ -215,17 +284,17 @@ export default async function Home() {
         <section className="py-24 md:py-28 section-deep">
           <SectionInner>
             <div>
-              <div className="text-center mb-10">
+              <div className="mb-10">
                 <p className="text-[10px] tracking-[0.45em] text-accent/80 mb-2">
                   GALLERY
                 </p>
-                <h2 className="text-3xl md:text-4xl font-bold">きたげんの料理</h2>
-                <div className="flex items-center justify-center gap-3 mt-4">
+                <h2 className={`text-3xl md:text-4xl ${SERIF_HEADING}`}>きたげんの料理</h2>
+                <div className="flex items-center gap-3 mt-4">
                   <div className="w-8 h-px bg-accent/50" />
                   <div className="w-1 h-1 rounded-full bg-accent/70" />
                   <div className="w-8 h-px bg-accent/50" />
                 </div>
-                <p className="text-base text-muted mt-4">
+                <p className={`${BODY_TEXT} mt-4 ${BODY_FONT}`}>
                   定番から季節のひと品まで。
                 </p>
               </div>
@@ -239,20 +308,21 @@ export default async function Home() {
 
       {/* ── ⑥ Instagram ──────────────────────────────────────
           最新情報・急な営業の変更は Instagram で発信している。URL は lib/contact.ts。
-          お知らせの一覧は /news のページに残している。 */}
+          お知らせの一覧は /news のページに残している。
+          左揃え。左の端をほかの欄とそろえるため、幅は SectionInner の標準（max-w-6xl）。 */}
       <section className="py-24 md:py-28 section-light">
-        <SectionInner maxW="max-w-4xl" className="text-center">
+        <SectionInner>
           <div>
             <p className="text-[10px] tracking-[0.5em] text-accent/70 mb-2">
               INSTAGRAM
             </p>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-wide">最新情報</h2>
-            <div className="flex items-center justify-center gap-3 mt-4">
+            <h2 className={`text-3xl md:text-4xl tracking-wide ${SERIF_HEADING}`}>最新情報</h2>
+            <div className="flex items-center gap-3 mt-4">
               <div className="w-8 h-px bg-accent/50" />
               <div className="w-1 h-1 rounded-full bg-accent/70" />
               <div className="w-8 h-px bg-accent/50" />
             </div>
-            <p className="text-base md:text-lg text-muted leading-[2.1] mt-6 mb-9">
+            <p className={`${BODY_TEXT} leading-[2.1] mt-6 mb-9 ${BODY_FONT}`}>
               日々の料理や、急な営業の変更は
               <br />
               Instagram でお知らせしています。
@@ -270,7 +340,9 @@ export default async function Home() {
         </SectionInner>
       </section>
 
-      {/* ── ⑦ くつろぎの空間（テキスト左・画像右） ─────────── */}
+      {/* ── ⑦ くつろぎの空間（テキスト左・画像右） ─────────────
+          md 未満：写真 → SPACE → 見出し → 文章 → ボタン（写真を order-first で先に出す）。
+          スマホの写真は幅いっぱい */}
       <section className="py-24 md:py-28 section-warm">
         <SectionInner>
           <div>
@@ -281,35 +353,33 @@ export default async function Home() {
                 <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-3">
                   SPACE
                 </p>
-                <h2 className="text-3xl md:text-4xl font-bold leading-snug">
+                <h2 className={`text-3xl md:text-4xl leading-snug ${SERIF_HEADING}`}>
                   肩肘張らない、
                   <br />
                   居心地の良い空間。
                 </h2>
                 <SectionDivider />
-                <p className="text-base md:text-lg text-muted leading-[2.1] md:leading-[2.2] mb-8">
-                  気の向くままに使える、そんな居心地を大事にしています。
-                  <br className="hidden sm:block" />
-                  カウンターは、お一人でも仕事帰りでも、
-                  <br className="hidden sm:block" />
-                  ふらっと立ち寄って一杯やるのにちょうどいい席。
-                  <br className="hidden sm:block" />
-                  2階には座敷があり、気の合う仲間との飲み会や、
-                  <br className="hidden sm:block" />
-                  ご家族での食事にぴったりです。
-                  <br className="hidden sm:block" />
-                  ひとりでも、大勢でも、それぞれの居心地がある一軒。
-                  <br className="hidden sm:block" />
-                  <Link
-                    href="/#group-reservation"
-                    className="text-accent hover:text-accent-dark underline underline-offset-4 decoration-accent/40 transition-colors duration-200"
-                  >
-                    ご宴会や団体でのご利用は、貸切でのご相談も承っています。
-                  </Link>
-                  <br className="hidden sm:block" />
-                  その日の気分や人数に合わせて、
-                  <br className="hidden sm:block" />
-                  思い思いにお過ごしください。
+                <p className={`${BODY_TEXT_SPLIT} leading-[2.1] md:leading-[2.2] mb-8 ${BODY_FONT}`}>
+                  {proseLines([
+                    "気の向くままに使える、そんな居心地を大事にしています。",
+                    "カウンターは、お一人でも仕事帰りでも、",
+                    "ふらっと立ち寄って一杯やるのにちょうどいい席。",
+                    "2階には座敷があり、気の合う仲間との飲み会や、",
+                    "ご家族での食事にぴったりです。",
+                    "ひとりでも、大勢でも、それぞれの居心地がある一軒。",
+                    {
+                      node: (
+                        <Link
+                          href="/#group-reservation"
+                          className="text-accent hover:text-accent-dark underline underline-offset-4 decoration-accent/40 transition-colors duration-200"
+                        >
+                          ご宴会や団体でのご利用は、貸切でのご相談も承っています。
+                        </Link>
+                      ),
+                    },
+                    "その日の気分や人数に合わせて、",
+                    "思い思いにお過ごしください。",
+                  ])}
                 </p>
                 <Link
                   href="/info"
@@ -319,11 +389,13 @@ export default async function Home() {
                 </Link>
               </div>
 
-              {/* 画像（public/counter.jpg を配置してください） */}
-              <SplitImage
-                src={SITE_IMAGES.space.counter}
-                alt="きたげんのカウンター席"
-              />
+              {/* 画像（public/counter.jpg を配置してください）。md 未満では文章より先に出す */}
+              <div className="order-first md:order-none -mx-6 sm:mx-0">
+                <SplitImage
+                  src={SITE_IMAGES.space.counter}
+                  alt="きたげんのカウンター席"
+                />
+              </div>
             </div>
           </div>
         </SectionInner>
@@ -331,18 +403,20 @@ export default async function Home() {
 
 
       {/* ── ⑧ 団体・宴会のご予約 ──────────────────────────────
-          SPACE の文中リンク（/#group-reservation）の飛び先。 */}
+          SPACE の文中リンク（/#group-reservation）の飛び先。
+          囲みは横の真ん中（mx-auto）、囲みの中の文字は左揃え（電話のボタンは囲みの幅いっぱいのまま）。
+          下の注意書き（ご予約時に〜）は小さく薄い色のまま。 */}
       <section id="group-reservation" className="py-20 md:py-24 section-light scroll-mt-24">
-        <SectionInner className="text-center">
+        <SectionInner>
           <div>
             <div className="rounded-xl border border-border bg-background/70 p-7 sm:p-8 max-w-xl mx-auto">
               <p className="text-[9px] tracking-[0.55em] text-accent/70 font-medium mb-3">
                 PARTY &amp; GROUP
               </p>
-              <p className="text-lg font-bold text-foreground mb-1.5">
+              <p className={`text-lg text-foreground mb-1.5 ${SERIF_HEADING}`}>
                 ご宴会・団体でのご利用は
               </p>
-              <p className="text-sm text-muted mb-7 leading-relaxed">
+              <p className={`text-[15px] text-foreground mb-7 leading-relaxed ${BODY_FONT}`}>
                 お席をご用意しますので、お電話ください。
               </p>
 
@@ -362,10 +436,11 @@ export default async function Home() {
                 <span className="tabular-nums">{PHONE}</span>
               </a>
 
-              <p className="text-sm text-muted/90 mt-5 leading-relaxed">
-                ご予約時に「ホームページを見た」とお伝えください。
-                <br />
-                営業時間外（昼間・開店前）でも承ります。
+              <p className={`text-sm text-muted/90 mt-5 leading-relaxed ${BODY_FONT}`}>
+                {proseLines([
+                  "ご予約時に「ホームページを見た」とお伝えください。",
+                  "営業時間外（昼間・開店前）でも承ります。",
+                ])}
               </p>
             </div>
           </div>
@@ -374,12 +449,12 @@ export default async function Home() {
 
       {/* ── ⑨ 店主紹介へのリンク ──────────────────────────────── */}
       <section className="py-14 md:py-16 section-warm">
-        <SectionInner className="text-center">
+        <SectionInner>
           <div>
             <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-3">
               OWNER
             </p>
-            <p className="text-base text-muted mb-5">
+            <p className={`${BODY_TEXT} mb-5 ${BODY_FONT}`}>
               きたげんの店主について。
             </p>
             <Link

@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
-import { Noto_Sans_JP } from "next/font/google";
+// フォントはサイトの中に持たせる（ビルドのたびに Google Fonts へ取りに行かない）。
+// @fontsource のファイルはビルド時に node_modules から出力される。文字の範囲ごとに分かれているので、
+// ブラウザはページで使う文字を含むファイルだけを読む。太さは使うものだけ（400・500・700）。
+// font-family 名は "Noto Sans JP"（globals.css の --font-noto-sans-jp）。
+import "@fontsource/noto-sans-jp/400.css";
+import "@fontsource/noto-sans-jp/500.css";
+import "@fontsource/noto-sans-jp/700.css";
 import Link from "next/link";
 import Header from "./components/Header";
 import StructuredData from "./components/StructuredData";
 import { SITE_URL, OG_IMAGE } from "./lib/seo";
 import "./globals.css";
-
-const notoSansJP = Noto_Sans_JP({
-  variable: "--font-noto-sans-jp",
-  subsets: ["latin"],
-  weight: ["400", "500", "700"],
-});
 
 const TITLE       = "IZAKAYA きたげん｜桃谷の居酒屋【公式サイト】";
 const DESCRIPTION = "桃谷の居酒屋「IZAKAYA きたげん」公式サイト。こだわりの料理とお酒を楽しめるお店です。ランチ・ディナー・テイクアウト対応。宴会や飲み会にもおすすめ。";
@@ -107,7 +107,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja">
-      <body className={`${notoSansJP.variable} font-sans antialiased`}>
+      <body className="font-sans antialiased">
         <StructuredData />
         <Header />
         <main className="pt-16">{children}</main>
