@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { MapPin, ExternalLink, Phone } from "lucide-react";
 import SectionInner from "../components/SectionInner";
-import { PHONE, INSTAGRAM_URL } from "../lib/contact";
+import { PHONE, INSTAGRAM_URL, MAP_URL } from "../lib/contact";
 import {
   BUSINESS_HOURS,
   isLunchSuspendedFor,
@@ -50,7 +50,7 @@ const ACCESS = {
   nearest:     "JR大阪環状線「桃谷駅」徒歩2分",
   parking:     "駐車場はございません。お近くのコインパーキングをご利用ください。",
   mapEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3281.89049709441!2d135.52679927628435!3d34.65746828553037!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6000df000a517bf7%3A0x81ed5ec961cb5e!2zSVpBS0FZQSDjgY3jgZ_jgZLjgpM!5e0!3m2!1sja!2sjp!4v1773280180352!5m2!1sja!2sjp",
-  mapUrl:      "https://www.google.co.jp/maps/place/IZAKAYA+%E3%81%8D%E3%81%9F%E3%81%92%E3%82%93/@34.6574683,135.5267993,17z/data=!3m1!4b1!4m6!3m5!1s0x6000df000a517bf7:0x81ed5ec961cb5e!8m2!3d34.6574639!4d135.5293742!16s%2Fg%2F11vwjd2bch?entry=ttu&g_ep=EgoyMDI2MDMwOS4wIKXMDSoASAFQAw%3D%3D",
+  mapUrl:      MAP_URL,
 };
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

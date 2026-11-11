@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import Image from "next/image";
 
 interface Props {
@@ -14,33 +14,25 @@ interface Props {
   positionPc?: string;
 }
 
-export default function ParallaxHero({
+/**
+ * トップのヒーロー写真（スマホ用・パソコン用の2枚）。
+ * 写真はスクロールしても動かさない（以前のパララックスはやめた）。
+ */
+export default function HeroImage({
   srcSp,
   srcPc,
   positionSp = "center 40%",
   positionPc = "center 40%",
 }: Props) {
-  const ref = useRef<HTMLDivElement>(null);
   const [spLoaded, setSpLoaded] = useState(false);
   const [pcLoaded, setPcLoaded] = useState(false);
   const [spError, setSpError] = useState(false);
   const [pcError, setPcError] = useState(false);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      if (ref.current) {
-        ref.current.style.transform = `translateY(${window.scrollY * 0.4}px)`;
-      }
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   return (
     <div
-      ref={ref}
-      // scale-[1.15] でパララックス移動時の端のはみ出しを防ぐ
-      className="absolute inset-0 will-change-transform scale-[1.15]"
+      // scale-[1.15] はパララックスの名残。外すと写真の切り取り（見え方）が変わるため残している。
+      className="absolute inset-0 scale-[1.15]"
       aria-hidden="true"
     >
       {/* ── フォールバック背景 ─────────────────────────────

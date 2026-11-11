@@ -30,11 +30,16 @@ export interface HourGroup {
   hasLunch?: boolean;
 }
 
-/** 通常営業時間（曜日グループごと）。曜日を変えるときは days と schemaDays を両方直す。 */
+/**
+ * 通常営業時間（曜日グループごと）。曜日を変えるときは days と schemaDays を両方直す。
+ * 日曜日は定休日なので、ここには入れない（REGULAR_CLOSED を参照）。
+ */
 export const BUSINESS_HOURS: HourGroup[] = [
   { days: "月・水・土", schemaDays: ["Monday", "Wednesday", "Saturday"], open: "11:30", close: "22:00", lo: "21:30", hasLunch: true },
   { days: "火・木・金", schemaDays: ["Tuesday", "Thursday", "Friday"],    open: "17:00", close: "22:00", lo: "21:30" },
-  { days: "日・祝",     schemaDays: ["Sunday", "PublicHolidays"],         open: "15:00", close: "22:00", lo: "21:30" },
+  // ★ 祝日の営業は代表者が確認中。決まったらこの1行だけを直す
+  //   （休みにするなら、この行を消して REGULAR_CLOSED に「祝日」を足す）。
+  { days: "祝日",       schemaDays: ["PublicHolidays"],                   open: "15:00", close: "22:00", lo: "21:30" },
 ];
 
 /** ディナータイムの始まり（ディナーメニューの見出しに使う） */
@@ -62,5 +67,5 @@ export function openTimeNow(g: HourGroup): string {
   return isLunchSuspendedFor(g) ? DINNER_START : g.open;
 }
 
-/** 定休日 */
-export const REGULAR_CLOSED = "不定休";
+/** 定休日（/info の「定休日」の行に出す）。日曜日は BUSINESS_HOURS に入れない。 */
+export const REGULAR_CLOSED = "日曜日";
