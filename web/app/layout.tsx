@@ -61,9 +61,9 @@ export const metadata: Metadata = {
 function Footer() {
   const currentYear = new Date().getFullYear();
   return (
-    // lg より狭い画面では、下に固定した「電話する」ボタン（MobileCallBar・52px ＋ safe-area）に
+    // md より狭い画面では、下に固定した「電話する」ボタン（MobileCallBar・52px ＋ safe-area）に
     // 隠れないよう、フッターの下に同じ高さのあきを足す
-    <footer className="border-t border-border bg-card-bg pb-[calc(52px+env(safe-area-inset-bottom))] lg:pb-0">
+    <footer className="border-t border-border bg-card-bg pb-[calc(52px+env(safe-area-inset-bottom))] md:pb-0">
       <div className="max-w-5xl mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-center md:text-left">

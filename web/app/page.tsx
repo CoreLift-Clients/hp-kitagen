@@ -179,9 +179,9 @@ export default async function Home() {
 
         <div className="hidden sm:block absolute top-20 left-8 w-8 h-8 border-t border-l border-white/25 z-10 hero-animate" />
         <div className="hidden sm:block absolute top-20 right-8 w-8 h-8 border-t border-r border-white/25 z-10 hero-animate" />
-        {/* 下の2つの飾りは、lg より狭い画面では下に固定した「電話する」ボタン（52px ＋ safe-area）の分だけ上げる */}
-        <div className="hidden sm:block absolute bottom-12 max-lg:bottom-[calc(3rem+52px+env(safe-area-inset-bottom))] left-8 w-8 h-8 border-b border-l border-white/25 z-10 hero-animate" />
-        <div className="hidden sm:block absolute bottom-12 max-lg:bottom-[calc(3rem+52px+env(safe-area-inset-bottom))] right-8 w-8 h-8 border-b border-r border-white/25 z-10 hero-animate" />
+        {/* 下の2つの飾りは、md より狭い画面では下に固定した「電話する」ボタン（52px ＋ safe-area）の分だけ上げる */}
+        <div className="hidden sm:block absolute bottom-12 max-md:bottom-[calc(3rem+52px+env(safe-area-inset-bottom))] left-8 w-8 h-8 border-b border-l border-white/25 z-10 hero-animate" />
+        <div className="hidden sm:block absolute bottom-12 max-md:bottom-[calc(3rem+52px+env(safe-area-inset-bottom))] right-8 w-8 h-8 border-b border-r border-white/25 z-10 hero-animate" />
 
         <div className="relative z-10 text-center px-4">
           <p className="text-xs tracking-[0.5em] text-white/70 mb-4 hero-animate text-shadow">
@@ -203,10 +203,10 @@ export default async function Home() {
         {/* 下に続きがある目印（飾り。動かさない・読み上げない）。
             高さを svh で決めているので、スマホのブラウザの下のバーが出ていても隠れない。
             画面の高さが低いとき（横向きのスマホなど）は店名と重なるので出さない。
-            lg より狭い画面では、下に固定した「電話する」ボタン（52px ＋ safe-area）と重ならないよう、その分だけ上げる。 */}
+            md より狭い画面では、下に固定した「電話する」ボタン（52px ＋ safe-area）と重ならないよう、その分だけ上げる。 */}
         <div
           aria-hidden="true"
-          className="absolute left-1/2 -translate-x-1/2 bottom-[calc(1.25rem+env(safe-area-inset-bottom))] max-lg:bottom-[calc(1.25rem+52px+env(safe-area-inset-bottom))] z-10 flex flex-col items-center gap-2 [@media(max-height:480px)]:hidden"
+          className="absolute left-1/2 -translate-x-1/2 bottom-[calc(1.25rem+env(safe-area-inset-bottom))] max-md:bottom-[calc(1.25rem+52px+env(safe-area-inset-bottom))] z-10 flex flex-col items-center gap-2 [@media(max-height:480px)]:hidden"
         >
           <span className="text-[10px] tracking-[0.4em] pl-[0.4em] text-white/70 text-shadow">SCROLL</span>
           <span className="block w-px h-10 bg-white/40" />
