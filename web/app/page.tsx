@@ -235,7 +235,7 @@ export default async function Home() {
             lg の縦書きは 1024px の画面で横幅が約 924px（使える幅は約 943px）。
             xl の縦書きは横幅が約 1081px（使える幅は 1088px）。どちらも余裕が少ない。
             文章を足して行や段落が増えたら、ここの計算を見直すこと */}
-      <section className="py-24 md:py-28 section-light story-glass">
+      <section className="section-screen py-24 md:py-28 section-light story-glass">
         <SectionInner>
           <div>
             <p className="text-[10px] tracking-[0.5em] text-accent/80 text-center">
@@ -281,7 +281,7 @@ export default async function Home() {
 
       {/* ── ④ こだわりの料理（画像左・テキスト右） ─────────────
           md 未満：写真 → FOOD → 見出し → 文章 → ボタン。スマホの写真は幅いっぱい */}
-      <section className="py-24 md:py-28 section-warm">
+      <section className="section-screen py-24 md:py-28 section-warm">
         <SectionInner>
           <div>
             {/* 写真=7 / テキスト=5：PCでは写真が左・大きく、テキストが右 */}
@@ -336,7 +336,7 @@ export default async function Home() {
           GALLERY_ITEMS に追記すると表示される（フォルダ方式）。
           写真が1枚も無い（配列が空）間は、セクションごと非表示にする。 */}
       {GALLERY_ITEMS.length > 0 && (
-        <section className="py-24 md:py-28 section-deep">
+        <section className="section-screen py-24 md:py-28 section-deep">
           <SectionInner>
             <div>
               <div className={`mb-10 ${CENTER_PC}`}>
@@ -365,7 +365,7 @@ export default async function Home() {
           md 未満：写真 → SPACE → 見出し → 文章 → ボタン（写真を order-first で先に出す）。
           スマホの写真は幅いっぱい。
           背景は section-light（GALLERY が無いときも、すぐ上の FOOD（section-warm）と色が分かれる） */}
-      <section className="py-24 md:py-28 section-light">
+      <section className="section-screen py-24 md:py-28 section-light">
         <SectionInner>
           <div>
             {/* 写真=7 / テキスト=5：写真を大きく、テキストは読みやすい幅に保つ */}
@@ -429,7 +429,7 @@ export default async function Home() {
           囲みは横の真ん中（mx-auto）。囲みの中の文字は lg より狭い画面は左揃え、lg 以上は真ん中
           （電話のボタンは囲みの幅いっぱいのまま）。
           下の注意書き（ご予約時に〜）は小さく薄い色のまま。 */}
-      <section id="group-reservation" className="py-20 md:py-24 section-warm scroll-mt-24">
+      <section id="group-reservation" className="section-screen py-20 md:py-24 section-warm scroll-mt-24">
         <SectionInner>
           <div>
             <div className={`rounded-xl border border-border bg-background/70 p-7 sm:p-8 max-w-xl mx-auto ${CENTER_PC}`}>
@@ -470,64 +470,63 @@ export default async function Home() {
         </SectionInner>
       </section>
 
-      {/* ── ⑧ Instagram ──────────────────────────────────────
+      {/* ── ⑧ Instagram と ⑨ 店主紹介へのリンク（1つの欄にまとめる）──────
           最新情報・急な営業の変更は Instagram で発信している。URL は lib/contact.ts。
           お知らせの一覧は /news のページに残している。
-          lg より狭い画面は左揃え（左の端をほかの欄とそろえるため、幅は SectionInner の標準 max-w-6xl）。
-          lg 以上は横の真ん中にそろえる。本文の改行の位置は同じまま、各行を真ん中にそろえる。 */}
-      <section className="py-24 md:py-28 section-light">
+          ・lg 以上 … 左に INSTAGRAM、右に OWNER を左右に並べ、間に細い区切りの線。
+            それぞれの中身は横の真ん中にそろえる（本文の改行の位置は同じまま、各行を真ん中に）
+          ・lg より狭い画面 … 上に INSTAGRAM、下に OWNER。左揃え
+            （左の端をほかの欄とそろえるため、幅は SectionInner の標準 max-w-6xl）
+          ・背景は section-light。上の PARTY & GROUP（section-warm）とも、
+            下のフッター（card-bg ＝ section-warm と同じ色）とも色が分かれる */}
+      <section className="section-screen py-24 md:py-28 section-light">
         <SectionInner>
-          <div className={CENTER_PC}>
-            <p className="text-[10px] tracking-[0.5em] text-accent/70 mb-2">
-              INSTAGRAM
-            </p>
-            <h2 className={`text-3xl md:text-4xl tracking-wide ${SERIF_HEADING}`}>最新情報</h2>
-            <div className={`flex items-center gap-3 mt-4 ${CENTER_PC_DIVIDER}`}>
-              <div className="w-8 h-px bg-accent/50" />
-              <div className="w-1 h-1 rounded-full bg-accent/70" />
-              <div className="w-8 h-px bg-accent/50" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-y-20 lg:gap-y-0 lg:divide-x lg:divide-border">
+            <div className={`lg:px-12 ${CENTER_PC}`}>
+              <p className="text-[10px] tracking-[0.5em] text-accent/70 mb-2">
+                INSTAGRAM
+              </p>
+              <h2 className={`text-3xl md:text-4xl tracking-wide ${SERIF_HEADING}`}>最新情報</h2>
+              <div className={`flex items-center gap-3 mt-4 ${CENTER_PC_DIVIDER}`}>
+                <div className="w-8 h-px bg-accent/50" />
+                <div className="w-1 h-1 rounded-full bg-accent/70" />
+                <div className="w-8 h-px bg-accent/50" />
+              </div>
+              <p className={`${BODY_TEXT} leading-[2.1] mt-6 mb-9 ${BODY_FONT}`}>
+                日々の料理や、急な営業の変更は
+                <br />
+                Instagram でお知らせしています。
+              </p>
+              <a
+                href={INSTAGRAM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-lift inline-flex items-center justify-center gap-2 min-h-[48px] px-8 rounded-sm text-sm tracking-wider border border-accent/40 text-accent hover:bg-accent/5 transition-colors duration-200"
+              >
+                Instagram を見る
+                <ExternalLink size={14} strokeWidth={1.75} aria-hidden="true" />
+              </a>
             </div>
-            <p className={`${BODY_TEXT} leading-[2.1] mt-6 mb-9 ${BODY_FONT}`}>
-              日々の料理や、急な営業の変更は
-              <br />
-              Instagram でお知らせしています。
-            </p>
-            <a
-              href={INSTAGRAM_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-lift inline-flex items-center justify-center gap-2 min-h-[48px] px-8 rounded-sm text-sm tracking-wider border border-accent/40 text-accent hover:bg-accent/5 transition-colors duration-200"
-            >
-              Instagram を見る
-              <ExternalLink size={14} strokeWidth={1.75} aria-hidden="true" />
-            </a>
-          </div>
-        </SectionInner>
-      </section>
-
-      {/* ── ⑨ 店主紹介へのリンク ────────────────────────────────
-          lg より狭い画面は左揃え、lg 以上は横の真ん中にそろえる */}
-      <section className="py-14 md:py-16 section-warm">
-        <SectionInner>
-          <div className={CENTER_PC}>
-            <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-3">
-              OWNER
-            </p>
-            {/* 飾り（線・点・線）。ほかの写真のない欄と同じ。lg 以上は真ん中、lg より狭い画面は左揃え */}
-            <div className={`flex items-center gap-3 mb-5 ${CENTER_PC_DIVIDER}`}>
-              <div className="w-8 h-px bg-accent/50" />
-              <div className="w-1 h-1 rounded-full bg-accent/70" />
-              <div className="w-8 h-px bg-accent/50" />
+            <div className={`lg:px-12 ${CENTER_PC}`}>
+              <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-3">
+                OWNER
+              </p>
+              {/* 飾り（線・点・線）。ほかの写真のない欄と同じ。lg 以上は真ん中、lg より狭い画面は左揃え */}
+              <div className={`flex items-center gap-3 mb-5 ${CENTER_PC_DIVIDER}`}>
+                <div className="w-8 h-px bg-accent/50" />
+                <div className="w-1 h-1 rounded-full bg-accent/70" />
+                <div className="w-8 h-px bg-accent/50" />
+              </div>
+              <p className={`${BODY_TEXT} mb-5 ${BODY_FONT}`}>
+                きたげんの店主について。
+              </p>
+              <Link
+                href="/owner"
+                className="btn-lift inline-flex items-center justify-center gap-2 min-h-[44px] text-sm text-accent border border-accent/40 px-6 rounded-sm hover:bg-accent/5 transition-colors"
+              >
+                店主紹介を見る →
+              </Link>
             </div>
-            <p className={`${BODY_TEXT} mb-5 ${BODY_FONT}`}>
-              きたげんの店主について。
-            </p>
-            <Link
-              href="/owner"
-              className="btn-lift inline-flex items-center justify-center gap-2 min-h-[44px] text-sm text-accent border border-accent/40 px-6 rounded-sm hover:bg-accent/5 transition-colors"
-            >
-              店主紹介を見る →
-            </Link>
           </div>
         </SectionInner>
       </section>
