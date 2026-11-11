@@ -104,6 +104,29 @@ html {
   }
 }
 
+/* ─── トップの各欄の高さ（最低1画面） ───
+   ヒーローと同じく、固定ヘッダー（h-16 = 4rem）の下から画面のいちばん下まで。
+   「ちょうど」ではなく「最低」1画面：中身が収まらない欄はそのまま長くなる。
+   中身は欄の上下の真ん中に置く（子の SectionInner は横幅いっぱい）。
+   欄の上下の余白は md 以上 64px（md:py-16）、md より狭い画面は各欄の py のまま。
+   vh → svh の順と @supports で分ける理由は .hero-full と同じ。 */
+.section-screen {
+  min-height: calc(100vh - 4rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.section-screen > * {
+  width: 100%;
+}
+
+@supports (height: 100svh) {
+  .section-screen {
+    min-height: calc(100svh - 4rem);
+  }
+}
+
 /* ─── Button lift ─── */
 
 .btn-lift {
