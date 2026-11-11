@@ -9,6 +9,8 @@ import PhotoStrip from "./components/PhotoStrip";
 import SectionInner from "./components/SectionInner";
 import { PHONE, INSTAGRAM_URL } from "./lib/contact";
 import { STORY } from "./content/story";
+import { getSpecialties, type DisplaySpecialty } from "./content";
+import { formatTaxIncludedPrice } from "./content/specialties";
 
 // 明朝体（Noto Serif JP）。このページでだけ読み込む。
 // 太さは使うものだけ：OUR STORY の本文 500、ほかの欄の本文 600、見出し 700。字の並び（読み込めないときの代わりの明朝体）は
@@ -92,6 +94,45 @@ const BODY_TEXT_SPLIT = "text-[17px] md:text-[18px] text-foreground";
 const CENTER_PC = "lg:text-center";
 const CENTER_PC_DIVIDER = "lg:justify-center";
 
+// ─── FOOD の下の名物の一覧 ───
+// データは content/specialties.ts（写真と値段がそろった品だけが渡ってくる）。0 品のときは呼び出し側で出さない。
+// ・並べ方 … スマホ 2 列、md 3 列、lg 以上 4 列。写真は正方形に切り取る
+// ・字 … 品名は明朝体 700（SERIF_HEADING）、値段・ひとことは本文と同じ（パソコン明朝体・スマホゴシック体）
+// ・写真の角と枠は SplitImage（sm 以上）と同じ
+function SpecialtyList({ items }: { items: readonly DisplaySpecialty[] }) {
+  return (
+    <div className="mt-16 md:mt-20">
+      <h3 className={`text-xl md:text-2xl ${SERIF_HEADING}`}>きたげんの名物</h3>
+      <ul className="mt-6 md:mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8 md:gap-x-6 md:gap-y-10">
+        {items.map((item) => (
+          <li key={item.id}>
+            <div className="relative aspect-square overflow-hidden rounded-md bg-card-bg border border-border/40">
+              <Image
+                src={item.image}
+                alt={item.name}
+                fill
+                className="object-cover brightness-[0.93] contrast-[1.02]"
+                sizes="(max-width: 767px) 50vw, (max-width: 1023px) 33vw, 280px"
+              />
+            </div>
+            <p className={`mt-3 text-[16px] md:text-[17px] leading-snug text-foreground ${SERIF_HEADING}`}>
+              {item.name}
+            </p>
+            <p className={`mt-1 text-[15px] text-accent tabular-nums ${BODY_FONT}`}>
+              {formatTaxIncludedPrice(item.price)}
+            </p>
+            {item.note && (
+              <p className={`mt-1.5 text-[14px] md:text-[15px] leading-relaxed text-muted ${BODY_FONT}`}>
+                {item.note}
+              </p>
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 // セクション見出しの装飾ライン
 function SectionDivider() {
   return (
@@ -104,6 +145,7 @@ function SectionDivider() {
 
 export default async function Home() {
   const SITE_IMAGES = await getSiteImages();
+  const specialties = await getSpecialties();
 
   return (
     <div className="min-h-screen">
@@ -137,8 +179,9 @@ export default async function Home() {
 
         <div className="hidden sm:block absolute top-20 left-8 w-8 h-8 border-t border-l border-white/25 z-10 hero-animate" />
         <div className="hidden sm:block absolute top-20 right-8 w-8 h-8 border-t border-r border-white/25 z-10 hero-animate" />
-        <div className="hidden sm:block absolute bottom-12 left-8 w-8 h-8 border-b border-l border-white/25 z-10 hero-animate" />
-        <div className="hidden sm:block absolute bottom-12 right-8 w-8 h-8 border-b border-r border-white/25 z-10 hero-animate" />
+        {/* 下の2つの飾りは、lg より狭い画面では下に固定した「電話する」ボタン（52px ＋ safe-area）の分だけ上げる */}
+        <div className="hidden sm:block absolute bottom-12 max-lg:bottom-[calc(3rem+52px+env(safe-area-inset-bottom))] left-8 w-8 h-8 border-b border-l border-white/25 z-10 hero-animate" />
+        <div className="hidden sm:block absolute bottom-12 max-lg:bottom-[calc(3rem+52px+env(safe-area-inset-bottom))] right-8 w-8 h-8 border-b border-r border-white/25 z-10 hero-animate" />
 
         <div className="relative z-10 text-center px-4">
           <p className="text-xs tracking-[0.5em] text-white/70 mb-4 hero-animate text-shadow">
@@ -159,10 +202,11 @@ export default async function Home() {
 
         {/* 下に続きがある目印（飾り。動かさない・読み上げない）。
             高さを svh で決めているので、スマホのブラウザの下のバーが出ていても隠れない。
-            画面の高さが低いとき（横向きのスマホなど）は店名と重なるので出さない。 */}
+            画面の高さが低いとき（横向きのスマホなど）は店名と重なるので出さない。
+            lg より狭い画面では、下に固定した「電話する」ボタン（52px ＋ safe-area）と重ならないよう、その分だけ上げる。 */}
         <div
           aria-hidden="true"
-          className="absolute left-1/2 -translate-x-1/2 bottom-[calc(1.25rem+env(safe-area-inset-bottom))] z-10 flex flex-col items-center gap-2 [@media(max-height:480px)]:hidden"
+          className="absolute left-1/2 -translate-x-1/2 bottom-[calc(1.25rem+env(safe-area-inset-bottom))] max-lg:bottom-[calc(1.25rem+52px+env(safe-area-inset-bottom))] z-10 flex flex-col items-center gap-2 [@media(max-height:480px)]:hidden"
         >
           <span className="text-[10px] tracking-[0.4em] pl-[0.4em] text-white/70 text-shadow">SCROLL</span>
           <span className="block w-px h-10 bg-white/40" />
@@ -279,6 +323,9 @@ export default async function Home() {
                 </Link>
               </div>
             </div>
+
+            {/* 名物の一覧。表示できる品が 0 のあいだは出さない（今までと同じ見た目） */}
+            {specialties.length > 0 && <SpecialtyList items={specialties} />}
           </div>
         </SectionInner>
       </section>
@@ -314,45 +361,11 @@ export default async function Home() {
         </section>
       )}
 
-      {/* ── ⑥ Instagram ──────────────────────────────────────
-          最新情報・急な営業の変更は Instagram で発信している。URL は lib/contact.ts。
-          お知らせの一覧は /news のページに残している。
-          lg より狭い画面は左揃え（左の端をほかの欄とそろえるため、幅は SectionInner の標準 max-w-6xl）。
-          lg 以上は横の真ん中にそろえる。本文の改行の位置は同じまま、各行を真ん中にそろえる。 */}
-      <section className="py-24 md:py-28 section-light">
-        <SectionInner>
-          <div className={CENTER_PC}>
-            <p className="text-[10px] tracking-[0.5em] text-accent/70 mb-2">
-              INSTAGRAM
-            </p>
-            <h2 className={`text-3xl md:text-4xl tracking-wide ${SERIF_HEADING}`}>最新情報</h2>
-            <div className={`flex items-center gap-3 mt-4 ${CENTER_PC_DIVIDER}`}>
-              <div className="w-8 h-px bg-accent/50" />
-              <div className="w-1 h-1 rounded-full bg-accent/70" />
-              <div className="w-8 h-px bg-accent/50" />
-            </div>
-            <p className={`${BODY_TEXT} leading-[2.1] mt-6 mb-9 ${BODY_FONT}`}>
-              日々の料理や、急な営業の変更は
-              <br />
-              Instagram でお知らせしています。
-            </p>
-            <a
-              href={INSTAGRAM_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-lift inline-flex items-center justify-center gap-2 min-h-[48px] px-8 rounded-sm text-sm tracking-wider border border-accent/40 text-accent hover:bg-accent/5 transition-colors duration-200"
-            >
-              Instagram を見る
-              <ExternalLink size={14} strokeWidth={1.75} aria-hidden="true" />
-            </a>
-          </div>
-        </SectionInner>
-      </section>
-
-      {/* ── ⑦ くつろぎの空間（テキスト左・画像右） ─────────────
+      {/* ── ⑥ くつろぎの空間（テキスト左・画像右） ─────────────
           md 未満：写真 → SPACE → 見出し → 文章 → ボタン（写真を order-first で先に出す）。
-          スマホの写真は幅いっぱい */}
-      <section className="py-24 md:py-28 section-warm">
+          スマホの写真は幅いっぱい。
+          背景は section-light（GALLERY が無いときも、すぐ上の FOOD（section-warm）と色が分かれる） */}
+      <section className="py-24 md:py-28 section-light">
         <SectionInner>
           <div>
             {/* 写真=7 / テキスト=5：写真を大きく、テキストは読みやすい幅に保つ */}
@@ -411,12 +424,12 @@ export default async function Home() {
       </section>
 
 
-      {/* ── ⑧ 団体・宴会のご予約 ──────────────────────────────
+      {/* ── ⑦ 団体・宴会のご予約 ──────────────────────────────
           SPACE の文中リンク（/#group-reservation）の飛び先。
           囲みは横の真ん中（mx-auto）。囲みの中の文字は lg より狭い画面は左揃え、lg 以上は真ん中
           （電話のボタンは囲みの幅いっぱいのまま）。
           下の注意書き（ご予約時に〜）は小さく薄い色のまま。 */}
-      <section id="group-reservation" className="py-20 md:py-24 section-light scroll-mt-24">
+      <section id="group-reservation" className="py-20 md:py-24 section-warm scroll-mt-24">
         <SectionInner>
           <div>
             <div className={`rounded-xl border border-border bg-background/70 p-7 sm:p-8 max-w-xl mx-auto ${CENTER_PC}`}>
@@ -457,6 +470,41 @@ export default async function Home() {
         </SectionInner>
       </section>
 
+      {/* ── ⑧ Instagram ──────────────────────────────────────
+          最新情報・急な営業の変更は Instagram で発信している。URL は lib/contact.ts。
+          お知らせの一覧は /news のページに残している。
+          lg より狭い画面は左揃え（左の端をほかの欄とそろえるため、幅は SectionInner の標準 max-w-6xl）。
+          lg 以上は横の真ん中にそろえる。本文の改行の位置は同じまま、各行を真ん中にそろえる。 */}
+      <section className="py-24 md:py-28 section-light">
+        <SectionInner>
+          <div className={CENTER_PC}>
+            <p className="text-[10px] tracking-[0.5em] text-accent/70 mb-2">
+              INSTAGRAM
+            </p>
+            <h2 className={`text-3xl md:text-4xl tracking-wide ${SERIF_HEADING}`}>最新情報</h2>
+            <div className={`flex items-center gap-3 mt-4 ${CENTER_PC_DIVIDER}`}>
+              <div className="w-8 h-px bg-accent/50" />
+              <div className="w-1 h-1 rounded-full bg-accent/70" />
+              <div className="w-8 h-px bg-accent/50" />
+            </div>
+            <p className={`${BODY_TEXT} leading-[2.1] mt-6 mb-9 ${BODY_FONT}`}>
+              日々の料理や、急な営業の変更は
+              <br />
+              Instagram でお知らせしています。
+            </p>
+            <a
+              href={INSTAGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-lift inline-flex items-center justify-center gap-2 min-h-[48px] px-8 rounded-sm text-sm tracking-wider border border-accent/40 text-accent hover:bg-accent/5 transition-colors duration-200"
+            >
+              Instagram を見る
+              <ExternalLink size={14} strokeWidth={1.75} aria-hidden="true" />
+            </a>
+          </div>
+        </SectionInner>
+      </section>
+
       {/* ── ⑨ 店主紹介へのリンク ────────────────────────────────
           lg より狭い画面は左揃え、lg 以上は横の真ん中にそろえる */}
       <section className="py-14 md:py-16 section-warm">
@@ -465,6 +513,12 @@ export default async function Home() {
             <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-3">
               OWNER
             </p>
+            {/* 飾り（線・点・線）。ほかの写真のない欄と同じ。lg 以上は真ん中、lg より狭い画面は左揃え */}
+            <div className={`flex items-center gap-3 mb-5 ${CENTER_PC_DIVIDER}`}>
+              <div className="w-8 h-px bg-accent/50" />
+              <div className="w-1 h-1 rounded-full bg-accent/70" />
+              <div className="w-8 h-px bg-accent/50" />
+            </div>
             <p className={`${BODY_TEXT} mb-5 ${BODY_FONT}`}>
               きたげんの店主について。
             </p>

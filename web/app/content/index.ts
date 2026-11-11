@@ -12,8 +12,9 @@ import type { PublicAnnouncement } from "../lib/announcements";
 import { DEFAULT_SITE_IMAGES } from "../lib/site-image-defaults";
 import { MENUS, type MenuDisplay } from "./menus";
 import { NEWS } from "./news";
+import { SPECIALTIES, displayableSpecialties, type DisplaySpecialty } from "./specialties";
 
-export type { MenuDisplay };
+export type { MenuDisplay, DisplaySpecialty };
 
 export interface SiteImages {
   hero:  { sp: string; pc: string };
@@ -40,4 +41,9 @@ export async function getSiteImages(): Promise<SiteImages> {
     food:  { main:    DEFAULT_SITE_IMAGES.food.main     },
     space: { counter: DEFAULT_SITE_IMAGES.space.counter },
   };
+}
+
+/** トップ ④FOOD の名物の一覧（写真と値段がそろった品だけ）。 */
+export async function getSpecialties(): Promise<DisplaySpecialty[]> {
+  return displayableSpecialties(SPECIALTIES).map((item) => ({ ...item }));
 }
