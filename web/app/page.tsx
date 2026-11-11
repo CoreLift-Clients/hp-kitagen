@@ -1,18 +1,12 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Phone, MapPin, UtensilsCrossed, ExternalLink } from "lucide-react";
+import { Phone, ExternalLink } from "lucide-react";
 import { getSiteImages } from "./lib/site-images";
 import { GALLERY_ITEMS } from "./lib/gallery";
 import HeroImage from "./components/HeroImage";
 import PhotoStrip from "./components/PhotoStrip";
 import SectionInner from "./components/SectionInner";
-import { PHONE, INSTAGRAM_URL, MAP_URL } from "./lib/contact";
-import {
-  BUSINESS_HOURS,
-  LUNCH_SUSPENDED,
-  REGULAR_CLOSED_SHORT,
-  dinnerTimeLabel,
-} from "./lib/businessHours";
+import { PHONE, INSTAGRAM_URL } from "./lib/contact";
 import { STORY } from "./content/story";
 
 // 左右分割セクションの画像コンポーネント
@@ -40,24 +34,6 @@ function SectionDivider() {
     </div>
   );
 }
-
-// ヒーロー下に出す営業時間の一行。
-// ランチ休止中（LUNCH_SUSPENDED）はディナーの時間だけを出す。
-// ランチ営業中は、曜日ごとの開店時刻と閉店・L.O. を短くまとめて出す。
-// 定休日（日曜定休）は、表示側でこの後ろに別の塊として添える。
-function hoursSummary(): string {
-  if (LUNCH_SUSPENDED) return dinnerTimeLabel();
-  const opens = BUSINESS_HOURS.map((g) => `${g.days} ${g.open}〜`).join("／");
-  const last = [...BUSINESS_HOURS].sort((a, b) => b.close.localeCompare(a.close))[0];
-  return `${opens}（${last.close}まで・L.O. ${last.lo}）`;
-}
-
-// ヒーロー下の3つのボタン（電話・地図・メニュー）の共通の見た目。
-// スマホでは3つ横並びでアイコンを上に、sm 以上ではアイコンと文字を横に並べる。高さは 48px 以上。
-const QUICK_BTN =
-  "btn-lift flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 " +
-  "min-h-[52px] sm:min-h-[48px] px-2 sm:px-5 rounded-sm text-[13px] sm:text-sm tracking-wider " +
-  "transition-colors duration-200 active:scale-[0.98]";
 
 export default async function Home() {
   const SITE_IMAGES = await getSiteImages();
@@ -113,57 +89,17 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ── ヒーローにかぶさる内容（②〜⑨）──────────────────────
+      {/* ── ヒーローにかぶさる内容（③〜⑨）──────────────────────
           背景色を付けて z-10 でヒーローより前に出す。上端にうっすら影。 */}
       <div className="relative z-10 bg-background shadow-[0_-10px_28px_rgba(47,36,28,0.16)]">
-
-      {/* ── ② 営業時間とボタン（電話・地図・メニュー） ──────────
-          営業時間は lib/businessHours.ts、電話・地図は lib/contact.ts から読む。 */}
-      <section className="py-8 md:py-10 section-warm border-b border-border/60">
-        <SectionInner maxW="max-w-3xl" className="text-center">
-          <p className="text-sm md:text-base text-foreground mb-5 leading-relaxed">
-            <span className="text-[10px] tracking-[0.4em] text-accent/80 mr-3 align-middle">
-              営業時間
-            </span>
-            {/* ディナーだけの短い一行は折り返さない（ランチ営業中の長い文は折り返してよい）。
-                「日曜定休」は別の塊にし、折り返すときは時間との間で折り返す。 */}
-            <span className={`tabular-nums ${LUNCH_SUSPENDED ? "whitespace-nowrap" : ""}`}>
-              {hoursSummary()}
-            </span>{" "}
-            <span className="inline-block whitespace-nowrap">{REGULAR_CLOSED_SHORT}</span>
-          </p>
-          <div className="grid grid-cols-3 gap-2.5 sm:gap-4">
-            <a
-              href={`tel:${PHONE}`}
-              className={`${QUICK_BTN} bg-accent text-white hover:bg-accent-dark font-bold`}
-            >
-              <Phone size={18} strokeWidth={2} aria-hidden="true" />
-              電話する
-            </a>
-            <a
-              href={MAP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`${QUICK_BTN} border border-accent/40 text-accent bg-background/60 hover:bg-accent/5`}
-            >
-              <MapPin size={18} strokeWidth={1.75} aria-hidden="true" />
-              地図を見る
-            </a>
-            <Link
-              href="/menu"
-              className={`${QUICK_BTN} border border-accent/40 text-accent bg-background/60 hover:bg-accent/5`}
-            >
-              <UtensilsCrossed size={18} strokeWidth={1.75} aria-hidden="true" />
-              メニュー
-            </Link>
-          </div>
-        </SectionInner>
-      </section>
 
       {/* ── ③ OUR STORY ──────────────────────────────────────
           文章は content/story.ts。配列の1つが1行（ここで行を区切る）。
           ・スマホ：見出しだけ縦書きで中央に大きく、本文は横書き
-          ・パソコン（md 以上）：見出しも本文も縦書き。右から左へ読み、見出しが右端 */}
+          ・パソコン（md 以上）：見出しも本文も縦書き。右から左へ読み、見出しが右端
+          ・文字の大きさ：本文はスマホ 17px（幅 320px でもいちばん長い15字の行が収まる）、
+            lg 18px。md（768〜1023px）は縦書きの横幅が画面に収まるよう、画面の幅に合わせて
+            14px〜16px（約 863px 以上で 16px）。文章を足して行が増えたら、ここの計算を見直すこと */}
       <section className="py-24 md:py-28 section-light">
         <SectionInner>
           <div>
@@ -172,8 +108,8 @@ export default async function Home() {
             </p>
             <div className="md:flex md:justify-center">
               <div className="md:[writing-mode:vertical-rl]">
-                <div className="flex justify-center md:block [margin-block-end:3rem] md:[margin-block-end:3.5rem] lg:[margin-block-end:4.5rem]">
-                  <h2 className="[writing-mode:vertical-rl] text-[2rem] md:text-3xl lg:text-4xl font-bold leading-[1.7] tracking-[0.18em]">
+                <div className="flex justify-center md:block [margin-block-end:3rem] md:[margin-block-end:2.5rem] lg:[margin-block-end:4rem]">
+                  <h2 className="[writing-mode:vertical-rl] text-[2.25rem] md:text-3xl lg:text-4xl font-bold leading-[1.7] tracking-[0.18em]">
                     {STORY.heading.map((line) => (
                       <span key={line} className="block whitespace-nowrap">
                         {line}
@@ -181,11 +117,11 @@ export default async function Home() {
                     ))}
                   </h2>
                 </div>
-                <div className="text-center md:text-start text-[15px] md:text-[14px] lg:text-base text-muted leading-[2.1] md:leading-[1.9] lg:leading-[2.1] tracking-wide md:tracking-[0.12em]">
+                <div className="text-center md:text-start text-[17px] md:text-[length:clamp(14px,calc(2.55vw_-_6px),16px)] lg:text-[18px] text-foreground leading-[2.1] md:leading-[1.85] lg:leading-[1.95] tracking-wide md:tracking-[0.12em]">
                   {STORY.paragraphs.map((para, i) => (
                     <p
                       key={i}
-                      className="[margin-block-end:1.6em] md:[margin-block-end:1.2em] last:[margin-block-end:0]"
+                      className="[margin-block-end:1.6em] md:[margin-block-end:1.1em] lg:[margin-block-end:1.2em] last:[margin-block-end:0]"
                     >
                       {para.map((line) => (
                         <span key={line} className="block whitespace-nowrap">

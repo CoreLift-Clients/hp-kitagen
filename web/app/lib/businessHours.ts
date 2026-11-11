@@ -69,6 +69,3 @@ export function openTimeNow(g: HourGroup): string {
 
 /** 定休日（/info の「定休日」の行に出す）。日曜日は BUSINESS_HOURS に入れない。 */
 export const REGULAR_CLOSED = "日曜日";
-
-/** トップの営業時間の一行に添える短い定休日の表記 */
-export const REGULAR_CLOSED_SHORT = "日曜定休";
