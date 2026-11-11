@@ -11,9 +11,9 @@ import { PHONE, INSTAGRAM_URL } from "./lib/contact";
 import { STORY } from "./content/story";
 
 // 明朝体（Noto Serif JP）。このページでだけ読み込む。
-// 太さは使うものだけ：本文 500、見出し 700。字の並び（読み込めないときの代わりの明朝体）は
+// 太さは使うものだけ：本文 600、見出し 700。字の並び（読み込めないときの代わりの明朝体）は
 // globals.css の --font-noto-serif-jp。Tailwind の font-serif で当てる。
-import "@fontsource/noto-serif-jp/500.css";
+import "@fontsource/noto-serif-jp/600.css";
 import "@fontsource/noto-serif-jp/700.css";
 
 // 左右分割セクションの画像コンポーネント
@@ -68,10 +68,18 @@ function proseLines(lines: readonly ProseLine[]): ReactNode[] {
   return out;
 }
 
-// 明朝体の見出し・本文に付けるクラス（太さは読み込んでいる 700・500 に合わせる）。
+// 明朝体の見出し・本文に付けるクラス（太さは読み込んでいる 700・600 に合わせる）。
 // word-break: auto-phrase が効かないブラウザでは普通の折り返しになる
 const SERIF_HEADING = "font-serif font-bold [word-break:auto-phrase]";
-const SERIF_BODY = "font-serif font-medium [word-break:auto-phrase]";
+const SERIF_BODY = "font-serif font-semibold [word-break:auto-phrase]";
+
+// ほかの欄の本文の大きさと色（OUR STORY 以外）。色は OUR STORY と同じ foreground。
+// ・BODY_TEXT … スマホ 17px、md 以上 19px（INSTAGRAM・GALLERY・OWNER）
+// ・BODY_TEXT_SPLIT … スマホ 17px、md 以上 18px（写真と左右に並ぶ FOOD・SPACE）。
+//   文章の列は最大で約 420px。19px だと 23 字の行（「手間を惜しまず作る一品は、派手さはないけれど、」など）が
+//   入りきらず、パソコンの改行の位置が崩れるため 18px のままにしている
+const BODY_TEXT = "text-[17px] md:text-[19px] text-foreground";
+const BODY_TEXT_SPLIT = "text-[17px] md:text-[18px] text-foreground";
 
 // セクション見出しの装飾ライン
 function SectionDivider() {
@@ -162,10 +170,13 @@ export default async function Home() {
           文章は content/story.ts。配列の1つが1行（ここで行を区切る）。
           ・スマホ・md：見出しだけ縦書きで中央に大きく、本文は横書き
           ・lg（1024px）以上：見出しも本文も縦書き。右から左へ読み、見出しが右端
-          ・字は明朝体（font-serif）。見出し 700、本文 500
-          ・本文の大きさ：スマホ・md 17px（幅 320px でもいちばん長い15字の行が収まる）、
-            lg 16px、xl 18px。段落の間は 2〜2.25 字分。
-            lg の縦書きは 1024px の画面で横幅が約 924px（使える幅は約 943px）なので余裕が少ない。
+          ・字は明朝体（font-serif）。見出し 700、本文 600
+          ・lg より狭い画面の本文：かたまりを横の真ん中に置き（w-fit mx-auto）、行の頭は左でそろえる
+          ・本文の大きさ：スマホ・md 18px、lg 16px、xl 19px。段落の間は 2〜2.25 字分。
+            いちばん長い行は15字。字間 0.025em 込みで 18px なら 276.75px、17px なら 261.4px。
+            幅 320px の画面で使える幅は 272px（左右の余白 24px ずつ）なので、360px より狭い画面は 17px にしている。
+            lg の縦書きは 1024px の画面で横幅が約 924px（使える幅は約 943px）。
+            xl の縦書きは横幅が約 1081px（使える幅は 1088px）。どちらも余裕が少ない。
             文章を足して行や段落が増えたら、ここの計算を見直すこと */}
       <section className="py-24 md:py-28 section-light story-glass">
         <SectionInner>
@@ -189,7 +200,7 @@ export default async function Home() {
                     ))}
                   </h2>
                 </div>
-                <div className="text-center lg:text-start text-[17px] lg:text-[16px] xl:text-[18px] font-medium text-foreground leading-[2.1] lg:leading-[1.95] tracking-wide lg:tracking-[0.12em]">
+                <div className="mx-auto w-fit lg:mx-0 lg:w-auto text-start text-[17px] min-[360px]:text-[18px] lg:text-[16px] xl:text-[19px] font-semibold text-foreground leading-[2.1] lg:leading-[1.95] tracking-wide lg:tracking-[0.12em]">
                   {STORY.paragraphs.map((para, i) => (
                     <p
                       key={i}
@@ -233,7 +244,7 @@ export default async function Home() {
                   うまい一品。
                 </h2>
                 <SectionDivider />
-                <p className={`text-base md:text-lg text-muted leading-[2.1] md:leading-[2.2] mb-8 ${SERIF_BODY}`}>
+                <p className={`${BODY_TEXT_SPLIT} leading-[2.1] md:leading-[2.2] mb-8 ${SERIF_BODY}`}>
                   {proseLines([
                     "きたげんの名物は、自家製のしゅうまいと鉄鍋餃子。",
                     "手間を惜しまず作る一品は、派手さはないけれど、",
@@ -266,17 +277,17 @@ export default async function Home() {
         <section className="py-24 md:py-28 section-deep">
           <SectionInner>
             <div>
-              <div className="text-center mb-10">
+              <div className="mb-10">
                 <p className="text-[10px] tracking-[0.45em] text-accent/80 mb-2">
                   GALLERY
                 </p>
                 <h2 className={`text-3xl md:text-4xl ${SERIF_HEADING}`}>きたげんの料理</h2>
-                <div className="flex items-center justify-center gap-3 mt-4">
+                <div className="flex items-center gap-3 mt-4">
                   <div className="w-8 h-px bg-accent/50" />
                   <div className="w-1 h-1 rounded-full bg-accent/70" />
                   <div className="w-8 h-px bg-accent/50" />
                 </div>
-                <p className={`text-base text-muted mt-4 ${SERIF_BODY}`}>
+                <p className={`${BODY_TEXT} mt-4 ${SERIF_BODY}`}>
                   定番から季節のひと品まで。
                 </p>
               </div>
@@ -290,20 +301,21 @@ export default async function Home() {
 
       {/* ── ⑥ Instagram ──────────────────────────────────────
           最新情報・急な営業の変更は Instagram で発信している。URL は lib/contact.ts。
-          お知らせの一覧は /news のページに残している。 */}
+          お知らせの一覧は /news のページに残している。
+          左揃え。左の端をほかの欄とそろえるため、幅は SectionInner の標準（max-w-6xl）。 */}
       <section className="py-24 md:py-28 section-light">
-        <SectionInner maxW="max-w-4xl" className="text-center">
+        <SectionInner>
           <div>
             <p className="text-[10px] tracking-[0.5em] text-accent/70 mb-2">
               INSTAGRAM
             </p>
             <h2 className={`text-3xl md:text-4xl tracking-wide ${SERIF_HEADING}`}>最新情報</h2>
-            <div className="flex items-center justify-center gap-3 mt-4">
+            <div className="flex items-center gap-3 mt-4">
               <div className="w-8 h-px bg-accent/50" />
               <div className="w-1 h-1 rounded-full bg-accent/70" />
               <div className="w-8 h-px bg-accent/50" />
             </div>
-            <p className={`text-base md:text-lg text-muted leading-[2.1] mt-6 mb-9 ${SERIF_BODY}`}>
+            <p className={`${BODY_TEXT} leading-[2.1] mt-6 mb-9 ${SERIF_BODY}`}>
               日々の料理や、急な営業の変更は
               <br />
               Instagram でお知らせしています。
@@ -340,7 +352,7 @@ export default async function Home() {
                   居心地の良い空間。
                 </h2>
                 <SectionDivider />
-                <p className={`text-base md:text-lg text-muted leading-[2.1] md:leading-[2.2] mb-8 ${SERIF_BODY}`}>
+                <p className={`${BODY_TEXT_SPLIT} leading-[2.1] md:leading-[2.2] mb-8 ${SERIF_BODY}`}>
                   {proseLines([
                     "気の向くままに使える、そんな居心地を大事にしています。",
                     "カウンターは、お一人でも仕事帰りでも、",
@@ -384,18 +396,20 @@ export default async function Home() {
 
 
       {/* ── ⑧ 団体・宴会のご予約 ──────────────────────────────
-          SPACE の文中リンク（/#group-reservation）の飛び先。 */}
+          SPACE の文中リンク（/#group-reservation）の飛び先。
+          左揃え。囲みもほかの欄と左の端をそろえる（電話のボタンは囲みの幅いっぱいのまま）。
+          下の注意書き（ご予約時に〜）は小さく薄い色のまま。 */}
       <section id="group-reservation" className="py-20 md:py-24 section-light scroll-mt-24">
-        <SectionInner className="text-center">
+        <SectionInner>
           <div>
-            <div className="rounded-xl border border-border bg-background/70 p-7 sm:p-8 max-w-xl mx-auto">
+            <div className="rounded-xl border border-border bg-background/70 p-7 sm:p-8 max-w-xl">
               <p className="text-[9px] tracking-[0.55em] text-accent/70 font-medium mb-3">
                 PARTY &amp; GROUP
               </p>
               <p className={`text-lg text-foreground mb-1.5 ${SERIF_HEADING}`}>
                 ご宴会・団体でのご利用は
               </p>
-              <p className={`text-sm text-muted mb-7 leading-relaxed ${SERIF_BODY}`}>
+              <p className={`text-[15px] text-foreground mb-7 leading-relaxed ${SERIF_BODY}`}>
                 お席をご用意しますので、お電話ください。
               </p>
 
@@ -428,12 +442,12 @@ export default async function Home() {
 
       {/* ── ⑨ 店主紹介へのリンク ──────────────────────────────── */}
       <section className="py-14 md:py-16 section-warm">
-        <SectionInner className="text-center">
+        <SectionInner>
           <div>
             <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-3">
               OWNER
             </p>
-            <p className={`text-base text-muted mb-5 ${SERIF_BODY}`}>
+            <p className={`${BODY_TEXT} mb-5 ${SERIF_BODY}`}>
               きたげんの店主について。
             </p>
             <Link
