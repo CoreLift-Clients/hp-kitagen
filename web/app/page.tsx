@@ -3,14 +3,14 @@ import Image from "next/image";
 import { Phone, MapPin, UtensilsCrossed, ExternalLink } from "lucide-react";
 import { getSiteImages } from "./lib/site-images";
 import { GALLERY_ITEMS } from "./lib/gallery";
-import ParallaxHero from "./components/ParallaxHero";
-import ScrollReveal from "./components/ScrollReveal";
+import HeroImage from "./components/HeroImage";
 import PhotoStrip from "./components/PhotoStrip";
 import SectionInner from "./components/SectionInner";
 import { PHONE, INSTAGRAM_URL, MAP_URL } from "./lib/contact";
 import {
   BUSINESS_HOURS,
   LUNCH_SUSPENDED,
+  REGULAR_CLOSED_SHORT,
   dinnerTimeLabel,
 } from "./lib/businessHours";
 import { STORY } from "./content/story";
@@ -44,6 +44,7 @@ function SectionDivider() {
 // ヒーロー下に出す営業時間の一行。
 // ランチ休止中（LUNCH_SUSPENDED）はディナーの時間だけを出す。
 // ランチ営業中は、曜日ごとの開店時刻と閉店・L.O. を短くまとめて出す。
+// 定休日（日曜定休）は、表示側でこの後ろに別の塊として添える。
 function hoursSummary(): string {
   if (LUNCH_SUSPENDED) return dinnerTimeLabel();
   const opens = BUSINESS_HOURS.map((g) => `${g.days} ${g.open}〜`).join("／");
@@ -72,8 +73,11 @@ export default async function Home() {
           │ ※ 構図の見え方（顔・料理の位置）は positionPc/positionSp   │
           │    の "center 40%" の数値で上下位置を微調整できます。      │
           └──────────────────────────────────────────────────────────┘ */}
-      <section className="relative h-[62vh] md:h-auto md:min-h-[82vh] flex items-center justify-center overflow-hidden bg-foreground">
-        <ParallaxHero
+      {/* 「幕」の動き：ヒーローは固定ヘッダー（h-16）のすぐ下（top-16）に止まり、
+          下の内容（下の relative z-10 の囲み）がその上にかぶさって流れてくる。
+          sticky が効くよう、祖先（このページの div・main・body）に overflow を付けないこと。 */}
+      <section className="sticky top-16 z-0 h-[62vh] md:h-auto md:min-h-[82vh] flex items-center justify-center overflow-hidden bg-foreground">
+        <HeroImage
           srcSp={SITE_IMAGES.hero.sp}
           srcPc={SITE_IMAGES.hero.pc}
           positionSp="center 42%"
@@ -109,6 +113,9 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* ── ヒーローにかぶさる内容（②〜⑨）──────────────────────
+          背景色を付けて z-10 でヒーローより前に出す。上端にうっすら影。 */}
+      <div className="relative z-10 bg-background shadow-[0_-10px_28px_rgba(47,36,28,0.16)]">
 
       {/* ── ② 営業時間とボタン（電話・地図・メニュー） ──────────
           営業時間は lib/businessHours.ts、電話・地図は lib/contact.ts から読む。 */}
@@ -118,10 +125,12 @@ export default async function Home() {
             <span className="text-[10px] tracking-[0.4em] text-accent/80 mr-3 align-middle">
               営業時間
             </span>
-            {/* ディナーだけの短い一行は折り返さない（ランチ営業中の長い文は折り返してよい） */}
+            {/* ディナーだけの短い一行は折り返さない（ランチ営業中の長い文は折り返してよい）。
+                「日曜定休」は別の塊にし、折り返すときは時間との間で折り返す。 */}
             <span className={`tabular-nums ${LUNCH_SUSPENDED ? "whitespace-nowrap" : ""}`}>
               {hoursSummary()}
-            </span>
+            </span>{" "}
+            <span className="inline-block whitespace-nowrap">{REGULAR_CLOSED_SHORT}</span>
           </p>
           <div className="grid grid-cols-3 gap-2.5 sm:gap-4">
             <a
@@ -157,7 +166,7 @@ export default async function Home() {
           ・パソコン（md 以上）：見出しも本文も縦書き。右から左へ読み、見出しが右端 */}
       <section className="py-24 md:py-28 section-light">
         <SectionInner>
-          <ScrollReveal>
+          <div>
             <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-10 md:mb-14 text-center">
               OUR STORY
             </p>
@@ -188,14 +197,14 @@ export default async function Home() {
                 </div>
               </div>
             </div>
-          </ScrollReveal>
+          </div>
         </SectionInner>
       </section>
 
       {/* ── ④ こだわりの料理（画像左・テキスト右） ─────────── */}
       <section className="py-24 md:py-28 section-warm">
         <SectionInner>
-          <ScrollReveal>
+          <div>
             {/* 写真=7 / テキスト=5：PCでは写真が左・大きく、テキストが右 */}
             <div className="grid grid-cols-1 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] gap-12 md:gap-20 items-center">
               {/* 画像（スマホでは下に、PCでは左に） */}
@@ -240,7 +249,7 @@ export default async function Home() {
                 </Link>
               </div>
             </div>
-          </ScrollReveal>
+          </div>
         </SectionInner>
       </section>
 
@@ -252,7 +261,7 @@ export default async function Home() {
       {GALLERY_ITEMS.length > 0 && (
         <section className="py-24 md:py-28 section-deep">
           <SectionInner>
-            <ScrollReveal>
+            <div>
               <div className="text-center mb-10">
                 <p className="text-[10px] tracking-[0.45em] text-accent/80 mb-2">
                   GALLERY
@@ -267,10 +276,10 @@ export default async function Home() {
                   定番から季節のひと品まで。
                 </p>
               </div>
-            </ScrollReveal>
-            <ScrollReveal delay={80}>
+            </div>
+            <div>
               <PhotoStrip items={GALLERY_ITEMS} />
-            </ScrollReveal>
+            </div>
           </SectionInner>
         </section>
       )}
@@ -280,7 +289,7 @@ export default async function Home() {
           お知らせの一覧は /news のページに残している。 */}
       <section className="py-24 md:py-28 section-light">
         <SectionInner maxW="max-w-4xl" className="text-center">
-          <ScrollReveal>
+          <div>
             <p className="text-[10px] tracking-[0.5em] text-accent/70 mb-2">
               INSTAGRAM
             </p>
@@ -304,14 +313,14 @@ export default async function Home() {
               Instagram を見る
               <ExternalLink size={14} strokeWidth={1.75} aria-hidden="true" />
             </a>
-          </ScrollReveal>
+          </div>
         </SectionInner>
       </section>
 
       {/* ── ⑦ くつろぎの空間（テキスト左・画像右） ─────────── */}
       <section className="py-24 md:py-28 section-warm">
         <SectionInner>
-          <ScrollReveal>
+          <div>
             {/* 写真=7 / テキスト=5：写真を大きく、テキストは読みやすい幅に保つ */}
             <div className="grid grid-cols-1 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-12 md:gap-20 items-center">
               {/* テキスト */}
@@ -363,7 +372,7 @@ export default async function Home() {
                 alt="きたげんのカウンター席"
               />
             </div>
-          </ScrollReveal>
+          </div>
         </SectionInner>
       </section>
 
@@ -372,7 +381,7 @@ export default async function Home() {
           SPACE の文中リンク（/#group-reservation）の飛び先。 */}
       <section id="group-reservation" className="py-20 md:py-24 section-light scroll-mt-24">
         <SectionInner className="text-center">
-          <ScrollReveal>
+          <div>
             <div className="rounded-xl border border-border bg-background/70 p-7 sm:p-8 max-w-xl mx-auto">
               <p className="text-[9px] tracking-[0.55em] text-accent/70 font-medium mb-3">
                 PARTY &amp; GROUP
@@ -406,14 +415,14 @@ export default async function Home() {
                 営業時間外（昼間・開店前）でも承ります。
               </p>
             </div>
-          </ScrollReveal>
+          </div>
         </SectionInner>
       </section>
 
       {/* ── ⑨ 店主紹介へのリンク ──────────────────────────────── */}
       <section className="py-14 md:py-16 section-warm">
         <SectionInner className="text-center">
-          <ScrollReveal>
+          <div>
             <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-3">
               OWNER
             </p>
@@ -426,9 +435,10 @@ export default async function Home() {
             >
               店主紹介を見る →
             </Link>
-          </ScrollReveal>
+          </div>
         </SectionInner>
       </section>
+      </div>
     </div>
   );
 }
