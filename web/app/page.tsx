@@ -90,8 +90,12 @@ export default async function Home() {
       </section>
 
       {/* ── ヒーローにかぶさる内容（③〜⑨）──────────────────────
-          背景色を付けて z-10 でヒーローより前に出す。上端にうっすら影。 */}
-      <div className="relative z-10 bg-background shadow-[0_-10px_28px_rgba(47,36,28,0.16)]">
+          z-10 でヒーローより前に出す。上端にうっすら影。
+          背景は各欄の section-* が持つ（この囲みに背景を付けると OUR STORY が透けなくなる）。
+          OUR STORY だけ story-glass で少し透かし、後ろのヒーロー写真をすりガラス越しに見せる。
+          透け具合・ぼかしの強さは globals.css の .story-glass の変数で変える。
+          ※ 欄を足すときは、必ず section-* などの不透明な背景を付けること。 */}
+      <div className="relative z-10 shadow-[0_-10px_28px_rgba(47,36,28,0.16)]">
 
       {/* ── ③ OUR STORY ──────────────────────────────────────
           文章は content/story.ts。配列の1つが1行（ここで行を区切る）。
@@ -100,7 +104,7 @@ export default async function Home() {
           ・文字の大きさ：本文はスマホ 17px（幅 320px でもいちばん長い15字の行が収まる）、
             lg 18px。md（768〜1023px）は縦書きの横幅が画面に収まるよう、画面の幅に合わせて
             14px〜16px（約 863px 以上で 16px）。文章を足して行が増えたら、ここの計算を見直すこと */}
-      <section className="py-24 md:py-28 section-light">
+      <section className="py-24 md:py-28 section-light story-glass">
         <SectionInner>
           <div>
             <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-10 md:mb-14 text-center">

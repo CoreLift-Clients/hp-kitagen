@@ -162,6 +162,26 @@ html {
   background-blend-mode: multiply, multiply;
 }
 
+/* ─── トップ OUR STORY のすりガラス ───────────────────────────
+   section-light の生成り色（#F7F3EB）を少し透かし、後ろに止まっている
+   ヒーローの写真をぼかして見せる。.section-light より後ろに書くこと（上書きのため）。
+   ・--story-glass-alpha … 背景の濃さ（1 で透けない。0.85 ＝ 85%）
+   ・--story-glass-blur  … 後ろの写真のぼかしの強さ
+   backdrop-filter が効かないブラウザでは @supports の中が使われず、
+   .section-light の不透明な生成り色のまま表示される。 */
+.story-glass {
+  --story-glass-alpha: 0.85;
+  --story-glass-blur: 8px;
+}
+
+@supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .story-glass {
+    background-color: rgb(247 243 235 / var(--story-glass-alpha));
+    -webkit-backdrop-filter: blur(var(--story-glass-blur));
+    backdrop-filter: blur(var(--story-glass-blur));
+  }
+}
+
 /* ─── Scrollbar hide (横スクロール用) ─── */
 
 .scrollbar-hide {
