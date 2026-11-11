@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { Noto_Serif_JP } from "next/font/google";
 import { Phone, ExternalLink } from "lucide-react";
 import { getSiteImages } from "./lib/site-images";
 import { GALLERY_ITEMS } from "./lib/gallery";
@@ -8,6 +9,15 @@ import PhotoStrip from "./components/PhotoStrip";
 import SectionInner from "./components/SectionInner";
 import { PHONE, INSTAGRAM_URL } from "./lib/contact";
 import { STORY } from "./content/story";
+
+// OUR STORY の見出しと本文だけに使う明朝体（このページでだけ読み込む）。
+// 太さは使うものだけ：本文 500、見出し 700。読み込めないときは手元の明朝体で出す。
+const storySerif = Noto_Serif_JP({
+  subsets: ["latin"],
+  weight: ["500", "700"],
+  display: "swap",
+  fallback: ["Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "serif"],
+});
 
 // 左右分割セクションの画像コンポーネント
 // public/ に画像を配置すれば自動で表示されます
@@ -112,21 +122,28 @@ export default async function Home() {
 
       {/* ── ③ OUR STORY ──────────────────────────────────────
           文章は content/story.ts。配列の1つが1行（ここで行を区切る）。
-          ・スマホ：見出しだけ縦書きで中央に大きく、本文は横書き
-          ・パソコン（md 以上）：見出しも本文も縦書き。右から左へ読み、見出しが右端
-          ・文字の大きさ：本文はスマホ 17px（幅 320px でもいちばん長い15字の行が収まる）、
-            lg 18px。md（768〜1023px）は縦書きの横幅が画面に収まるよう、画面の幅に合わせて
-            14px〜16px（約 863px 以上で 16px）。文章を足して行が増えたら、ここの計算を見直すこと */}
+          ・スマホ・md：見出しだけ縦書きで中央に大きく、本文は横書き
+          ・lg（1024px）以上：見出しも本文も縦書き。右から左へ読み、見出しが右端
+          ・字は明朝体（storySerif）。見出し 700、本文 500
+          ・本文の大きさ：スマホ・md 17px（幅 320px でもいちばん長い15字の行が収まる）、
+            lg 16px、xl 18px。段落の間は 2〜2.25 字分。
+            lg の縦書きは 1024px の画面で横幅が約 924px（使える幅は約 943px）なので余裕が少ない。
+            文章を足して行や段落が増えたら、ここの計算を見直すこと */}
       <section className="py-24 md:py-28 section-light story-glass">
         <SectionInner>
           <div>
-            <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-10 md:mb-14 text-center">
+            <p className="text-[10px] tracking-[0.5em] text-accent/80 text-center">
               OUR STORY
             </p>
-            <div className="md:flex md:justify-center">
-              <div className="md:[writing-mode:vertical-rl]">
-                <div className="flex justify-center md:block [margin-block-end:3rem] md:[margin-block-end:2.5rem] lg:[margin-block-end:4rem]">
-                  <h2 className="[writing-mode:vertical-rl] text-[2.25rem] md:text-3xl lg:text-4xl font-bold leading-[1.7] tracking-[0.18em]">
+            <div className="flex items-center justify-center gap-3 mt-4 mb-10 md:mb-14">
+              <div className="w-8 h-px bg-accent/50" />
+              <div className="w-1 h-1 rounded-full bg-accent/70" />
+              <div className="w-8 h-px bg-accent/50" />
+            </div>
+            <div className={`${storySerif.className} lg:flex lg:justify-center`}>
+              <div className="lg:[writing-mode:vertical-rl]">
+                <div className="flex justify-center lg:block [margin-block-end:3.5rem] md:[margin-block-end:4rem] lg:[margin-block-end:5rem] xl:[margin-block-end:5.5rem]">
+                  <h2 className="[writing-mode:vertical-rl] text-[2.25rem] md:text-[2.5rem] lg:text-4xl xl:text-[2.5rem] font-bold leading-[1.7] tracking-[0.18em]">
                     {STORY.heading.map((line) => (
                       <span key={line} className="block whitespace-nowrap">
                         {line}
@@ -134,11 +151,11 @@ export default async function Home() {
                     ))}
                   </h2>
                 </div>
-                <div className="text-center md:text-start text-[17px] md:text-[length:clamp(14px,calc(2.55vw_-_6px),16px)] lg:text-[18px] text-foreground leading-[2.1] md:leading-[1.85] lg:leading-[1.95] tracking-wide md:tracking-[0.12em]">
+                <div className="text-center lg:text-start text-[17px] lg:text-[16px] xl:text-[18px] font-medium text-foreground leading-[2.1] lg:leading-[1.95] tracking-wide lg:tracking-[0.12em]">
                   {STORY.paragraphs.map((para, i) => (
                     <p
                       key={i}
-                      className="[margin-block-end:1.6em] md:[margin-block-end:1.1em] lg:[margin-block-end:1.2em] last:[margin-block-end:0]"
+                      className="[margin-block-end:2.25em] lg:[margin-block-end:2em] last:[margin-block-end:0]"
                     >
                       {para.map((line) => (
                         <span key={line} className="block whitespace-nowrap">
