@@ -11,8 +11,9 @@ import { PHONE, INSTAGRAM_URL } from "./lib/contact";
 import { STORY } from "./content/story";
 
 // 明朝体（Noto Serif JP）。このページでだけ読み込む。
-// 太さは使うものだけ：本文 600、見出し 700。字の並び（読み込めないときの代わりの明朝体）は
+// 太さは使うものだけ：OUR STORY の本文 500、ほかの欄の本文 600、見出し 700。字の並び（読み込めないときの代わりの明朝体）は
 // globals.css の --font-noto-serif-jp。Tailwind の font-serif で当てる。
+import "@fontsource/noto-serif-jp/500.css";
 import "@fontsource/noto-serif-jp/600.css";
 import "@fontsource/noto-serif-jp/700.css";
 
@@ -170,7 +171,7 @@ export default async function Home() {
           文章は content/story.ts。配列の1つが1行（ここで行を区切る）。
           ・スマホ・md：見出しだけ縦書きで中央に大きく、本文は横書き
           ・lg（1024px）以上：見出しも本文も縦書き。右から左へ読み、見出しが右端
-          ・字は明朝体（font-serif）。見出し 700、本文 600
+          ・字は明朝体（font-serif）。見出し 700、本文 500（ほかの欄の本文 600 より一段細くし、主張を抑える）
           ・lg より狭い画面の本文：かたまりを横の真ん中に置き（w-fit mx-auto）、行の頭は左でそろえる
           ・本文の大きさ：lg より狭い画面は画面の幅から決める（clamp(17px, (100vw − 48px) ÷ 15.6, 21px)）。
             lg 16px、xl 19px。行の間隔は lg より狭い画面 2.0、lg 以上 1.95。段落の間は 2〜2.25 字分。
@@ -202,7 +203,7 @@ export default async function Home() {
                     ))}
                   </h2>
                 </div>
-                <div className="mx-auto w-fit lg:mx-0 lg:w-auto text-start text-[length:clamp(17px,calc((100vw_-_48px)/15.6),21px)] lg:text-[16px] xl:text-[19px] font-semibold text-foreground leading-[2] lg:leading-[1.95] tracking-wide lg:tracking-[0.12em]">
+                <div className="mx-auto w-fit lg:mx-0 lg:w-auto text-start text-[length:clamp(17px,calc((100vw_-_48px)/15.6),21px)] lg:text-[16px] xl:text-[19px] font-medium text-foreground leading-[2] lg:leading-[1.95] tracking-wide lg:tracking-[0.12em]">
                   {STORY.paragraphs.map((para, i) => (
                     <p
                       key={i}
