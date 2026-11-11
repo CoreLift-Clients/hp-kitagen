@@ -172,9 +172,11 @@ export default async function Home() {
           ・lg（1024px）以上：見出しも本文も縦書き。右から左へ読み、見出しが右端
           ・字は明朝体（font-serif）。見出し 700、本文 600
           ・lg より狭い画面の本文：かたまりを横の真ん中に置き（w-fit mx-auto）、行の頭は左でそろえる
-          ・本文の大きさ：スマホ・md 18px、lg 16px、xl 19px。段落の間は 2〜2.25 字分。
-            いちばん長い行は15字。字間 0.025em 込みで 18px なら 276.75px、17px なら 261.4px。
-            幅 320px の画面で使える幅は 272px（左右の余白 24px ずつ）なので、360px より狭い画面は 17px にしている。
+          ・本文の大きさ：lg より狭い画面は画面の幅から決める（clamp(17px, (100vw − 48px) ÷ 15.6, 21px)）。
+            lg 16px、xl 19px。行の間隔は lg より狭い画面 2.0、lg 以上 1.95。段落の間は 2〜2.25 字分。
+            いちばん長い行は15字で、字間 0.025em 込みの幅は 15 × 1.025 ＝ 15.375 字分。
+            15.6 で割るので、左右の余白 24px ずつの内側に約 1.4% のゆとりを残して収まる
+            （320px で 17.4px、360px で 20px、375px 以上は上限の 21px）。
             lg の縦書きは 1024px の画面で横幅が約 924px（使える幅は約 943px）。
             xl の縦書きは横幅が約 1081px（使える幅は 1088px）。どちらも余裕が少ない。
             文章を足して行や段落が増えたら、ここの計算を見直すこと */}
@@ -200,7 +202,7 @@ export default async function Home() {
                     ))}
                   </h2>
                 </div>
-                <div className="mx-auto w-fit lg:mx-0 lg:w-auto text-start text-[17px] min-[360px]:text-[18px] lg:text-[16px] xl:text-[19px] font-semibold text-foreground leading-[2.1] lg:leading-[1.95] tracking-wide lg:tracking-[0.12em]">
+                <div className="mx-auto w-fit lg:mx-0 lg:w-auto text-start text-[length:clamp(17px,calc((100vw_-_48px)/15.6),21px)] lg:text-[16px] xl:text-[19px] font-semibold text-foreground leading-[2] lg:leading-[1.95] tracking-wide lg:tracking-[0.12em]">
                   {STORY.paragraphs.map((para, i) => (
                     <p
                       key={i}
@@ -397,12 +399,12 @@ export default async function Home() {
 
       {/* ── ⑧ 団体・宴会のご予約 ──────────────────────────────
           SPACE の文中リンク（/#group-reservation）の飛び先。
-          左揃え。囲みもほかの欄と左の端をそろえる（電話のボタンは囲みの幅いっぱいのまま）。
+          囲みは横の真ん中（mx-auto）、囲みの中の文字は左揃え（電話のボタンは囲みの幅いっぱいのまま）。
           下の注意書き（ご予約時に〜）は小さく薄い色のまま。 */}
       <section id="group-reservation" className="py-20 md:py-24 section-light scroll-mt-24">
         <SectionInner>
           <div>
-            <div className="rounded-xl border border-border bg-background/70 p-7 sm:p-8 max-w-xl">
+            <div className="rounded-xl border border-border bg-background/70 p-7 sm:p-8 max-w-xl mx-auto">
               <p className="text-[9px] tracking-[0.55em] text-accent/70 font-medium mb-3">
                 PARTY &amp; GROUP
               </p>
