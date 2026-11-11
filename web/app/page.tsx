@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Noto_Serif_JP } from "next/font/google";
 import { Phone, ExternalLink } from "lucide-react";
 import { getSiteImages } from "./lib/site-images";
 import { GALLERY_ITEMS } from "./lib/gallery";
@@ -10,14 +9,11 @@ import SectionInner from "./components/SectionInner";
 import { PHONE, INSTAGRAM_URL } from "./lib/contact";
 import { STORY } from "./content/story";
 
-// OUR STORY の見出しと本文だけに使う明朝体（このページでだけ読み込む）。
-// 太さは使うものだけ：本文 500、見出し 700。読み込めないときは手元の明朝体で出す。
-const storySerif = Noto_Serif_JP({
-  subsets: ["latin"],
-  weight: ["500", "700"],
-  display: "swap",
-  fallback: ["Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "serif"],
-});
+// 明朝体（Noto Serif JP）。このページでだけ読み込む。
+// 太さは使うものだけ：本文 500、見出し 700。字の並び（読み込めないときの代わりの明朝体）は
+// globals.css の --font-noto-serif-jp。Tailwind の font-serif で当てる。
+import "@fontsource/noto-serif-jp/500.css";
+import "@fontsource/noto-serif-jp/700.css";
 
 // 左右分割セクションの画像コンポーネント
 // public/ に画像を配置すれば自動で表示されます
@@ -124,7 +120,7 @@ export default async function Home() {
           文章は content/story.ts。配列の1つが1行（ここで行を区切る）。
           ・スマホ・md：見出しだけ縦書きで中央に大きく、本文は横書き
           ・lg（1024px）以上：見出しも本文も縦書き。右から左へ読み、見出しが右端
-          ・字は明朝体（storySerif）。見出し 700、本文 500
+          ・字は明朝体（font-serif）。見出し 700、本文 500
           ・本文の大きさ：スマホ・md 17px（幅 320px でもいちばん長い15字の行が収まる）、
             lg 16px、xl 18px。段落の間は 2〜2.25 字分。
             lg の縦書きは 1024px の画面で横幅が約 924px（使える幅は約 943px）なので余裕が少ない。
@@ -140,7 +136,7 @@ export default async function Home() {
               <div className="w-1 h-1 rounded-full bg-accent/70" />
               <div className="w-8 h-px bg-accent/50" />
             </div>
-            <div className={`${storySerif.className} lg:flex lg:justify-center`}>
+            <div className="font-serif lg:flex lg:justify-center">
               <div className="lg:[writing-mode:vertical-rl]">
                 <div className="flex justify-center lg:block [margin-block-end:3.5rem] md:[margin-block-end:4rem] lg:[margin-block-end:5rem] xl:[margin-block-end:5.5rem]">
                   <h2 className="[writing-mode:vertical-rl] text-[2.25rem] md:text-[2.5rem] lg:text-4xl xl:text-[2.5rem] font-bold leading-[1.7] tracking-[0.18em]">
