@@ -168,16 +168,15 @@ export default async function Home() {
       <div className="relative z-10 shadow-[0_-10px_28px_rgba(47,36,28,0.16)]">
 
       {/* ── ③ OUR STORY ──────────────────────────────────────
-          文章は content/story.ts。配列の1つが1行（ここで行を区切る）。
-          ・スマホ・md：見出しだけ縦書きで中央に大きく、本文は横書き
+          文章は content/story.ts。見出しは配列の1つが1行。本文は lg 以上でだけ配列の1つが1行。
+          ・スマホ・md：見出しだけ縦書きで中央に大きく、本文は横書き。
+            本文は段落ごとに行をつなげて1つの文章にし、自然に折り返す（auto-phrase・text-wrap: pretty）
           ・lg（1024px）以上：見出しも本文も縦書き。右から左へ読み、見出しが右端
           ・字は明朝体（font-serif）。見出し 700、本文 500（ほかの欄の本文 600 より一段細くし、主張を抑える）
-          ・lg より狭い画面の本文：かたまりを横の真ん中に置き（w-fit mx-auto）、行の頭は左でそろえる
-          ・本文の大きさ：lg より狭い画面は画面の幅から決める（clamp(17px, (100vw − 48px) ÷ 15.6, 21px)）。
-            lg 16px、xl 19px。行の間隔は lg より狭い画面 2.0、lg 以上 1.95。段落の間は 2〜2.25 字分。
-            いちばん長い行は15字で、字間 0.025em 込みの幅は 15 × 1.025 ＝ 15.375 字分。
-            15.6 で割るので、左右の余白 24px ずつの内側に約 1.4% のゆとりを残して収まる
-            （320px で 17.4px、360px で 20px、375px 以上は上限の 21px）。
+          ・lg より狭い画面の本文：左右の余白（24px）いっぱいの幅で左揃え。
+            md では1行が長くなりすぎないよう、幅の上限を 33em（1行 約32字）にして横の真ん中に置く
+          ・本文の大きさ：lg より狭い画面 18px、lg 16px、xl 19px。
+            行の間隔は lg より狭い画面 2.0、lg 以上 1.95。段落の間は 2〜2.25 字分。
             lg の縦書きは 1024px の画面で横幅が約 924px（使える幅は約 943px）。
             xl の縦書きは横幅が約 1081px（使える幅は 1088px）。どちらも余裕が少ない。
             文章を足して行や段落が増えたら、ここの計算を見直すこと */}
@@ -203,14 +202,16 @@ export default async function Home() {
                     ))}
                   </h2>
                 </div>
-                <div className="mx-auto w-fit lg:mx-0 lg:w-auto text-start text-[length:clamp(17px,calc((100vw_-_48px)/15.6),21px)] lg:text-[16px] xl:text-[19px] font-medium text-foreground leading-[2] lg:leading-[1.95] tracking-wide lg:tracking-[0.12em]">
+                <div className="mx-auto max-w-[33em] lg:mx-0 lg:max-w-none text-start text-[18px] lg:text-[16px] xl:text-[19px] font-medium text-foreground leading-[2] lg:leading-[1.95] tracking-wide lg:tracking-[0.12em] max-lg:[word-break:auto-phrase] max-lg:text-pretty">
                   {STORY.paragraphs.map((para, i) => (
                     <p
                       key={i}
                       className="[margin-block-end:2.25em] lg:[margin-block-end:2em] last:[margin-block-end:0]"
                     >
+                      {/* lg より狭い画面は行をつなげる（span は inline、間に空白は入れない）。
+                          lg 以上は1行ずつ（block・折り返さない） */}
                       {para.map((line) => (
-                        <span key={line} className="block whitespace-nowrap">
+                        <span key={line} className="lg:block lg:whitespace-nowrap">
                           {line}
                         </span>
                       ))}
