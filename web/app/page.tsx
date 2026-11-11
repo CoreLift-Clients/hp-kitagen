@@ -235,7 +235,7 @@ export default async function Home() {
             lg の縦書きは 1024px の画面で横幅が約 924px（使える幅は約 943px）。
             xl の縦書きは横幅が約 1081px（使える幅は 1088px）。どちらも余裕が少ない。
             文章を足して行や段落が増えたら、ここの計算を見直すこと */}
-      <section className="section-screen py-24 md:py-28 section-light story-glass">
+      <section className="section-screen py-24 md:py-16 section-light story-glass">
         <SectionInner>
           <div>
             <p className="text-[10px] tracking-[0.5em] text-accent/80 text-center">
@@ -281,7 +281,7 @@ export default async function Home() {
 
       {/* ── ④ こだわりの料理（画像左・テキスト右） ─────────────
           md 未満：写真 → FOOD → 見出し → 文章 → ボタン。スマホの写真は幅いっぱい */}
-      <section className="section-screen py-24 md:py-28 section-warm">
+      <section className="section-screen py-24 md:py-16 section-warm">
         <SectionInner>
           <div>
             {/* 写真=7 / テキスト=5：PCでは写真が左・大きく、テキストが右 */}
@@ -336,7 +336,7 @@ export default async function Home() {
           GALLERY_ITEMS に追記すると表示される（フォルダ方式）。
           写真が1枚も無い（配列が空）間は、セクションごと非表示にする。 */}
       {GALLERY_ITEMS.length > 0 && (
-        <section className="section-screen py-24 md:py-28 section-deep">
+        <section className="section-screen py-24 md:py-16 section-deep">
           <SectionInner>
             <div>
               <div className={`mb-10 ${CENTER_PC}`}>
@@ -365,7 +365,7 @@ export default async function Home() {
           md 未満：写真 → SPACE → 見出し → 文章 → ボタン（写真を order-first で先に出す）。
           スマホの写真は幅いっぱい。
           背景は section-light（GALLERY が無いときも、すぐ上の FOOD（section-warm）と色が分かれる） */}
-      <section className="section-screen py-24 md:py-28 section-light">
+      <section className="section-screen py-24 md:py-16 section-light">
         <SectionInner>
           <div>
             {/* 写真=7 / テキスト=5：写真を大きく、テキストは読みやすい幅に保つ */}
@@ -429,7 +429,7 @@ export default async function Home() {
           囲みは横の真ん中（mx-auto）。囲みの中の文字は lg より狭い画面は左揃え、lg 以上は真ん中
           （電話のボタンは囲みの幅いっぱいのまま）。
           下の注意書き（ご予約時に〜）は小さく薄い色のまま。 */}
-      <section id="group-reservation" className="section-screen py-20 md:py-24 section-warm scroll-mt-24">
+      <section id="group-reservation" className="section-screen py-20 md:py-16 section-warm scroll-mt-24">
         <SectionInner>
           <div>
             <div className={`rounded-xl border border-border bg-background/70 p-7 sm:p-8 max-w-xl mx-auto ${CENTER_PC}`}>
@@ -474,14 +474,15 @@ export default async function Home() {
           最新情報・急な営業の変更は Instagram で発信している。URL は lib/contact.ts。
           お知らせの一覧は /news のページに残している。
           ・lg 以上 … 左に INSTAGRAM、右に OWNER を左右に並べ、間に細い区切りの線。
+            線は divide-x ではなく ::before で描き、欄の中身の上下いっぱい（高いほうの中身に合わせる）に伸ばす。
             それぞれの中身は横の真ん中にそろえる（本文の改行の位置は同じまま、各行を真ん中に）
           ・lg より狭い画面 … 上に INSTAGRAM、下に OWNER。左揃え
             （左の端をほかの欄とそろえるため、幅は SectionInner の標準 max-w-6xl）
           ・背景は section-light。上の PARTY & GROUP（section-warm）とも、
             下のフッター（card-bg ＝ section-warm と同じ色）とも色が分かれる */}
-      <section className="section-screen py-24 md:py-28 section-light">
+      <section className="section-screen py-24 md:py-16 section-light">
         <SectionInner>
-          <div className="grid grid-cols-1 lg:grid-cols-2 items-center gap-y-20 lg:gap-y-0 lg:divide-x lg:divide-border">
+          <div className="relative grid grid-cols-1 lg:grid-cols-2 items-center gap-y-20 lg:gap-y-0 lg:before:absolute lg:before:inset-y-0 lg:before:left-1/2 lg:before:w-px lg:before:bg-border">
             <div className={`lg:px-12 ${CENTER_PC}`}>
               <p className="text-[10px] tracking-[0.5em] text-accent/70 mb-2">
                 INSTAGRAM
