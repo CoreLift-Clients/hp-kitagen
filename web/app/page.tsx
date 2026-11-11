@@ -51,12 +51,14 @@ export default async function Home() {
           └──────────────────────────────────────────────────────────┘ */}
       {/* 「幕」の動き：ヒーローは固定ヘッダー（h-16）のすぐ下（top-16）に止まり、
           下の内容（下の relative z-10 の囲み）がその上にかぶさって流れてくる。
-          sticky が効くよう、祖先（このページの div・main・body）に overflow を付けないこと。 */}
-      <section className="sticky top-16 z-0 h-[62vh] md:h-auto md:min-h-[82vh] flex items-center justify-center overflow-hidden bg-foreground">
+          sticky が効くよう、祖先（このページの div・main・body）に overflow を付けないこと。
+          高さは hero-full（globals.css）：ヘッダーの下から画面のいちばん下まで（100svh − 4rem）。
+          スマホ用の写真は横長で左右が大きく切れるため、入り口と看板が真ん中に来る位置（横 51%）にしている。 */}
+      <section className="hero-full sticky top-16 z-0 flex items-center justify-center overflow-hidden bg-foreground">
         <HeroImage
           srcSp={SITE_IMAGES.hero.sp}
           srcPc={SITE_IMAGES.hero.pc}
-          positionSp="center 42%"
+          positionSp="51% 50%"
           positionPc="center 40%"
         />
 
@@ -86,6 +88,17 @@ export default async function Home() {
           <p className="text-[15px] sm:text-lg md:text-xl text-white/85 tracking-wide hero-animate-delay-2 text-shadow">
             ふらっと寄って、ちゃんとうまい。
           </p>
+        </div>
+
+        {/* 下に続きがある目印（飾り。動かさない・読み上げない）。
+            高さを svh で決めているので、スマホのブラウザの下のバーが出ていても隠れない。
+            画面の高さが低いとき（横向きのスマホなど）は店名と重なるので出さない。 */}
+        <div
+          aria-hidden="true"
+          className="absolute left-1/2 -translate-x-1/2 bottom-[calc(1.25rem+env(safe-area-inset-bottom))] z-10 flex flex-col items-center gap-2 [@media(max-height:480px)]:hidden"
+        >
+          <span className="text-[10px] tracking-[0.4em] pl-[0.4em] text-white/70 text-shadow">SCROLL</span>
+          <span className="block w-px h-10 bg-white/40" />
         </div>
       </section>
 

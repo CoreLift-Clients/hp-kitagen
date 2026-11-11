@@ -79,6 +79,21 @@ html {
   animation: heroFadeUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.5s both;
 }
 
+/* ─── トップのヒーローの高さ ───
+   固定ヘッダー（h-16 = 4rem）の下から画面のいちばん下まで。
+   svh（アドレスバーが出ているときの画面の高さ）で決め、バーの出し入れで高さが変わらないようにする。
+   svh が効かないブラウザ向けに、vh の指定を先に置く。
+   （同じ所に2つ並べると、ビルドの CSS 圧縮で vh の方が消されるため、@supports で分けている） */
+.hero-full {
+  height: calc(100vh - 4rem);
+}
+
+@supports (height: 100svh) {
+  .hero-full {
+    height: calc(100svh - 4rem);
+  }
+}
+
 /* ─── Button lift ─── */
 
 .btn-lift {

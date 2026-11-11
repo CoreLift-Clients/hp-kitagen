@@ -31,8 +31,7 @@ export default function HeroImage({
 
   return (
     <div
-      // scale-[1.15] はパララックスの名残。外すと写真の切り取り（見え方）が変わるため残している。
-      className="absolute inset-0 scale-[1.15]"
+      className="absolute inset-0"
       aria-hidden="true"
     >
       {/* ── フォールバック背景 ─────────────────────────────
