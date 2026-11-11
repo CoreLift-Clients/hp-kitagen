@@ -7,6 +7,8 @@ import { GALLERY_ITEMS } from "./lib/gallery";
 import HeroImage from "./components/HeroImage";
 import PhotoStrip from "./components/PhotoStrip";
 import SectionInner from "./components/SectionInner";
+import SeiroIllustration from "./components/SeiroIllustration";
+import SeiroPlayOnView from "./components/SeiroPlayOnView";
 import { PHONE, INSTAGRAM_URL } from "./lib/contact";
 import { STORY } from "./content/story";
 import { getSpecialties, type DisplaySpecialty } from "./content";
@@ -274,6 +276,44 @@ export default async function Home() {
                   ))}
                 </div>
               </div>
+            </div>
+          </div>
+        </SectionInner>
+      </section>
+
+      {/* ── せいろ（自家製しゅうまい）の場面 ─────────────────────
+          写真の代わりに、スクロールに合わせて動く線画で名物を見せる（試作）。
+          ・絵は components/SeiroIllustration.tsx、動きは globals.css の「せいろの場面」
+          ・「最低1画面」の決まり（section-screen）は当てない。中身に合わせた高さで、上下にゆったり余白をとる
+          ・md 以上：左に絵、右に縦書きの文。md より狭い画面：上に絵、下に縦書きの文を真ん中に
+          ・絵の大きさ：md 以上 幅 400px、スマホ 画面の幅の 70%
+          ・背景は section-deep（上の OUR STORY の section-light とも、下の FOOD の section-warm とも分かれる）。
+            背景の色を変えるときは、globals.css の --seiro-paper（ふたの塗り）も同じ色にすること */}
+      <section className="py-28 md:py-40 section-deep">
+        <SectionInner>
+          <div className="flex flex-col md:flex-row items-center justify-center gap-14 md:gap-20 lg:gap-24">
+            <SeiroPlayOnView className="shrink-0">
+              <SeiroIllustration className="block w-[70vw] md:w-[400px] h-auto text-foreground" />
+            </SeiroPlayOnView>
+
+            <div className="flex flex-col items-center">
+              {/* 縦書き。右から左へ読み、見出しが右端。高さは見出しの 11 字分で決まる */}
+              <div className="font-serif [writing-mode:vertical-rl] text-foreground">
+                <h2 className="text-[1.75rem] md:text-[2rem] font-bold leading-[1.6] tracking-[0.16em] whitespace-nowrap">
+                  自家製の、しゅうまい。
+                </h2>
+                <p className="[margin-block-start:1.75rem] md:[margin-block-start:2.25rem] text-[17px] md:text-[18px] font-medium leading-[2] tracking-[0.14em] [padding-inline-start:2.5em]">
+                  <span className="block whitespace-nowrap">蒸したての</span>
+                  <span className="block whitespace-nowrap">しゅうまいを肴に、</span>
+                  <span className="block whitespace-nowrap">まずは一杯。</span>
+                </p>
+              </div>
+              <Link
+                href="/menu"
+                className="mt-10 text-sm tracking-wider text-accent hover:text-accent-dark underline underline-offset-4 decoration-accent/40 transition-colors duration-200"
+              >
+                お品書きを見る →
+              </Link>
             </div>
           </div>
         </SectionInner>

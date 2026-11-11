@@ -239,3 +239,111 @@ html {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* ─── トップ「せいろ」の場面（スクロールで動く線画） ─────────────
+   絵は components/SeiroIllustration.tsx、囲みは components/SeiroPlayOnView.tsx。
+   ・何も動かさないときの形（このすぐ下の指定）が「動き終わった絵」：ふたが開き、湯気が立ち、しゅうまいが見える。
+     prefers-reduced-motion: reduce のときと、JavaScript が動かないときは、この形のまま止まって見える
+   ・動きは「動く前 → 動き終わり」の keyframes を、
+     1) scroll-driven animations が使えるブラウザ … スクロールの位置で進める（下に進む・上で巻き戻る）
+     2) 使えないブラウザ … 場面が画面に入ったとき1回だけ、時間で進める（data-seiro="play"）
+   ・動かすのは transform・opacity・stroke-dashoffset だけ
+   ・--seiro-paper … ふたの塗り（後ろの線を隠す）。欄の背景（section-deep）と同じ色にする */
+.seiro-scene {
+  --seiro-paper: #EBE1D3;
+  /* ふたの開き具合（右下を支点に、持ち上げて左を上げる） */
+  --seiro-lid-open: translateY(-44px) rotate(8deg);
+}
+
+/* 線の太さ。絵の幅が 400px（viewBox と同じ）のとき 2.6px・2.1px。
+   スマホでは絵が画面の幅の 70% に縮むので、その分だけ太くして 2〜2.5px くらいに保つ */
+.seiro-svg { --seiro-k: 1; }
+@media (max-width: 767px) {
+  .seiro-svg { --seiro-k: 1.45; }
+}
+.seiro-line { stroke-width: calc(2.6px * var(--seiro-k)); }
+.seiro-fine { stroke-width: calc(2.1px * var(--seiro-k)); }
+.seiro-lid-fill { fill: var(--seiro-paper); }
+.seiro-accent { fill: var(--accent); }
+
+.seiro-lid {
+  transform-box: fill-box;
+  transform-origin: 100% 100%;
+  transform: var(--seiro-lid-open);
+}
+.seiro-steam-line {
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 0;
+}
+.seiro-sway {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+@keyframes seiro-lid-open {
+  from { transform: none; }
+  to   { transform: var(--seiro-lid-open); }
+}
+@keyframes seiro-steam-draw {
+  from { stroke-dashoffset: 1; opacity: 0; }
+  10%  { opacity: 1; }
+  to   { stroke-dashoffset: 0; opacity: 1; }
+}
+@keyframes seiro-shumai-show {
+  from { opacity: 0; transform: translateY(5px); }
+  to   { opacity: 1; transform: none; }
+}
+/* 湯気の揺れ（時間で、ずっとゆっくり。スクロールとは別） */
+@keyframes seiro-sway {
+  from { transform: translateX(-2.5px) rotate(-1.6deg); }
+  to   { transform: translateX(2.5px) rotate(1.6deg); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .seiro-sway { animation: seiro-sway 4.8s ease-in-out infinite alternate; }
+  .seiro-sway-2 { animation-duration: 5.6s; animation-delay: -1.8s; }
+  .seiro-sway-3 { animation-duration: 4.2s; animation-delay: -3.1s; }
+  .seiro-sway-4 { animation-duration: 6.1s; animation-delay: -0.9s; }
+
+  /* 1) スクロールの位置で進める。
+     場面の絵（.seiro-scene）が画面の下から入り始めたとき（cover 0%）から、
+     絵の真ん中が画面の真ん中に来たとき（cover 50%）までに、ふた → 湯気 → しゅうまいの順に進む */
+  @supports (animation-timeline: view()) {
+    .seiro-scene { view-timeline: --seiro block; }
+    .seiro-lid {
+      animation: seiro-lid-open linear both;
+      animation-timeline: --seiro;
+      animation-range: cover 4% cover 22%;
+    }
+    .seiro-steam-line {
+      animation: seiro-steam-draw linear both;
+      animation-timeline: --seiro;
+      animation-range: cover 18% cover 38%;
+    }
+    .seiro-steam-2 { animation-range: cover 21% cover 41%; }
+    .seiro-steam-3 { animation-range: cover 24% cover 44%; }
+    .seiro-steam-4 { animation-range: cover 27% cover 46%; }
+    .seiro-shumai {
+      animation: seiro-shumai-show linear both;
+      animation-timeline: --seiro;
+      animation-range: cover 36% cover 50%;
+    }
+  }
+
+  /* 2) 使えないブラウザ：画面に入ったとき1回だけ、時間で同じ順に進める（data-seiro は SeiroPlayOnView が付ける） */
+  .seiro-scene[data-seiro="wait"] .seiro-lid { transform: none; }
+  .seiro-scene[data-seiro="wait"] .seiro-steam-line { stroke-dashoffset: 1; opacity: 0; }
+  .seiro-scene[data-seiro="wait"] .seiro-shumai { opacity: 0; }
+  .seiro-scene[data-seiro="play"] .seiro-lid {
+    animation: seiro-lid-open 0.9s cubic-bezier(0.33, 1, 0.68, 1) both;
+  }
+  .seiro-scene[data-seiro="play"] .seiro-steam-line {
+    animation: seiro-steam-draw 1.4s ease-out 0.6s both;
+  }
+  .seiro-scene[data-seiro="play"] .seiro-steam-2 { animation-delay: 0.75s; }
+  .seiro-scene[data-seiro="play"] .seiro-steam-3 { animation-delay: 0.9s; }
+  .seiro-scene[data-seiro="play"] .seiro-steam-4 { animation-delay: 1.05s; }
+  .seiro-scene[data-seiro="play"] .seiro-shumai {
+    animation: seiro-shumai-show 0.8s ease-out 1.5s both;
+  }
+}
