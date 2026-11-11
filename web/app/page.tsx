@@ -1,3 +1,4 @@
+import { Fragment, type ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Phone, ExternalLink } from "lucide-react";
@@ -17,9 +18,11 @@ import "@fontsource/noto-serif-jp/700.css";
 
 // 左右分割セクションの画像コンポーネント
 // public/ に画像を配置すれば自動で表示されます
+// スマホ（sm より狭い画面）では画面の幅いっぱいに出すので、角の丸みと枠を付けない
+// （左右の余白を消すのは呼び出し側の -mx-6 sm:mx-0）。
 function SplitImage({ src, alt }: { src: string; alt: string }) {
   return (
-    <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-card-bg border border-border/40">
+    <div className="relative aspect-[4/3] overflow-hidden bg-card-bg sm:rounded-lg sm:border sm:border-border/40">
       <Image
         src={src}
         alt={alt}
@@ -30,6 +33,45 @@ function SplitImage({ src, alt }: { src: string; alt: string }) {
     </div>
   );
 }
+
+// ─── 明朝体の文章（OUR STORY 以外の欄） ───
+// ・パソコン（sm 以上）… 配列の1つが1行。今までの <br className="hidden sm:block" /> と同じ位置で改行する
+// ・スマホ（sm より狭い）… 行の区切りは使わず、「。」で終わるところごとに段落を分け、
+//   段落の間を 1.75 字分あける。段落の中は自然に折り返す（word-break: auto-phrase は呼び出し側の p）
+// ・リンクなど文字列でない行は { node } で渡す。その行は「。」で終わる1文として扱う
+type ProseLine = string | { node: ReactNode };
+
+// スマホでだけ出す、段落の間のあき
+function MobileParaBreak() {
+  return <span aria-hidden="true" className="block h-[1.75em] sm:hidden" />;
+}
+
+function proseLines(lines: readonly ProseLine[]): ReactNode[] {
+  const out: ReactNode[] = [];
+  lines.forEach((line, i) => {
+    const isLastLine = i === lines.length - 1;
+    if (typeof line === "string") {
+      const parts = line.split(/(?<=。)/);
+      parts.forEach((part, j) => {
+        out.push(<Fragment key={`${i}-${j}`}>{part}</Fragment>);
+        const isEnd = isLastLine && j === parts.length - 1;
+        if (part.endsWith("。") && !isEnd) {
+          out.push(<MobileParaBreak key={`${i}-${j}-p`} />);
+        }
+      });
+    } else {
+      out.push(<Fragment key={i}>{line.node}</Fragment>);
+      if (!isLastLine) out.push(<MobileParaBreak key={`${i}-p`} />);
+    }
+    if (!isLastLine) out.push(<br key={`${i}-br`} className="hidden sm:block" />);
+  });
+  return out;
+}
+
+// 明朝体の見出し・本文に付けるクラス（太さは読み込んでいる 700・500 に合わせる）。
+// word-break: auto-phrase が効かないブラウザでは普通の折り返しになる
+const SERIF_HEADING = "font-serif font-bold [word-break:auto-phrase]";
+const SERIF_BODY = "font-serif font-medium [word-break:auto-phrase]";
 
 // セクション見出しの装飾ライン
 function SectionDivider() {
@@ -167,45 +209,41 @@ export default async function Home() {
         </SectionInner>
       </section>
 
-      {/* ── ④ こだわりの料理（画像左・テキスト右） ─────────── */}
+      {/* ── ④ こだわりの料理（画像左・テキスト右） ─────────────
+          md 未満：写真 → FOOD → 見出し → 文章 → ボタン。スマホの写真は幅いっぱい */}
       <section className="py-24 md:py-28 section-warm">
         <SectionInner>
           <div>
             {/* 写真=7 / テキスト=5：PCでは写真が左・大きく、テキストが右 */}
             <div className="grid grid-cols-1 md:grid-cols-[minmax(0,7fr)_minmax(0,5fr)] gap-12 md:gap-20 items-center">
-              {/* 画像（スマホでは下に、PCでは左に） */}
+              {/* 画像（スマホでは上に、PCでは左に） */}
               {/* public/food-main.jpg を配置してください */}
-              <div className="order-2 md:order-1">
+              <div className="-mx-6 sm:mx-0">
                 <SplitImage src={SITE_IMAGES.food.main} alt="きたげんの料理" />
               </div>
 
-              {/* テキスト（スマホでは上に、PCでは右に） */}
-              <div className="order-1 md:order-2">
+              {/* テキスト（スマホでは下に、PCでは右に） */}
+              <div>
                 <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-3">
                   FOOD
                 </p>
-                <h2 className="text-3xl md:text-4xl font-bold leading-snug">
+                <h2 className={`text-3xl md:text-4xl leading-snug ${SERIF_HEADING}`}>
                   手作りにこだわった、
                   <br />
                   うまい一品。
                 </h2>
                 <SectionDivider />
-                <p className="text-base md:text-lg text-muted leading-[2.1] md:leading-[2.2] mb-8">
-                  きたげんの名物は、自家製のしゅうまいと鉄鍋餃子。
-                  <br className="hidden sm:block" />
-                  手間を惜しまず作る一品は、派手さはないけれど、
-                  <br className="hidden sm:block" />
-                  また食べたくなる味です。蒸したてのしゅうまい、
-                  <br className="hidden sm:block" />
-                  こんがり焼けた餃子を肴に、まずは一杯。
-                  <br className="hidden sm:block" />
-                  からあげ、豚の角煮、串の盛り合わせと、
-                  <br className="hidden sm:block" />
-                  箸もお酒も進む料理を取り揃えています。
-                  <br className="hidden sm:block" />
-                  飾らないけれど、&ldquo;ちゃんとうまい&rdquo;。
-                  <br className="hidden sm:block" />
-                  それがきたげんの一品です。
+                <p className={`text-base md:text-lg text-muted leading-[2.1] md:leading-[2.2] mb-8 ${SERIF_BODY}`}>
+                  {proseLines([
+                    "きたげんの名物は、自家製のしゅうまいと鉄鍋餃子。",
+                    "手間を惜しまず作る一品は、派手さはないけれど、",
+                    "また食べたくなる味です。蒸したてのしゅうまい、",
+                    "こんがり焼けた餃子を肴に、まずは一杯。",
+                    "からあげ、豚の角煮、串の盛り合わせと、",
+                    "箸もお酒も進む料理を取り揃えています。",
+                    "飾らないけれど、“ちゃんとうまい”。",
+                    "それがきたげんの一品です。",
+                  ])}
                 </p>
                 <Link
                   href="/menu"
@@ -232,13 +270,13 @@ export default async function Home() {
                 <p className="text-[10px] tracking-[0.45em] text-accent/80 mb-2">
                   GALLERY
                 </p>
-                <h2 className="text-3xl md:text-4xl font-bold">きたげんの料理</h2>
+                <h2 className={`text-3xl md:text-4xl ${SERIF_HEADING}`}>きたげんの料理</h2>
                 <div className="flex items-center justify-center gap-3 mt-4">
                   <div className="w-8 h-px bg-accent/50" />
                   <div className="w-1 h-1 rounded-full bg-accent/70" />
                   <div className="w-8 h-px bg-accent/50" />
                 </div>
-                <p className="text-base text-muted mt-4">
+                <p className={`text-base text-muted mt-4 ${SERIF_BODY}`}>
                   定番から季節のひと品まで。
                 </p>
               </div>
@@ -259,13 +297,13 @@ export default async function Home() {
             <p className="text-[10px] tracking-[0.5em] text-accent/70 mb-2">
               INSTAGRAM
             </p>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-wide">最新情報</h2>
+            <h2 className={`text-3xl md:text-4xl tracking-wide ${SERIF_HEADING}`}>最新情報</h2>
             <div className="flex items-center justify-center gap-3 mt-4">
               <div className="w-8 h-px bg-accent/50" />
               <div className="w-1 h-1 rounded-full bg-accent/70" />
               <div className="w-8 h-px bg-accent/50" />
             </div>
-            <p className="text-base md:text-lg text-muted leading-[2.1] mt-6 mb-9">
+            <p className={`text-base md:text-lg text-muted leading-[2.1] mt-6 mb-9 ${SERIF_BODY}`}>
               日々の料理や、急な営業の変更は
               <br />
               Instagram でお知らせしています。
@@ -283,7 +321,9 @@ export default async function Home() {
         </SectionInner>
       </section>
 
-      {/* ── ⑦ くつろぎの空間（テキスト左・画像右） ─────────── */}
+      {/* ── ⑦ くつろぎの空間（テキスト左・画像右） ─────────────
+          md 未満：写真 → SPACE → 見出し → 文章 → ボタン（写真を order-first で先に出す）。
+          スマホの写真は幅いっぱい */}
       <section className="py-24 md:py-28 section-warm">
         <SectionInner>
           <div>
@@ -294,35 +334,33 @@ export default async function Home() {
                 <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-3">
                   SPACE
                 </p>
-                <h2 className="text-3xl md:text-4xl font-bold leading-snug">
+                <h2 className={`text-3xl md:text-4xl leading-snug ${SERIF_HEADING}`}>
                   肩肘張らない、
                   <br />
                   居心地の良い空間。
                 </h2>
                 <SectionDivider />
-                <p className="text-base md:text-lg text-muted leading-[2.1] md:leading-[2.2] mb-8">
-                  気の向くままに使える、そんな居心地を大事にしています。
-                  <br className="hidden sm:block" />
-                  カウンターは、お一人でも仕事帰りでも、
-                  <br className="hidden sm:block" />
-                  ふらっと立ち寄って一杯やるのにちょうどいい席。
-                  <br className="hidden sm:block" />
-                  2階には座敷があり、気の合う仲間との飲み会や、
-                  <br className="hidden sm:block" />
-                  ご家族での食事にぴったりです。
-                  <br className="hidden sm:block" />
-                  ひとりでも、大勢でも、それぞれの居心地がある一軒。
-                  <br className="hidden sm:block" />
-                  <Link
-                    href="/#group-reservation"
-                    className="text-accent hover:text-accent-dark underline underline-offset-4 decoration-accent/40 transition-colors duration-200"
-                  >
-                    ご宴会や団体でのご利用は、貸切でのご相談も承っています。
-                  </Link>
-                  <br className="hidden sm:block" />
-                  その日の気分や人数に合わせて、
-                  <br className="hidden sm:block" />
-                  思い思いにお過ごしください。
+                <p className={`text-base md:text-lg text-muted leading-[2.1] md:leading-[2.2] mb-8 ${SERIF_BODY}`}>
+                  {proseLines([
+                    "気の向くままに使える、そんな居心地を大事にしています。",
+                    "カウンターは、お一人でも仕事帰りでも、",
+                    "ふらっと立ち寄って一杯やるのにちょうどいい席。",
+                    "2階には座敷があり、気の合う仲間との飲み会や、",
+                    "ご家族での食事にぴったりです。",
+                    "ひとりでも、大勢でも、それぞれの居心地がある一軒。",
+                    {
+                      node: (
+                        <Link
+                          href="/#group-reservation"
+                          className="text-accent hover:text-accent-dark underline underline-offset-4 decoration-accent/40 transition-colors duration-200"
+                        >
+                          ご宴会や団体でのご利用は、貸切でのご相談も承っています。
+                        </Link>
+                      ),
+                    },
+                    "その日の気分や人数に合わせて、",
+                    "思い思いにお過ごしください。",
+                  ])}
                 </p>
                 <Link
                   href="/info"
@@ -332,11 +370,13 @@ export default async function Home() {
                 </Link>
               </div>
 
-              {/* 画像（public/counter.jpg を配置してください） */}
-              <SplitImage
-                src={SITE_IMAGES.space.counter}
-                alt="きたげんのカウンター席"
-              />
+              {/* 画像（public/counter.jpg を配置してください）。md 未満では文章より先に出す */}
+              <div className="order-first md:order-none -mx-6 sm:mx-0">
+                <SplitImage
+                  src={SITE_IMAGES.space.counter}
+                  alt="きたげんのカウンター席"
+                />
+              </div>
             </div>
           </div>
         </SectionInner>
@@ -352,10 +392,10 @@ export default async function Home() {
               <p className="text-[9px] tracking-[0.55em] text-accent/70 font-medium mb-3">
                 PARTY &amp; GROUP
               </p>
-              <p className="text-lg font-bold text-foreground mb-1.5">
+              <p className={`text-lg text-foreground mb-1.5 ${SERIF_HEADING}`}>
                 ご宴会・団体でのご利用は
               </p>
-              <p className="text-sm text-muted mb-7 leading-relaxed">
+              <p className={`text-sm text-muted mb-7 leading-relaxed ${SERIF_BODY}`}>
                 お席をご用意しますので、お電話ください。
               </p>
 
@@ -375,10 +415,11 @@ export default async function Home() {
                 <span className="tabular-nums">{PHONE}</span>
               </a>
 
-              <p className="text-sm text-muted/90 mt-5 leading-relaxed">
-                ご予約時に「ホームページを見た」とお伝えください。
-                <br />
-                営業時間外（昼間・開店前）でも承ります。
+              <p className={`text-sm text-muted/90 mt-5 leading-relaxed ${SERIF_BODY}`}>
+                {proseLines([
+                  "ご予約時に「ホームページを見た」とお伝えください。",
+                  "営業時間外（昼間・開店前）でも承ります。",
+                ])}
               </p>
             </div>
           </div>
@@ -392,7 +433,7 @@ export default async function Home() {
             <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-3">
               OWNER
             </p>
-            <p className="text-base text-muted mb-5">
+            <p className={`text-base text-muted mb-5 ${SERIF_BODY}`}>
               きたげんの店主について。
             </p>
             <Link
