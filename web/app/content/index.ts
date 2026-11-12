@@ -13,8 +13,9 @@ import { DEFAULT_SITE_IMAGES } from "../lib/site-image-defaults";
 import { MENUS, type MenuDisplay } from "./menus";
 import { NEWS } from "./news";
 import { SPECIALTIES, displayableSpecialties, type DisplaySpecialty } from "./specialties";
+import { SPECIALTY_CARD_PRICES, type SpecialtyCardId } from "./specialty-prices";
 
-export type { MenuDisplay, DisplaySpecialty };
+export type { MenuDisplay, DisplaySpecialty, SpecialtyCardId };
 
 export interface SiteImages {
   hero:  { sp: string; pc: string };
@@ -46,4 +47,14 @@ export async function getSiteImages(): Promise<SiteImages> {
 /** トップ ④FOOD の名物の一覧（写真と値段がそろった品だけ）。 */
 export async function getSpecialties(): Promise<DisplaySpecialty[]> {
   return displayableSpecialties(SPECIALTIES).map((item) => ({ ...item }));
+}
+
+/** トップの「名物」の欄のカードの値段（税込み・円）。決まっていない品は undefined（値段の行を出さない） */
+export async function getSpecialtyCardPrices(): Promise<Record<SpecialtyCardId, number | undefined>> {
+  const valid = (n: number | undefined) => (typeof n === "number" && Number.isFinite(n) ? n : undefined);
+  return {
+    shumai: valid(SPECIALTY_CARD_PRICES.shumai),
+    gyoza: valid(SPECIALTY_CARD_PRICES.gyoza),
+    beer: valid(SPECIALTY_CARD_PRICES.beer),
+  };
 }

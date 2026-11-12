@@ -10,6 +10,7 @@ import ZashikiIllustration from "./components/scenes/ZashikiIllustration";
 import EntranceIllustration from "./components/scenes/EntranceIllustration";
 import { PHONE, INSTAGRAM_URL } from "./lib/contact";
 import { STORY } from "./content/story";
+import { getSpecialtyCardPrices } from "./content";
 
 // 明朝体（Noto Serif JP）。このページでだけ読み込む。
 // 太さは使うものだけ：OUR STORY の本文と場面の文 500、見出し 700。字の並び（読み込めないときの代わりの明朝体）は
@@ -21,7 +22,7 @@ import "@fontsource/noto-serif-jp/700.css";
 // ヒーロー → OUR STORY → 名物（しゅうまい・鉄鍋餃子・生ビール）→ 席 → 宴 → 結び →（フッター）
 // トップは「場面をめくるように淡々と進む」入口。OUR STORY のあとの場面は components/scenes/Scene.tsx の共通の部品で、
 // 「動く線画・縦書きの短い見出し・2〜3行の短い文・詳しいページへの入口」の4つだけにする。詳しい説明は遷移先のページに任せる。
-// 名物の欄は components/scenes/Specialties.tsx（3品を斜めに並べる）。
+// 名物の欄は components/scenes/Specialties.tsx（3品を和紙のカードに載せ、斜めに少しずつ重ねる）。
 // ・背景は OUR STORY の section-light から、light → deep → warm の順に回し、隣どうしで色を変える：
 //   OUR STORY light → 名物 deep → 席 warm → 宴 light → 結び deep →（フッター card-bg ＝ warm と同じ色）
 // ・席・宴・結びの並びは「左に絵、右に縦書き」と、その左右を入れ替えた形（reverse）を交互にする
@@ -34,6 +35,7 @@ const CALL_BUTTON_CLASS =
 
 export default async function Home() {
   const SITE_IMAGES = await getSiteImages();
+  const specialtyPrices = await getSpecialtyCardPrices();
 
   // 場面の絵の大きさ：md 以上 幅 400px、スマホ 画面の幅の 70%
   const ART = "block w-[70vw] md:w-[400px] h-auto text-foreground";
@@ -174,8 +176,9 @@ export default async function Home() {
           部品は components/scenes/Scene.tsx、絵は components/scenes/*Illustration.tsx、線と動きは scenes.css。
           文章を変えるときは、縦書きが 320px の画面からはみ出さないよう Scene.tsx の計算を見ること */}
 
-      {/* 名物（しゅうまい・鉄鍋餃子・生ビールを斜めに並べる1つの欄）。中身と置き方は components/scenes/Specialties.tsx */}
-      <Specialties tone="deep" />
+      {/* 名物（しゅうまい・鉄鍋餃子・生ビールを和紙のカードに載せ、斜めに少しずつ重ねる1つの欄）。
+          中身と置き方は components/scenes/Specialties.tsx、値段は content/specialty-prices.ts */}
+      <Specialties tone="deep" prices={specialtyPrices} />
 
       {/* 席（左に絵） */}
       <Scene
