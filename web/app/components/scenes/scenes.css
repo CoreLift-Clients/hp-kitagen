@@ -99,6 +99,15 @@
   from { transform: none; }
   to   { transform: var(--seiro-lid-open); }
 }
+/* 「営業中」の札が一度だけ小さく揺れて止まる（上の釘を支点に。--o: 50% 0%）。動く前も動き終わりも、まっすぐ下がった形 */
+@keyframes entrance-swing {
+  from { transform: none; }
+  25%  { transform: rotate(7deg); }
+  50%  { transform: rotate(-4.5deg); }
+  72%  { transform: rotate(2deg); }
+  88%  { transform: rotate(-0.6deg); }
+  to   { transform: none; }
+}
 /* 湯気の揺れ（時間で、ずっとゆっくり。スクロールとは別） */
 @keyframes scene-sway {
   from { transform: translateX(-2.5px) rotate(-1.6deg); }
