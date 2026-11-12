@@ -63,17 +63,6 @@
   transform: var(--seiro-lid-open);
 }
 
-/* 店主のお辞儀（動き終わりはお辞儀の姿。支点は、g の中の見えない四角で g のまん中に合わせた腰）。
-   前髪（動き終わりは少し前に垂れた形。支点は前髪の根元） */
-.owner-bow {
-  --owner-bow: rotate(35deg);
-  transform: var(--owner-bow);
-}
-.owner-hair {
-  --owner-hair: rotate(-9deg);
-  transform: var(--owner-hair);
-}
-
 /* 店主紹介のページの手元の絵（幅は 画面の幅の 70%、広い画面では 390px まで）。
    絵の幅に合わせて太さを3段に分け、線を 2〜3px に保つ（320px の画面で約 2.1px、390px の絵で約 2.5px） */
 .scene-svg.owner-hands-svg { --scene-k: 1; }
@@ -119,15 +108,6 @@
 @keyframes seiro-lid-open {
   from { transform: none; }
   to   { transform: var(--seiro-lid-open); }
-}
-/* 店主のお辞儀（腰を支点に上体が前へ倒れる）と、前髪が少し前に垂れる動き（OwnerBowIllustration.tsx） */
-@keyframes owner-bow {
-  from { transform: none; }
-  to   { transform: var(--owner-bow); }
-}
-@keyframes owner-hair {
-  from { transform: none; }
-  to   { transform: var(--owner-hair); }
 }
 /* しゅうまいの皮が、ひだを寄せるようにすぼまる（下を支点に、広く平たい形から。OwnerHandsIllustration.tsx） */
 @keyframes owner-gather {

@@ -57,36 +57,74 @@ export default function Scene({
   );
 }
 
+// ─── 結びの場面（絵なし、文字だけで締める） ───
+// トップのいちばん最後の場面。絵は置かず、縦書きの見出しと文、その下の入口を、欄の横の真ん中にそろえる。
+// ・絵がない分、見出しと文を一段大きくする（SceneText の large）
+// ・上下の余白・背景は Scene と同じ（py-28 md:py-40 ＝ スマホ 112px・md 以上 160px、tone で背景）
+// ・縦書きの横幅：320px の画面では 見出し1列（36px × 1.6 ≒ 58px）＋あき（28px）＋文1行（18px × 2 ＝ 36px）で約 122px。
+//   左右の余白を除いた 272px に収まる。文を増やすときは 1行 36px ずつ足して見直すこと
+export function TextOnlyScene({
+  heading,
+  lines,
+  action,
+  tone,
+  id,
+}: {
+  heading: string;
+  lines: readonly string[];
+  action: ReactNode;
+  tone: SceneTone;
+  id?: string;
+}) {
+  return (
+    <section id={id} className={`scene py-28 md:py-40 section-${tone}`}>
+      <SectionInner>
+        <div className="flex flex-col items-center text-center">
+          <SceneText heading={heading} lines={lines} large />
+          <div className="mt-10 flex justify-center">{action}</div>
+        </div>
+      </SectionInner>
+    </section>
+  );
+}
+
 // ─── 縦書きの見出しと文 ───
 // 右から左へ読み、見出しが右端。高さは見出しの字数で決まる。
 // ・見出しは明朝体 700、文は明朝体 500（配列の1つが1行）
 // ・level … 見出しの階層（場面は h2。名物の欄の各品は、欄の見出しの下なので h3）
 // ・compact … 名物の欄の各品用。lg 以上で字を一段小さくする（絵を小さくした分に合わせる）
+// ・large … 結びの場面（TextOnlyScene）用。絵がない分、字を一段大きくする
+//   （見出し スマホ 36px・md 以上 46px、文 スマホ 18px・md 以上 20px。見出しと文のあきは普段と同じ）
 export function SceneText({
   heading,
   lines,
   level = "h2",
   compact = false,
+  large = false,
 }: {
   heading: string;
   lines: readonly string[];
   level?: "h2" | "h3";
   compact?: boolean;
+  large?: boolean;
 }) {
   const Heading = level;
+  const headingSize = large
+    ? "text-[2.25rem] md:text-[2.875rem]"
+    : `text-[1.75rem] md:text-[2rem] ${compact ? "lg:text-[1.625rem]" : ""}`;
+  const textSize = large
+    ? "text-[18px] md:text-[20px]"
+    : `text-[17px] md:text-[18px] ${compact ? "lg:text-[16px]" : ""}`;
+  const textGap = `[margin-block-start:1.75rem] md:[margin-block-start:2.25rem] ${
+    compact ? "lg:[margin-block-start:1.5rem]" : ""
+  }`;
   return (
     <div className="font-serif [writing-mode:vertical-rl] text-foreground">
-      <Heading
-        className={`text-[1.75rem] font-bold leading-[1.6] tracking-[0.16em] whitespace-nowrap ${
-          `md:text-[2rem] ${compact ? "lg:text-[1.625rem]" : ""}`
-        }`}
-      >
+      <Heading className={`${headingSize} font-bold leading-[1.6] tracking-[0.16em] whitespace-nowrap`}>
         {heading}
       </Heading>
       <p
-        className={`[margin-block-start:1.75rem] text-[17px] font-medium leading-[2] tracking-[0.14em] [padding-inline-start:2.5em] ${
-          `md:[margin-block-start:2.25rem] md:text-[18px] ${compact ? "lg:[margin-block-start:1.5rem] lg:text-[16px]" : ""}`
-        }`}
+        className={`${textGap} ${textSize} font-medium leading-[2] tracking-[0.14em] [padding-inline-start:2.5em]`}
       >
         {lines.map((l) => (
           <span key={l} className="block whitespace-nowrap">

@@ -3,11 +3,10 @@ import { Phone, ExternalLink } from "lucide-react";
 import { getSiteImages } from "./lib/site-images";
 import HeroImage from "./components/HeroImage";
 import SectionInner from "./components/SectionInner";
-import Scene, { SceneLink, SCENE_LINK_CLASS } from "./components/scenes/Scene";
+import Scene, { SceneLink, SCENE_LINK_CLASS, TextOnlyScene } from "./components/scenes/Scene";
 import SeiroIllustration from "./components/scenes/SeiroIllustration";
 import SeatIllustration from "./components/scenes/SeatIllustration";
 import ZashikiIllustration from "./components/scenes/ZashikiIllustration";
-import OwnerBowIllustration from "./components/scenes/OwnerBowIllustration";
 import { PHONE, INSTAGRAM_URL } from "./lib/contact";
 import { STORY } from "./content/story";
 
@@ -25,8 +24,9 @@ import "@fontsource/noto-serif-jp/700.css";
 // （components/scenes/Specialties.tsx）は、「お品書きを見る」の飛び先のディナーメニュー（/menu/dinner）のいちばん上に置いている。
 // ・背景は OUR STORY の section-light から、light → deep → warm の順に回し、隣どうしで色を変える：
 //   OUR STORY light → 名物 deep → 席 warm → 宴 light → 結び deep →（フッター card-bg ＝ warm と同じ色）
-// ・名物・席・宴・結びの並びは「左に絵、右に縦書き」と、その左右を入れ替えた形（reverse）を交互にする：
-//   名物 右に絵（reverse）→ 席 左 → 宴 右（reverse）→ 結び 左
+// ・名物・席・宴の並びは「左に絵、右に縦書き」と、その左右を入れ替えた形（reverse）を交互にする：
+//   名物 右に絵（reverse）→ 席 左 → 宴 右（reverse）
+// ・結びは絵を置かず、文字だけで締める（Scene.tsx の TextOnlyScene。縦書きと入口を横の真ん中に）
 // ・以前トップにあった FOOD・GALLERY・SPACE・PARTY & GROUP・INSTAGRAM と OWNER の欄は
 //   components/home-sections/HomeSections.tsx に残している（トップでは使っていない）
 
@@ -203,15 +203,14 @@ export default async function Home() {
         }
       />
 
-      {/* 結び（左に絵）。入口は横に3つ（md より狭い画面は縦に）。
+      {/* 結び（絵なし、文字だけ。縦書きと入口を横の真ん中に）。入口は横に3つ（md より狭い画面は縦に）。
           背景は section-deep（下のフッター（card-bg ＝ section-warm と同じ色）と分ける） */}
-      <Scene
+      <TextOnlyScene
         tone="deep"
-        art={<OwnerBowIllustration className={ART} />}
         heading="今日も桃谷で、"
         lines={["お待ちしています。"]}
         action={
-          <ul className="flex flex-col md:flex-row items-center gap-5 md:gap-8">
+          <ul className="flex flex-col md:flex-row items-center justify-center gap-5 md:gap-8">
             <li>
               <a
                 href={INSTAGRAM_URL}
