@@ -1,16 +1,22 @@
 // web/app/content/specialty-prices.ts
 //
-// トップの「名物」の欄（しゅうまい・鉄鍋餃子・生ビールの3枚のカード）に出す値段のデータ。
+// トップの「名物」の欄（しゅうまい・鉄鍋餃子・生ビールの3品）に出す、品ごとの「値段」と「こだわりの文」のデータ。
 //
 // ─────────────────────────────────────────────────────────────
 // 【値段の入れ方】
-//   1. 下の SPECIALTY_CARD_PRICES の、その品の行の undefined を、税込みの値段の数字に書きかえる
-//        例: shumai: 580,
+//   1. 下の SPECIALTY_CARDS の、その品の price: undefined を、税込みの値段の数字に書きかえる
+//        例: price: 580,
 //        ・数字だけを書く（「¥」「円」「,」は付けない）
 //        ・表示はカードの下のほうに「¥580（税込）」の形で出る（1,000 円以上は「¥1,200（税込）」）
 //   2. 値段が決まっていない品は undefined のままにする。その品のカードには値段の行ごと出さない
 //
-//   ※ 品の名前・見出し・文は、このファイルではなく components/scenes/Specialties.tsx にある。
+// 【こだわりの文の直し方】
+//   1. 下の SPECIALTY_CARDS の、その品の text: "…" の中の文を書きかえる（前後の " " は消さない）
+//   2. 1つの段落として、カードの横（スマホはカードの下）に横書きで出る。
+//      改行は入れず、1行につなげて書く（行の折り返しは画面の幅に合わせて自動で行う）
+//   3. 品名（「しゅうまい」など）はカードの縦書きの見出しに出ているので、文の頭に繰り返さなくてよい
+//
+//   ※ 品の名前・カードの中の縦書きの見出しと短い文は、このファイルではなく components/scenes/Specialties.tsx にある。
 //   ※ content/specialties.ts（写真つきの名物の一覧）とは別のデータ。
 //     あちらは「写真と値段の両方がそろった品だけを出す」決まりなので、写真のないこのカードには使っていない。
 //     同じ品の値段を変えるときは、両方のファイルをそろえること
@@ -19,9 +25,24 @@
 /** 名物のカードの品（並ぶ順：壱 しゅうまい → 弐 鉄鍋餃子 → 参 生ビール） */
 export type SpecialtyCardId = "shumai" | "gyoza" | "beer";
 
-/** 税込みの値段（円）。決まっていない間は undefined */
-export const SPECIALTY_CARD_PRICES: Record<SpecialtyCardId, number | undefined> = {
-  shumai: undefined,
-  gyoza: undefined,
-  beer: undefined,
+export interface SpecialtyCardContent {
+  /** 税込みの値段（円）。決まっていない間は undefined */
+  price: number | undefined;
+  /** こだわりの文（1つの段落。改行は入れない） */
+  text: string;
+}
+
+export const SPECIALTY_CARDS: Record<SpecialtyCardId, SpecialtyCardContent> = {
+  shumai: {
+    price: undefined,
+    text: "ひとつずつ包んだ自家製のしゅうまいを、せいろでふっくら蒸し上げます。ふたを開けたときの湯気ごと、熱々のうちにどうぞ。まずはこれと、冷えたビールで。",
+  },
+  gyoza: {
+    price: undefined,
+    text: "鉄鍋のまま席までお持ちするので、最後のひとつまで熱々です。底はこんがり、なかはふっくら。焼き色ひとつにも、手間を惜しみません。",
+  },
+  beer: {
+    price: undefined,
+    text: "一日の終わりは、よく冷えた生ビールから。きめ細かな泡を、ジョッキでたっぷりと。名物と合わせて、乾杯をどうぞ。",
+  },
 };

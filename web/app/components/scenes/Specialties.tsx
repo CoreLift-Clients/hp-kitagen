@@ -6,27 +6,30 @@ import SeiroIllustration from "./SeiroIllustration";
 import TeppanIllustration from "./TeppanIllustration";
 import BeerIllustration from "./BeerIllustration";
 import { jitter, smooth, type P } from "./draw";
-import type { SpecialtyCardId } from "../../content";
+import type { SpecialtyCardId, SpecialtyCardContent } from "../../content";
 import { formatTaxIncludedPrice } from "../../content/specialties";
 import "./scenes.css";
 
 // ─── トップの「名物」の欄（しゅうまい・鉄鍋餃子・生ビール） ───
-// 3品をそれぞれ和紙のカード（台紙）に載せ、斜めに少しずつ重ねる。欄の最後に「お品書きを見る →」を1つだけ置く。
+// 1品ずつ、和紙のカード（台紙）と「こだわりの文」を左右に並べ、品ごとに左右を入れ替える（ジグザグ）。
+// カードどうしは重ねない。欄の最後に「お品書きを見る →」を1つだけ、真ん中に置く。
 // ・カードの中身：番号（壱・弐・参。左上の角、明朝体、accent）・線画・縦書きの見出しと文・値段（値段がある品だけ）
 // ・カードの色：section-light（#F7F3EB と同じ和紙の模様）。欄の背景（section-deep）より少し明るい。
 //   絵の中の「後ろの線を隠す塗り」（--scene-paper）もカードの色にする（scenes.css の .scene-card）
 // ・カードのふち：筆ペンで描いたような、少し揺らぎのある四角い線（CardFrame。乱数なし）。影はごく薄く
 // ・湯気・泡などはカードの上のふちから少しはみ出す（絵を -mt で上に出す。カードは overflow を切らない）
-// ・重ね方
-//   - lg 以上：1枚目は左上、2枚目は真ん中、3枚目は右下。あとのカードが上（z-index）。
-//     前のカードの右下の角に、次のカードの左上の角が縦横とも 56px 重なる。
-//     カードの幅は (欄の幅 ＋ 56px × 2) ÷ 3。欄の幅 1088px（xl 以上）で 400px、lg の 1024px の画面（欄の幅 960px）で約 357px。
-//     2枚目・3枚目の左の位置は「(カードの幅 − 56px) × 1・2」
-//   - lg より狭い画面：カードの幅は画面の幅の 85%。縦に並べ、左・右・左に画面の幅の 7% ずらす。上下に 24px 重ねる。
-//     カードを左右の余白（px-6）の外まで使えるよう、並びの囲みは -mx-6 で画面の幅いっぱいにする
-//   - 重なるのはカードの角の余白（左右と下の余白 20〜28px ＋ 文は真ん中寄せ）だけなので、文や値段は隠れない
-// ・「きたげんの名物」の見出し：lg 以上は1枚目のカードのすぐ右上、lg より狭い画面は上の真ん中
-// ・絵の大きさ：カードの幅から左右の余白を引いた幅（lg 以上 約 300〜344px、320px の画面で約 232px）。
+// ・こだわりの文：content/specialty-prices.ts の text。横書きの1つの段落。品名は繰り返さない。
+//   字は OUR STORY の本文と同じ決まり（lg 以上は明朝体 500、lg より狭い画面はゴシック体 400）。
+//   大きさは lg より狭い画面 18px、lg 16px、xl 18px。文の箱の幅は lg 380px・xl 400px（1行 約22〜23字）
+// ・並べ方
+//   - lg（1024px）以上：カード（幅 400px）と文を横に並べ、間は 80px。
+//     壱・参はカードが左・文が右、弐はカードが右・文が左（lg:flex-row-reverse）。
+//     lg の 1024px の画面（欄の幅 960px）でも 400 ＋ 80 ＋ 380 ＝ 860px で収まる
+//   - lg より狭い画面：カードを上、文を下にして縦に並べる。カードの幅は画面の幅の 85%（md は 400px まで）、真ん中。
+//     文の箱もカードと同じ幅（400px まで）。カードと文の間は 40px
+//   - 品と品の上下の間は 80px（gap-20。lg 以上はカードどうしの縁から縁、lg より狭い画面は文の下からカードの上まで）
+// ・「きたげんの名物」の見出し：欄のいちばん上の真ん中（縦書き）
+// ・絵の大きさ：カードの幅から左右の余白を引いた幅（lg 以上 344px、320px の画面で約 232px）。
 //   線の太さは scenes.css の .scene-svg-small
 // ・各品の動きは、その品の絵が画面に入る位置に合わせて、それぞれ進む（絵ごとに ScenePlayOnView で囲む）
 // ・縦書きの横幅：いちばん広いしゅうまいで約 175px。320px の画面のカードの中（約 232px）に収まる
@@ -39,10 +42,10 @@ type Card = {
   art: ReactNode;
   heading: string;
   lines: readonly string[];
-  // 置く位置（lg より狭い画面／lg 以上）と重なり
-  place: string;
+  // lg 以上で、カードを右・文を左に入れ替える品（弐 鉄鍋餃子）
+  reverse?: boolean;
   // 絵を上に出す量。湯気・油はねのある品は上のふちから少しはみ出させる。
-  // 生ビールは注ぎ口が上にあり、はみ出すと前のカードの値段に近づくので、少しだけにする（泡の粒はカードの中）
+  // 生ビールは注ぎ口が上にあるので、少しだけにする（泡の粒はカードの中）
   artLift: string;
 };
 
@@ -53,7 +56,6 @@ const CARDS: readonly Card[] = [
     art: <SeiroIllustration className={ART} />,
     heading: "しゅうまい。",
     lines: ["自家製の、", "蒸したてを肴に、", "まずは一杯。"],
-    place: "z-[1] ml-[4vw] lg:ml-0",
     artLift: "-mt-10 lg:-mt-12",
   },
   {
@@ -62,7 +64,7 @@ const CARDS: readonly Card[] = [
     art: <TeppanIllustration className={ART} />,
     heading: "鉄鍋餃子。",
     lines: ["こんがり焼いて、", "一品一品、", "手間を惜しまず。"],
-    place: "z-[2] ml-[11vw] -mt-6 lg:ml-[calc(100%/3-18.667px)] lg:-mt-14",
+    reverse: true,
     artLift: "-mt-10 lg:-mt-12",
   },
   {
@@ -71,7 +73,6 @@ const CARDS: readonly Card[] = [
     art: <BeerIllustration className={ART} />,
     heading: "生ビール。",
     lines: ["名物と一緒に、", "乾杯。"],
-    place: "z-[3] ml-[4vw] -mt-6 lg:ml-[calc(200%/3-37.333px)] lg:-mt-14",
     artLift: "-mt-1 lg:-mt-2",
   },
 ];
@@ -130,30 +131,32 @@ function CardFrame({ seed }: { seed: number }) {
 
 export default function Specialties({
   tone,
-  prices,
+  items,
 }: {
   tone: SceneTone;
-  prices: Record<SpecialtyCardId, number | undefined>;
+  items: Record<SpecialtyCardId, SpecialtyCardContent>;
 }) {
   return (
     <section className={`scene py-28 md:py-40 section-${tone}`}>
       <SectionInner>
-        <div className="relative">
-          {/* 欄の見出し（縦書き・明朝体 700）。lg 以上は1枚目のカードのすぐ右上 */}
-          <div className="mb-14 flex justify-center lg:absolute lg:top-0 lg:left-[calc((100%+112px)/3+28px)] lg:mb-0">
-            <h2 className="font-serif [writing-mode:vertical-rl] text-foreground text-[1.75rem] md:text-[2rem] font-bold leading-[1.6] tracking-[0.16em] whitespace-nowrap">
-              きたげんの名物
-            </h2>
-          </div>
+        {/* 欄の見出し（縦書き・明朝体 700）。欄のいちばん上の真ん中 */}
+        <div className="mb-16 lg:mb-20 flex justify-center">
+          <h2 className="font-serif [writing-mode:vertical-rl] text-foreground text-[1.75rem] md:text-[2rem] font-bold leading-[1.6] tracking-[0.16em] whitespace-nowrap">
+            きたげんの名物
+          </h2>
+        </div>
 
-          <ol className="-mx-6 md:-mx-8 lg:mx-0">
-            {CARDS.map((card, i) => {
-              const price = prices[card.id];
-              return (
-                <li
-                  key={card.id}
-                  className={`scene-card section-light relative w-[85vw] lg:w-[calc((100%+112px)/3)] px-5 pt-5 pb-7 lg:px-7 lg:pt-6 lg:pb-8 shadow-[0_1px_4px_rgba(47,36,28,0.06)] ${card.place}`}
-                >
+        <ol className="flex flex-col gap-20">
+          {CARDS.map((card, i) => {
+            const { price, text } = items[card.id];
+            return (
+              <li
+                key={card.id}
+                className={`flex flex-col items-center gap-10 lg:justify-center lg:gap-20 ${
+                  card.reverse ? "lg:flex-row-reverse" : "lg:flex-row"
+                }`}
+              >
+                <div className="scene-card section-light relative w-[85vw] max-w-[400px] lg:w-[400px] lg:shrink-0 px-5 pt-5 pb-7 lg:px-7 lg:pt-6 lg:pb-8 shadow-[0_1px_4px_rgba(47,36,28,0.06)]">
                   <CardFrame seed={7000 + i * 200} />
 
                   {/* 番号（左上の角） */}
@@ -172,14 +175,19 @@ export default function Specialties({
                       </p>
                     )}
                   </div>
-                </li>
-              );
-            })}
-          </ol>
+                </div>
 
-          <div className="mt-16 flex justify-center lg:justify-end">
-            <SceneLink href="/menu">お品書きを見る →</SceneLink>
-          </div>
+                {/* こだわりの文（横書き・1つの段落） */}
+                <p className="w-[85vw] max-w-[400px] lg:max-w-none lg:w-[380px] xl:w-[400px] lg:shrink-0 text-start text-[18px] lg:text-[16px] xl:text-[18px] font-sans font-normal lg:font-serif lg:font-medium text-foreground leading-[2] tracking-wide [word-break:auto-phrase] text-pretty">
+                  {text}
+                </p>
+              </li>
+            );
+          })}
+        </ol>
+
+        <div className="mt-20 flex justify-center">
+          <SceneLink href="/menu">お品書きを見る →</SceneLink>
         </div>
       </SectionInner>
     </section>

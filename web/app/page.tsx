@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Phone, ExternalLink } from "lucide-react";
 import { getSiteImages } from "./lib/site-images";
 import HeroImage from "./components/HeroImage";
@@ -10,7 +11,7 @@ import ZashikiIllustration from "./components/scenes/ZashikiIllustration";
 import EntranceIllustration from "./components/scenes/EntranceIllustration";
 import { PHONE, INSTAGRAM_URL } from "./lib/contact";
 import { STORY } from "./content/story";
-import { getSpecialtyCardPrices } from "./content";
+import { getSpecialtyCards } from "./content";
 
 // 明朝体（Noto Serif JP）。このページでだけ読み込む。
 // 太さは使うものだけ：OUR STORY の本文と場面の文 500、見出し 700。字の並び（読み込めないときの代わりの明朝体）は
@@ -22,7 +23,7 @@ import "@fontsource/noto-serif-jp/700.css";
 // ヒーロー → OUR STORY → 名物（しゅうまい・鉄鍋餃子・生ビール）→ 席 → 宴 → 結び →（フッター）
 // トップは「場面をめくるように淡々と進む」入口。OUR STORY のあとの場面は components/scenes/Scene.tsx の共通の部品で、
 // 「動く線画・縦書きの短い見出し・2〜3行の短い文・詳しいページへの入口」の4つだけにする。詳しい説明は遷移先のページに任せる。
-// 名物の欄は components/scenes/Specialties.tsx（3品を和紙のカードに載せ、斜めに少しずつ重ねる）。
+// 名物の欄は components/scenes/Specialties.tsx（3品を和紙のカードに載せ、こだわりの文とジグザグに並べる）。
 // ・背景は OUR STORY の section-light から、light → deep → warm の順に回し、隣どうしで色を変える：
 //   OUR STORY light → 名物 deep → 席 warm → 宴 light → 結び deep →（フッター card-bg ＝ warm と同じ色）
 // ・席・宴・結びの並びは「左に絵、右に縦書き」と、その左右を入れ替えた形（reverse）を交互にする
@@ -33,9 +34,12 @@ import "@fontsource/noto-serif-jp/700.css";
 const CALL_BUTTON_CLASS =
   "btn-lift inline-flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 py-4 px-8 rounded-sm bg-accent text-white hover:bg-accent-dark font-bold text-sm tracking-wider transition-colors duration-200 active:scale-[0.98]";
 
+// OUR STORY の下の段の写真（席の写真：カウンターとテーブルの店内）。alt は店舗情報のページ（info/page.tsx）と同じ
+const STORY_PHOTO = { src: "/images/about/shop.jpg", alt: "居酒屋きたげんの店舗" };
+
 export default async function Home() {
   const SITE_IMAGES = await getSiteImages();
-  const specialtyPrices = await getSpecialtyCardPrices();
+  const specialtyCards = await getSpecialtyCards();
 
   // 場面の絵の大きさ：md 以上 幅 400px、スマホ 画面の幅の 70%
   const ART = "block w-[70vw] md:w-[400px] h-auto text-foreground";
@@ -170,15 +174,42 @@ export default async function Home() {
             </div>
           </div>
         </SectionInner>
+
+        {/* ── OUR STORY の下の段（色の面と写真）──────────────────────
+            文字は置かず、濃い茶色（foreground）の不透明な面と、店内の写真1枚だけ。
+            段は画面の幅いっぱい（SectionInner の外）。左・上の生成り色の側は、上の文と同じすりガラスのまま。
+            欄の下の余白（py-24 md:py-16）は、この段の -mb で打ち消し、色の面を欄のいちばん下まで届かせる。
+            ・md 以上：欄の右 42% を色の面にする。写真は横長（4:3）、幅は 560px（画面が狭いときは画面の幅の 60% まで）。
+              写真の左の 3分の1 が生成り色の側、残りが色の面の側に来るよう、左の位置を「58% − 写真の幅 ÷ 3」にする。
+              768px の画面でも写真の右の端は 752px で、はみ出さない
+            ・md より狭い画面：段の下半分を色の面にする。写真は画面の幅の 85%、真ん中。
+              段の上下の余白をそろえているので、写真の上下の真ん中が、色の面との境目に来る
+            写真を替えるときは STORY_PHOTO を書きかえる（alt は店舗情報のページの同じ写真と同じ） */}
+        <div className="relative mt-20 -mb-24 md:mt-24 md:-mb-16 py-12 md:py-20">
+          <div
+            aria-hidden="true"
+            className="absolute inset-x-0 bottom-0 h-1/2 md:inset-y-0 md:left-auto md:right-0 md:h-auto md:w-[42%] bg-foreground"
+          />
+          <div className="relative mx-auto w-[85vw] md:mx-0 md:w-[min(560px,60vw)] md:ml-[calc(58%-min(560px,60vw)/3)]">
+            <Image
+              src={STORY_PHOTO.src}
+              alt={STORY_PHOTO.alt}
+              width={1477}
+              height={1108}
+              sizes="(min-width: 768px) min(560px, 60vw), 85vw"
+              className="block w-full h-auto shadow-[0_8px_24px_rgba(47,36,28,0.18)]"
+            />
+          </div>
+        </div>
       </section>
 
       {/* ── 線画の場面 ─────────────────────────────────────
           部品は components/scenes/Scene.tsx、絵は components/scenes/*Illustration.tsx、線と動きは scenes.css。
           文章を変えるときは、縦書きが 320px の画面からはみ出さないよう Scene.tsx の計算を見ること */}
 
-      {/* 名物（しゅうまい・鉄鍋餃子・生ビールを和紙のカードに載せ、斜めに少しずつ重ねる1つの欄）。
-          中身と置き方は components/scenes/Specialties.tsx、値段は content/specialty-prices.ts */}
-      <Specialties tone="deep" prices={specialtyPrices} />
+      {/* 名物（しゅうまい・鉄鍋餃子・生ビールを和紙のカードに載せ、こだわりの文と左右に並べる1つの欄）。
+          中身と置き方は components/scenes/Specialties.tsx、値段とこだわりの文は content/specialty-prices.ts */}
+      <Specialties tone="deep" items={specialtyCards} />
 
       {/* 席（左に絵） */}
       <Scene
