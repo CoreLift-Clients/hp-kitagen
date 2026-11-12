@@ -4,13 +4,12 @@ import { getSiteImages } from "./lib/site-images";
 import HeroImage from "./components/HeroImage";
 import SectionInner from "./components/SectionInner";
 import Scene, { SceneLink, SCENE_LINK_CLASS } from "./components/scenes/Scene";
-import Specialties from "./components/scenes/Specialties";
+import SeiroIllustration from "./components/scenes/SeiroIllustration";
 import SeatIllustration from "./components/scenes/SeatIllustration";
 import ZashikiIllustration from "./components/scenes/ZashikiIllustration";
 import EntranceIllustration from "./components/scenes/EntranceIllustration";
 import { PHONE, INSTAGRAM_URL } from "./lib/contact";
 import { STORY } from "./content/story";
-import { getSpecialtyCards } from "./content";
 
 // 明朝体（Noto Serif JP）。このページでだけ読み込む。
 // 太さは使うものだけ：OUR STORY の本文と場面の文 500、見出し 700。字の並び（読み込めないときの代わりの明朝体）は
@@ -19,13 +18,15 @@ import "@fontsource/noto-serif-jp/500.css";
 import "@fontsource/noto-serif-jp/700.css";
 
 // ─── トップの並び ───
-// ヒーロー → OUR STORY → 名物（しゅうまい・鉄鍋餃子・生ビール）→ 席 → 宴 → 結び →（フッター）
+// ヒーロー → OUR STORY → 名物（せいろ）→ 席 → 宴 → 結び →（フッター）
 // トップは「場面をめくるように淡々と進む」入口。OUR STORY のあとの場面は components/scenes/Scene.tsx の共通の部品で、
 // 「動く線画・縦書きの短い見出し・2〜3行の短い文・詳しいページへの入口」の4つだけにする。詳しい説明は遷移先のページに任せる。
-// 名物の欄は components/scenes/Specialties.tsx（3品を和紙のカードに載せ、こだわりの文とジグザグに並べる）。
+// 名物も席・宴・結びと同じ共通の部品の場面にする（絵はせいろ）。3品のカードとこだわりの文のジグザグ
+// （components/scenes/Specialties.tsx）は、「お品書きを見る」の飛び先のディナーメニュー（/menu/dinner）のいちばん上に置いている。
 // ・背景は OUR STORY の section-light から、light → deep → warm の順に回し、隣どうしで色を変える：
 //   OUR STORY light → 名物 deep → 席 warm → 宴 light → 結び deep →（フッター card-bg ＝ warm と同じ色）
-// ・席・宴・結びの並びは「左に絵、右に縦書き」と、その左右を入れ替えた形（reverse）を交互にする
+// ・名物・席・宴・結びの並びは「左に絵、右に縦書き」と、その左右を入れ替えた形（reverse）を交互にする：
+//   名物 右に絵（reverse）→ 席 左 → 宴 右（reverse）→ 結び 左
 // ・以前トップにあった FOOD・GALLERY・SPACE・PARTY & GROUP・INSTAGRAM と OWNER の欄は
 //   components/home-sections/HomeSections.tsx に残している（トップでは使っていない）
 
@@ -35,7 +36,6 @@ const CALL_BUTTON_CLASS =
 
 export default async function Home() {
   const SITE_IMAGES = await getSiteImages();
-  const specialtyCards = await getSpecialtyCards();
 
   // 場面の絵の大きさ：md 以上 幅 400px、スマホ 画面の幅の 70%
   const ART = "block w-[70vw] md:w-[400px] h-auto text-foreground";
@@ -176,9 +176,16 @@ export default async function Home() {
           部品は components/scenes/Scene.tsx、絵は components/scenes/*Illustration.tsx、線と動きは scenes.css。
           文章を変えるときは、縦書きが 320px の画面からはみ出さないよう Scene.tsx の計算を見ること */}
 
-      {/* 名物（しゅうまい・鉄鍋餃子・生ビールを和紙のカードに載せ、こだわりの文と左右に並べる1つの欄）。
-          中身と置き方は components/scenes/Specialties.tsx、値段とこだわりの文は content/specialty-prices.ts */}
-      <Specialties tone="deep" items={specialtyCards} />
+      {/* 名物（右に絵。せいろのふたが開き、湯気が立ち、しゅうまいが見える）。
+          入口は /menu（/menu/dinner へ転送）。そのページのいちばん上に3品のカードとこだわりの文の欄がある */}
+      <Scene
+        tone="deep"
+        reverse
+        art={<SeiroIllustration className={ART} />}
+        heading="きたげんの名物。"
+        lines={["しゅうまいに、", "鉄鍋餃子、", "まずは生ビール。"]}
+        action={<SceneLink href="/menu">お品書きを見る →</SceneLink>}
+      />
 
       {/* 席（左に絵） */}
       <Scene

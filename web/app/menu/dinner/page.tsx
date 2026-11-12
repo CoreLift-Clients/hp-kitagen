@@ -12,6 +12,13 @@ import {
   resolveRecommendedPrice,
   type RecommendedItem,
 } from "../../lib/recommendedMenu";
+import Specialties from "../../components/scenes/Specialties";
+import { getSpecialtyCards } from "../../content";
+
+// 明朝体（Noto Serif JP）。名物の欄（縦書きの見出し・こだわりの文）のために、このページでも読み込む。
+// 太さはトップと同じく 500・700 だけ
+import "@fontsource/noto-serif-jp/500.css";
+import "@fontsource/noto-serif-jp/700.css";
 
 // ドリンクカテゴリの表示順（居酒屋として自然な並び）
 const DRINK_CATEGORY_ORDER = [
@@ -231,6 +238,9 @@ export default async function DinnerMenuPage() {
   const otherItems = RECOMMENDED_ITEMS.filter((i) => !i.featured);
   const priceOf = (item: RecommendedItem) => resolveRecommendedPrice(item, allItems);
 
+  // 名物の欄（3品のカードとこだわりの文）の値段と文は content/specialty-prices.ts から
+  const specialtyCards = await getSpecialtyCards();
+
   return (
     <div className="min-h-screen">
       <BreadcrumbJsonLd
@@ -300,6 +310,12 @@ export default async function DinnerMenuPage() {
           </div>
         </SectionInner>
       </div>
+
+      {/* ── 名物（しゅうまい・鉄鍋餃子・生ビール）────────────────────
+           トップの名物の場面の入口「お品書きを見る →」の行き先なので、ページのいちばん上に置く。
+           中身と並べ方は components/scenes/Specialties.tsx（以前トップにあった欄をそのまま使う）。
+           背景は section-deep：上のページヘッダー（section-warm）・下の名物・おすすめ（section-light）と色を変える */}
+      <Specialties id="specialties" tone="deep" items={specialtyCards} />
 
       {/* ── ① 名物・おすすめ ───────────────────────────────── */}
       <section id="recommend" className="section-light scroll-mt-32 py-16 md:py-20">

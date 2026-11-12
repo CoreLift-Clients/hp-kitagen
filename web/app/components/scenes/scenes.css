@@ -1,5 +1,5 @@
-/* ─── トップの線画の場面（スクロールで動く線画） ─────────────
-   場面の部品は Scene.tsx、絵の囲みは ScenePlayOnView.tsx、絵は *Illustration.tsx。
+/* ─── トップの線画の場面と、ディナーメニューの名物の欄（スクロールで動く線画） ─────────────
+   場面の部品は Scene.tsx、名物の欄は Specialties.tsx、絵の囲みは ScenePlayOnView.tsx、絵は *Illustration.tsx。
    ・何も動かさないときの形が「動き終わった絵」。
      prefers-reduced-motion: reduce のときと、JavaScript が動かないときは、この形のまま止まって見える
    ・動きは「動く前 → 動き終わり」の @keyframes を、

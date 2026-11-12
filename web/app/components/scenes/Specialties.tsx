@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import SectionInner from "../SectionInner";
 import ScenePlayOnView from "./ScenePlayOnView";
-import { SceneLink, SceneText, type SceneTone } from "./Scene";
+import { SceneText, type SceneTone } from "./Scene";
 import SeiroIllustration from "./SeiroIllustration";
 import TeppanIllustration from "./TeppanIllustration";
 import BeerIllustration from "./BeerIllustration";
@@ -10,9 +10,13 @@ import type { SpecialtyCardId, SpecialtyCardContent } from "../../content";
 import { formatTaxIncludedPrice } from "../../content/specialties";
 import "./scenes.css";
 
-// ─── トップの「名物」の欄（しゅうまい・鉄鍋餃子・生ビール） ───
+// ─── 「名物」の欄（しゅうまい・鉄鍋餃子・生ビール） ───
+// ディナーメニュー（app/menu/dinner/page.tsx。/menu から転送）のいちばん上、ページの見出しと目次の帯のすぐ下に置く。
+// トップの名物は、席・宴・結びと同じ共通の部品の場面（せいろの絵）で、その入口「お品書きを見る →」がこのページに来る。
 // 1品ずつ、和紙のカード（台紙）と「こだわりの文」を左右に並べ、品ごとに左右を入れ替える（ジグザグ）。
-// カードどうしは重ねない。欄の最後に「お品書きを見る →」を1つだけ、真ん中に置く。
+// カードどうしは重ねない。同じページへのリンクになるので、欄の最後の「お品書きを見る →」は置かない。
+// ・背景：tone で section-*（ページの前後の欄と色が変わるものを渡す）。上下の余白はメニューのページの欄にそろえる。
+// ・明朝体（Noto Serif JP 500・700）は、この欄を置くページで読み込む
 // ・カードの中身：番号（壱・弐・参。左上の角、明朝体、accent）・線画・縦書きの見出しと文・値段（値段がある品だけ）
 // ・カードの色：section-light（#F7F3EB と同じ和紙の模様）。欄の背景（section-deep）より少し明るい。
 //   絵の中の「後ろの線を隠す塗り」（--scene-paper）もカードの色にする（scenes.css の .scene-card）
@@ -132,12 +136,14 @@ function CardFrame({ seed }: { seed: number }) {
 export default function Specialties({
   tone,
   items,
+  id,
 }: {
   tone: SceneTone;
   items: Record<SpecialtyCardId, SpecialtyCardContent>;
+  id?: string;
 }) {
   return (
-    <section className={`scene py-28 md:py-40 section-${tone}`}>
+    <section id={id} className={`scene scroll-mt-32 py-20 md:py-24 section-${tone}`}>
       <SectionInner>
         {/* 欄の見出し（縦書き・明朝体 700）。欄のいちばん上の真ん中 */}
         <div className="mb-16 lg:mb-20 flex justify-center">
@@ -185,10 +191,6 @@ export default function Specialties({
             );
           })}
         </ol>
-
-        <div className="mt-20 flex justify-center">
-          <SceneLink href="/menu">お品書きを見る →</SceneLink>
-        </div>
       </SectionInner>
     </section>
   );
