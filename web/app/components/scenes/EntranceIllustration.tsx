@@ -1,18 +1,22 @@
-// ─── お店の入口（きたげんの正面）の線画 ───
+// ─── お店の入口（きたげんの店構え）の線画 ───
 // トップの「結び」の場面で使う飾りの絵（aria-hidden。意味は横の文で伝える）。
-// 本物のきたげんの入口に似せる：上に横長の白い看板（IZAKAYA ／ きたげん）、その下に入口の幅いっぱいの横長の窓（欄間）、
-// 左右は縦の板張りの木の壁、真ん中に木の枠のガラス戸（すりガラスの帯と「営業中」の札）、右の壁に掲示ケース、
-// 入口の前の左寄りに黒板の立て看板、足もとに段。
-// ・線は1色（currentColor ＝ 呼び出し側の text-foreground）。端と角は丸く
-// ・看板と札の文字は SVG の text（明朝体 700 ＝ font-serif font-bold。トップで読み込む Noto Serif JP）。色は線と同じ。
-//   文字の幅は textLength で決めるので、明朝体が読み込めず代わりの字になっても、看板・札からはみ出さない
-// ・塗り：看板・札・掲示ケース・黒板は scene-paper（場面の背景と同じ生成り色）で、後ろの線を隠す
-// ・差し色は accent を1か所だけ（明かり：欄間のガラスと戸のガラスのうすい色。まとめて1か所）
-// ・動き（スクロールの位置で進む。動きの名前と範囲は anim(...)、@keyframes は scenes.css）：
-//   1) 壁の線が描かれ、看板・欄間・板張り・戸・掲示ケースが現れる（4〜30）
-//   2) 欄間と戸のガラスに明かりがともる（30〜42）
-//   3) 「営業中」の札が一度だけ小さく揺れて止まる（40〜50）
-//   4) 黒板の立て看板が現れる（46〜58）
+// 本物のきたげんの店構えの骨組みと比率に合わせる（のぼり・貼り紙・花などの飾りは描かない）：
+// ・横長の店構え（左右の柱の外どうしで 幅 360 × 高さ 226 ≒ 1.6：1）
+// ・左右の端に細い柱（線2本）。いちばん上に柱の間いっぱいの白いひさしの帯（高さ 約 20%）、
+//   その真ん中に帯より小さい白い看板（帯の幅の 約 43%・帯の高さの 約 80%。IZAKAYA ／ きたげん）
+// ・ひさしのすぐ下に、柱の間いっぱいの横長の窓（欄間。高さ 約 12%。縦の桟は2本）
+// ・欄間の下は、真ん中に木の枠のガラス戸1枚（幅 約 25%）、その左右は縦の板張りの壁
+// ・戸の前にれんがの段、地面の線
+// 線は1色（currentColor ＝ 呼び出し側の text-foreground）。端と角は丸く。
+// 看板と札の文字は SVG の text（明朝体 700 ＝ font-serif font-bold。トップで読み込む Noto Serif JP）。色は線と同じ。
+// 文字の幅は textLength で決めるので、明朝体が読み込めず代わりの字になっても、看板・札からはみ出さない。
+// 塗り：ひさし・看板・札・すりガラスは scene-paper（場面の背景と同じ生成り色）で、後ろの線や明かりを隠す。
+// 差し色は accent を1か所だけ（明かり：欄間と戸のガラスのうすい色。まとめて1か所）。
+// 動き（スクロールの位置で進む。動きの名前と範囲は anim(...)、@keyframes は scenes.css）：
+//   1) 柱・ひさし・壁・足もとの線が描かれる（4〜26）
+//   2) 看板と戸が現れる（22〜34）
+//   3) 欄間と戸のガラスに明かりがともる（32〜44）
+//   4) 「営業中」の札が一度だけ小さく揺れて止まる（42〜52）
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
 import { anim, line, type P } from "./draw";
@@ -27,107 +31,82 @@ function rect(x0: number, y0: number, x1: number, y1: number, seed: number, amp 
 }
 
 // ── 間取り（viewBox の座標） ──
-const L = 40; // 入口の左の端
-const R = 360; // 入口の右の端
-const SIGN_Y0 = 30; // 看板
-const SIGN_Y1 = 92;
-const WIN_Y0 = 98; // 欄間（横長の窓）
-const WIN_Y1 = 124;
-const BEAM = 130; // 欄間の下の横木（ここから下が壁と戸）
-const FLOOR = 338; // 入口の床（段の上の面）
-const GROUND = 350; // 地面
+const OUT_L = 20; // 左の柱の外
+const IN_L = 27; // 左の柱の内（ここから右の柱の内までが「柱の間」）
+const IN_R = 373;
+const OUT_R = 380;
+const TOP = 30; // ひさしの帯の上
+const EAVE = 75; // ひさしの帯の下 ＝ 欄間の上（帯の高さ 45 ＝ 全体 226 の 約 20%）
+const BEAM = 102; // 欄間の下（欄間の高さ 27 ＝ 約 12%）
+const GROUND = 252; // 地面
 
-// ── 壁の大きな線（描かれる） ──
-const WALL_DRAW = [
-  line([L, SIGN_Y1], [L + 0.5, FLOOR], 4000, 0.8, 3), // 左の端
-  line([R, SIGN_Y1], [R - 0.5, FLOOR], 4010, 0.8, 3), // 右の端
-  line([L, BEAM], [R, BEAM - 0.5], 4020, 0.8, 4), // 欄間の下の横木
-  line([L - 6, FLOOR], [R + 6, FLOOR - 0.5], 4030, 0.8, 4), // 段の上
-  line([L - 18, GROUND], [R + 18, GROUND], 4040, 0.8, 4), // 地面
+// ── 戸（幅 90 ＝ 柱の外どうし 360 の 25%） ──
+const DOOR_X0 = 155;
+const DOOR_X1 = 245;
+const DOOR_Y1 = 236; // 戸の下 ＝ れんがの段の上
+const GLASS_X0 = 165;
+const GLASS_X1 = 235;
+const GLASS_Y0 = 112;
+const GLASS_Y1 = 226;
+const RAIL_A = [152, 156] as const; // 上の横の桟（ここから下がすりガラスの帯）
+const RAIL_B = [178, 182] as const; // 下の横の桟
+
+// ── 描かれる線（柱・ひさし・欄間・壁・足もと） ──
+const DRAW_MAIN = [
+  line([OUT_L, TOP - 4], [OUT_L + 0.5, GROUND], 4000, 0.6, 3), // 左の柱
+  line([IN_L, TOP], [IN_L, GROUND], 4005, 0.5, 3),
+  line([OUT_R, TOP - 4], [OUT_R - 0.5, GROUND], 4010, 0.6, 3), // 右の柱
+  line([IN_R, TOP], [IN_R, GROUND], 4015, 0.5, 3),
+  line([OUT_L - 4, TOP - 4], [OUT_R + 4, TOP - 4.5], 4020, 0.8, 4), // 柱の頭をつなぐ線
+  line([IN_L, EAVE], [IN_R, EAVE - 0.5], 4025, 0.8, 4), // ひさしの帯の下
+  line([IN_L, BEAM], [IN_R, BEAM], 4030, 0.8, 4), // 欄間の下
+  line([6, GROUND], [394, GROUND - 0.5], 4035, 0.8, 4), // 地面
+];
+const DRAW_FINE = [
+  line([IN_L, TOP], [IN_R, TOP], 4040, 0.6, 4), // ひさしの帯の上
+  ...[DOOR_X0, DOOR_X1].map((x, i) => line([x, EAVE + 3], [x, BEAM - 3], 4045 + i * 3, 0.2, 1)), // 欄間の縦の桟（2本）
+  // 板張りの壁（戸の左右に3本ずつ。間隔は 32）
+  ...[59, 91, 123, 277, 309, 341].map((x, i) => line([x, BEAM + 4], [x, GROUND - 3], 4060 + i * 4, 0.4, 2)),
+  // れんがの段（戸の前の横長の帯と、目地の短い線）
+  line([145, DOOR_Y1], [255, DOOR_Y1], 4100, 0.4, 2),
+  line([145, DOOR_Y1], [145, GROUND], 4103, 0.2, 1),
+  line([255, DOOR_Y1], [255, GROUND], 4106, 0.2, 1),
+  line([147, 244], [253, 244], 4109, 0.3, 2),
+  ...[172, 200, 228].map((x, i) => line([x, DOOR_Y1 + 2], [x, 242], 4120 + i * 2, 0.1, 1)),
+  ...[158, 186, 214, 242].map((x, i) => line([x, 246], [x, GROUND - 2], 4130 + i * 2, 0.1, 1)),
 ];
 
-// ── 板張りの壁の縦の線と、段のタイルの目地（細い線。現れる） ──
-const BOARDS = [
-  ...[60, 80, 100, 120].map((x, i) => line([x, BEAM + 3], [x, FLOOR - 2], 4100 + i * 4, 0.3, 2)), // 左の壁
-  ...[262, 282, 302, 322, 342].map((x, i) => line([x, BEAM + 3], [x, FLOOR - 2], 4130 + i * 4, 0.3, 2)), // 右の壁
-];
-const STEP_JOINTS = [130, 180, 230, 280, 330].map((x, i) => line([x, FLOOR + 2], [x - 1, GROUND - 2], 4160 + i * 3, 0.2, 1));
+// ── 看板（ひさしの帯の真ん中。幅 150 ＝ 帯 346 の 約 43%、高さ 36 ＝ 帯 45 の 80%） ──
+const SIGN_X0 = 125;
+const SIGN_X1 = 275;
+const SIGN_Y0 = 34.5;
+const SIGN_Y1 = 70.5;
+const SIGN = rect(SIGN_X0, SIGN_Y0, SIGN_X1, SIGN_Y1, 4200, 0.4);
 
-// ── 看板（文字は text） ──
-const SIGN = rect(L, SIGN_Y0, R, SIGN_Y1, 4200, 0.7);
-
-// ── 欄間（横長の窓） ──
-const TRANSOM = [
-  ...rect(L + 4, WIN_Y0, R - 4, WIN_Y1, 4240, 0.5),
-  ...[120, 200, 280].map((x, i) => line([x, WIN_Y0 + 2], [x, WIN_Y1 - 2], 4280 + i * 3, 0.2, 1)),
-];
-
-// ── 入口の戸（木の枠のガラス戸） ──
-const DOOR_X0 = 146;
-const DOOR_X1 = 234;
-const GLASS_X0 = 156;
-const GLASS_X1 = 224;
-const GLASS_Y0 = 148;
-const GLASS_Y1 = 324;
-const FROST_Y0 = 224; // すりガラスの帯
-const FROST_Y1 = 246;
-const DOOR = [
-  line([138, BEAM], [138.5, FLOOR], 4300, 0.6, 3), // 戸の枠の左
-  line([242, BEAM], [241.5, FLOOR], 4305, 0.6, 3), // 戸の枠の右
-  ...rect(DOOR_X0, BEAM + 6, DOOR_X1, FLOOR - 2, 4310, 0.5), // 戸
-];
+// ── 戸（木の枠のガラス戸。ガラスは横の桟で3段：ガラス・すりガラスの帯・ガラス） ──
+const DOOR = rect(DOOR_X0, BEAM, DOOR_X1, DOOR_Y1, 4300, 0.5);
 const DOOR_FINE = [
-  ...rect(GLASS_X0, GLASS_Y0, GLASS_X1, GLASS_Y1, 4350, 0.4), // ガラス
-  line([GLASS_X0, FROST_Y0], [GLASS_X1, FROST_Y0], 4390, 0.3, 2), // すりガラスの帯の上下
-  line([GLASS_X0, FROST_Y1], [GLASS_X1, FROST_Y1], 4395, 0.3, 2),
-  line([GLASS_X0 + 6, 232], [GLASS_X1 - 6, 232], 4400, 0.2, 2), // 帯の中の細い横線
-  line([GLASS_X0 + 6, 238], [GLASS_X1 - 6, 238], 4405, 0.2, 2),
-  line([229, 214], [229, 256], 4410, 0.2, 1), // 取っ手
+  ...rect(GLASS_X0, GLASS_Y0, GLASS_X1, GLASS_Y1, 4340, 0.3), // ガラスの枠
+  ...[...RAIL_A, ...RAIL_B].map((y, i) => line([GLASS_X0, y], [GLASS_X1, y], 4380 + i * 4, 0.2, 2)), // 横の桟
+  line([GLASS_X0 + 8, 167], [GLASS_X1 - 8, 167], 4400, 0.2, 2), // すりガラスの帯の中の細い線
+  line([240, 156], [240, 186], 4405, 0.2, 1), // 取っ手
 ];
 
 // ── 「営業中」の札（戸の上のほうに下がる） ──
-const NAIL: P = [190, 152];
-const PLAQUE_X0 = 168;
-const PLAQUE_X1 = 212;
-const PLAQUE_Y0 = 166;
-const PLAQUE_Y1 = 186;
+const NAIL: P = [200, 116];
+const PLAQUE_X0 = 182;
+const PLAQUE_X1 = 218;
+const PLAQUE_Y0 = 125;
+const PLAQUE_Y1 = 141;
 const PLAQUE = [
-  line(NAIL, [PLAQUE_X0 + 4, PLAQUE_Y0], 4450, 0.2, 1), // 吊るひも
-  line(NAIL, [PLAQUE_X1 - 4, PLAQUE_Y0], 4455, 0.2, 1),
+  line(NAIL, [PLAQUE_X0 + 3, PLAQUE_Y0], 4450, 0.2, 1), // 吊るひも
+  line(NAIL, [PLAQUE_X1 - 3, PLAQUE_Y0], 4455, 0.2, 1),
   ...rect(PLAQUE_X0, PLAQUE_Y0, PLAQUE_X1, PLAQUE_Y1, 4460, 0.3),
-];
-
-// ── 右の壁の掲示ケース（中に紙が2枚） ──
-const BOARD_X0 = 268;
-const BOARD_X1 = 336;
-const BOARD_Y0 = 178;
-const BOARD_Y1 = 246;
-const NOTICE = rect(BOARD_X0, BOARD_Y0, BOARD_X1, BOARD_Y1, 4500, 0.5);
-const NOTICE_FINE = [...rect(276, 188, 299, 234, 4540, 0.3), ...rect(306, 192, 328, 226, 4580, 0.3)];
-
-// ── 黒板の立て看板（A型。黒板は線の枠だけ） ──
-const EASEL = [
-  line([67, 262], [109, 262], 4600, 0.4, 2), // 上
-  line([67, 262], [60, GROUND], 4605, 0.5, 3), // 左の脚
-  line([109, 262], [116, GROUND], 4610, 0.5, 3), // 右の脚
-  line([62, 332], [114, 332], 4615, 0.4, 2), // 下の横木
-];
-const BOARD_PTS: readonly P[] = [
-  [71, 270],
-  [105, 270],
-  [108, 322],
-  [68, 322],
-];
-const EASEL_FINE = [
-  ...BOARD_PTS.map((p, i) => line(p, BOARD_PTS[(i + 1) % 4], 4620 + i * 5, 0.3, 1)), // 黒板の枠
-  line([77, 284], [99, 284], 4650, 0.4, 2), // 黒板の中の線（文字は書かない）
-  line([77, 296], [95, 296], 4655, 0.4, 2),
-  line([78, 308], [100, 308], 4660, 0.4, 2),
 ];
 
 // ── 明かり（差し色。欄間と戸のガラス） ──
 const LIGHT: readonly [number, number, number, number][] = [
-  [L + 5, WIN_Y0 + 1, R - 5, WIN_Y1 - 1],
+  [IN_L + 1, EAVE + 1, IN_R - 1, BEAM - 1],
   [GLASS_X0 + 1, GLASS_Y0 + 1, GLASS_X1 - 1, GLASS_Y1 - 1],
 ];
 
@@ -136,7 +115,7 @@ const paths = (ds: readonly string[], className: string) => ds.map((d, i) => <pa
 export default function EntranceIllustration({ className = "" }: { className?: string }) {
   return (
     <svg
-      viewBox="0 20 400 340"
+      viewBox="0 18 400 242"
       aria-hidden="true"
       focusable="false"
       className={`scene-svg ${className}`}
@@ -146,7 +125,7 @@ export default function EntranceIllustration({ className = "" }: { className?: s
       strokeLinejoin="round"
     >
       {/* 差し色（accent）はここだけ：欄間と戸のガラスの明かり（線の後ろ） */}
-      <g className="entrance-light scene-anim" style={anim("scene-on", 30, 42)}>
+      <g className="entrance-light scene-anim" style={anim("scene-on", 32, 44)}>
         {LIGHT.map(([x0, y0, x1, y1], i) => (
           <rect
             key={i}
@@ -161,54 +140,66 @@ export default function EntranceIllustration({ className = "" }: { className?: s
         ))}
       </g>
 
-      {/* 壁の大きな線（描かれる） */}
-      <g className="entrance-wall">
-        {WALL_DRAW.map((d, i) => (
+      {/* 柱・ひさし・欄間・壁・足もとの線（描かれる） */}
+      <g className="entrance-frame">
+        {/* ひさしの白い帯の塗り（柱の間いっぱい） */}
+        <rect x={IN_L} y={TOP} width={IN_R - IN_L} height={EAVE - TOP} className="scene-paper" stroke="none" />
+        {DRAW_MAIN.map((d, i) => (
           <path
             key={i}
             d={d}
             pathLength={1}
             className="scene-line scene-stroke-draw scene-anim"
-            style={anim("scene-draw", 4 + i * 2, 16 + i * 2)}
+            style={anim("scene-draw", 4 + i * 1.5, 14 + i * 1.5)}
+          />
+        ))}
+        {DRAW_FINE.map((d, i) => (
+          <path
+            key={i}
+            d={d}
+            pathLength={1}
+            className="scene-fine scene-stroke-draw scene-anim"
+            style={anim("scene-draw", 10 + (i % 6) * 1.5, 18 + (i % 6) * 1.5)}
           />
         ))}
       </g>
 
-      {/* 板張りの壁と段の目地 */}
-      <g className="entrance-boards scene-anim" style={anim("scene-on", 12, 24)}>
-        {paths(BOARDS, "scene-fine")}
-        {paths(STEP_JOINTS, "scene-fine")}
-      </g>
-
-      {/* 看板と欄間 */}
-      <g className="entrance-sign scene-anim" style={anim("scene-fade-up", 8, 22, { "--dy": "-10px" })}>
-        <rect x={L} y={SIGN_Y0} width={R - L} height={SIGN_Y1 - SIGN_Y0} className="scene-paper" stroke="none" />
+      {/* 看板（ひさしの帯の真ん中） */}
+      <g className="entrance-sign scene-anim" style={anim("scene-fade-up", 22, 32, { "--dy": "-8px" })}>
+        <rect
+          x={SIGN_X0}
+          y={SIGN_Y0}
+          width={SIGN_X1 - SIGN_X0}
+          height={SIGN_Y1 - SIGN_Y0}
+          className="scene-paper"
+          stroke="none"
+        />
         {paths(SIGN, "scene-line")}
         <g className="font-serif font-bold" fill="currentColor" stroke="none">
-          <text x={L + 12} y={SIGN_Y0 + 16} fontSize={10} textLength={56} lengthAdjust="spacingAndGlyphs">
+          <text x={SIGN_X0 + 7} y={SIGN_Y0 + 8} fontSize={6.5} textLength={30} lengthAdjust="spacingAndGlyphs">
             IZAKAYA
           </text>
-          <text x={200} y={SIGN_Y0 + 46} fontSize={38} textAnchor="middle" textLength={164} lengthAdjust="spacingAndGlyphs">
+          {/* 幅 105 ＝ 看板 150 の 70% */}
+          <text x={200} y={SIGN_Y1 - 5} fontSize={23} textAnchor="middle" textLength={105} lengthAdjust="spacingAndGlyphs">
             きたげん
           </text>
         </g>
-        {paths(TRANSOM, "scene-fine")}
       </g>
 
       {/* 入口の戸（すりガラスの帯と「営業中」の札） */}
-      <g className="entrance-door scene-anim" style={anim("scene-fade-up", 14, 28, { "--dy": "10px" })}>
-        {paths(DOOR, "scene-line")}
+      <g className="entrance-door scene-anim" style={anim("scene-fade-up", 24, 34, { "--dy": "8px" })}>
         <rect
           x={GLASS_X0}
-          y={FROST_Y0}
+          y={RAIL_A[1]}
           width={GLASS_X1 - GLASS_X0}
-          height={FROST_Y1 - FROST_Y0}
+          height={RAIL_B[0] - RAIL_A[1]}
           className="scene-paper"
           fillOpacity={0.6}
           stroke="none"
         />
+        {paths(DOOR, "scene-line")}
         {paths(DOOR_FINE, "scene-fine")}
-        <g className="entrance-plaque scene-anim" style={anim("entrance-swing", 40, 50, { "--o": "50% 0%" })}>
+        <g className="entrance-plaque scene-anim" style={anim("entrance-swing", 42, 52, { "--o": "50% 0%" })}>
           <rect
             x={PLAQUE_X0}
             y={PLAQUE_Y0}
@@ -219,11 +210,11 @@ export default function EntranceIllustration({ className = "" }: { className?: s
           />
           {paths(PLAQUE, "scene-fine")}
           <text
-            x={190}
-            y={PLAQUE_Y1 - 5}
-            fontSize={13}
+            x={200}
+            y={PLAQUE_Y1 - 4}
+            fontSize={11}
             textAnchor="middle"
-            textLength={36}
+            textLength={30}
             lengthAdjust="spacingAndGlyphs"
             className="font-serif font-bold"
             fill="currentColor"
@@ -232,31 +223,6 @@ export default function EntranceIllustration({ className = "" }: { className?: s
             営業中
           </text>
         </g>
-      </g>
-
-      {/* 右の壁の掲示ケース */}
-      <g className="entrance-notice scene-anim" style={anim("scene-fade-up", 20, 30, { "--dy": "8px" })}>
-        <rect
-          x={BOARD_X0}
-          y={BOARD_Y0}
-          width={BOARD_X1 - BOARD_X0}
-          height={BOARD_Y1 - BOARD_Y0}
-          className="scene-paper"
-          stroke="none"
-        />
-        {paths(NOTICE, "scene-line")}
-        {paths(NOTICE_FINE, "scene-fine")}
-      </g>
-
-      {/* 黒板の立て看板（最後に現れる） */}
-      <g className="entrance-easel scene-anim" style={anim("scene-fade-up", 46, 58, { "--dy": "12px" })}>
-        <path
-          d={`M${BOARD_PTS.map(([x, y]) => `${x} ${y}`).join(" L")} Z`}
-          className="scene-paper"
-          stroke="none"
-        />
-        {paths(EASEL, "scene-line")}
-        {paths(EASEL_FINE, "scene-fine")}
       </g>
     </svg>
   );
