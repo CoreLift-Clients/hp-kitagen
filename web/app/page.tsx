@@ -7,7 +7,7 @@ import Scene, { SceneLink, SCENE_LINK_CLASS } from "./components/scenes/Scene";
 import SeiroIllustration from "./components/scenes/SeiroIllustration";
 import SeatIllustration from "./components/scenes/SeatIllustration";
 import ZashikiIllustration from "./components/scenes/ZashikiIllustration";
-import EntranceIllustration from "./components/scenes/EntranceIllustration";
+import OwnerBowIllustration from "./components/scenes/OwnerBowIllustration";
 import { PHONE, INSTAGRAM_URL } from "./lib/contact";
 import { STORY } from "./content/story";
 
@@ -207,7 +207,7 @@ export default async function Home() {
           背景は section-deep（下のフッター（card-bg ＝ section-warm と同じ色）と分ける） */}
       <Scene
         tone="deep"
-        art={<EntranceIllustration className={ART} />}
+        art={<OwnerBowIllustration className={ART} />}
         heading="今日も桃谷で、"
         lines={["お待ちしています。"]}
         action={

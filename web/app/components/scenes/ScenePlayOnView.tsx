@@ -13,8 +13,20 @@ import { useEffect, useRef, type ReactNode } from "react";
 //   絵が画面より大きくて 70% まで入りきらないときは、絵が画面の高さの 70% 以上をふさいだところで動かす
 // ・prefers-reduced-motion: reduce のとき … 何もしない（動き終わった絵のまま）
 // ・時間で揺れ続ける動き（湯気の揺れなど）は、場面が画面の外にあるあいだ止める（data-inview="false"）
+// ・playOnce のとき … scroll-driven animations が使えるブラウザでも、使えないブラウザと同じく1回だけ時間で動かす。
+//   ページのいちばん上に置く絵（店主紹介のページの手元の絵）は、開いたときにはもうスクロールの範囲
+//   （絵の真ん中が画面の真ん中に来たところ）を過ぎていて、スクロールでは動きが見えないため
+//   （data-scene の CSS は、スクロールで進める CSS より強いので、そちらが勝つ）
 // JavaScript が動かないときも、動き終わった絵のまま見える。
-export default function ScenePlayOnView({ children, className = "" }: { children: ReactNode; className?: string }) {
+export default function ScenePlayOnView({
+  children,
+  className = "",
+  playOnce = false,
+}: {
+  children: ReactNode;
+  className?: string;
+  playOnce?: boolean;
+}) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -32,9 +44,9 @@ export default function ScenePlayOnView({ children, className = "" }: { children
     );
     inview.observe(el);
 
-    // scroll-driven animations が使えないブラウザだけ、絵の 70% 以上が画面に入ったときに1回だけ動かす
+    // scroll-driven animations が使えないブラウザ（と playOnce のとき）だけ、絵の 70% 以上が画面に入ったときに1回だけ動かす
     let once: IntersectionObserver | undefined;
-    if (!(typeof CSS !== "undefined" && CSS.supports("animation-timeline: view()"))) {
+    if (playOnce || !(typeof CSS !== "undefined" && CSS.supports("animation-timeline: view()"))) {
       el.dataset.scene = "wait";
       const PLAY_RATIO = 0.7;
       once = new IntersectionObserver(
@@ -60,7 +72,7 @@ export default function ScenePlayOnView({ children, className = "" }: { children
       inview.disconnect();
       once?.disconnect();
     };
-  }, []);
+  }, [playOnce]);
 
   return (
     <div ref={ref} className={`scene-art ${className}`}>

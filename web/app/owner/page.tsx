@@ -8,6 +8,9 @@ import {
 } from "../lib/owner";
 import { pageMetadata } from "../lib/seo";
 import BreadcrumbJsonLd from "../components/BreadcrumbJsonLd";
+import ScenePlayOnView from "../components/scenes/ScenePlayOnView";
+import OwnerHandsIllustration from "../components/scenes/OwnerHandsIllustration";
+import "../components/scenes/scenes.css";
 
 export const metadata = pageMetadata({
   title: "店主紹介 | IZAKAYA きたげん",
@@ -33,9 +36,16 @@ export default function OwnerPage() {
       />
 
       {/* ── ページヘッダー ───────────────────────────────── */}
-      <section className="section-warm py-16 px-4 text-center border-b border-foreground/10">
+      {/* 見出しのすぐ下に、店主の手元の線画（components/scenes/OwnerHandsIllustration.tsx。飾りなので aria-hidden）。
+          幅は 画面の幅の 70%、広い画面では 390px まで。真ん中に置く。
+          class の scene は、絵の中の「後ろの線を隠す塗り」をこの欄の背景（section-warm）の色にするため（scenes.css）。
+          ページのいちばん上なので、スクロールではなく、画面に入ったときに1回だけ動かす（playOnce） */}
+      <section className="scene section-warm py-16 px-4 text-center border-b border-foreground/10">
         <h1 className="text-3xl font-bold leading-snug">きたげんの店主より</h1>
         <p className="text-sm text-muted mt-4">桃谷で、みんなの居場所になる店を。</p>
+        <ScenePlayOnView playOnce className="mx-auto mt-10 w-[70vw] max-w-[390px]">
+          <OwnerHandsIllustration className="owner-hands-svg block w-full h-auto text-foreground" />
+        </ScenePlayOnView>
       </section>
 
       {/* ── 本文（縦長の読み物） ─────────────────────────── */}
