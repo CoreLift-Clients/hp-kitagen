@@ -95,12 +95,10 @@ const BODY_TEXT = "text-[17px] md:text-[19px] text-foreground";
 const BODY_TEXT_SPLIT = "text-[17px] md:text-[18px] text-foreground";
 
 // 写真のない欄（INSTAGRAM・PARTY & GROUP・OWNER）と、写真だけの欄（GALLERY）の見出しまわりの揃え方
-// ・lg（1024px）以上 … 英字の小見出し・見出し・飾り・本文・ボタンを横の真ん中にそろえる
+// ・lg（1024px）以上 … 見出し・本文・ボタンを横の真ん中にそろえる
 // ・lg より狭い画面（スマホ・タブレット）… 今までどおり左揃え
-// ・飾り（線・点・線）は CENTER_PC_DIVIDER を flex の囲みに付けて真ん中に置く
 // 写真と文章が左右に並ぶ欄（FOOD・SPACE）には使わない
 const CENTER_PC = "lg:text-center";
-const CENTER_PC_DIVIDER = "lg:justify-center";
 
 // ─── FOOD の下の名物の一覧 ───
 // データは content/specialties.ts（写真と値段がそろった品だけが渡ってくる）。0 品のときは呼び出し側で出さない。
@@ -141,16 +139,6 @@ export function SpecialtyList({ items }: { items: readonly DisplaySpecialty[] })
   );
 }
 
-// セクション見出しの装飾ライン
-function SectionDivider() {
-  return (
-    <div className="flex items-center gap-3 my-5">
-      <div className="w-8 h-px bg-accent/50" />
-      <div className="w-1 h-1 rounded-full bg-accent/70" />
-    </div>
-  );
-}
-
 // FOOD（写真左・文章右）と、その下の名物の一覧
 export function FoodSection({ images, specialties }: { images: SiteImages; specialties: readonly DisplaySpecialty[] }) {
   return (
@@ -175,8 +163,7 @@ export function FoodSection({ images, specialties }: { images: SiteImages; speci
                     <br />
                     うまい一品。
                   </h2>
-                  <SectionDivider />
-                  <p className={`${BODY_TEXT_SPLIT} leading-[2.1] md:leading-[2.2] mb-8 ${BODY_FONT}`}>
+                  <p className={`${BODY_TEXT_SPLIT} leading-[2.1] md:leading-[2.2] mt-5 mb-8 ${BODY_FONT}`}>
                     {proseLines([
                       "きたげんの名物は、自家製のしゅうまいと鉄鍋餃子。",
                       "手間を惜しまず作る一品は、派手さはないけれど、",
@@ -220,11 +207,6 @@ export function GallerySection() {
               <div>
                 <div className={`mb-10 ${CENTER_PC}`}>
                   <h2 className={`text-3xl md:text-4xl ${SERIF_HEADING}`}>きたげんの料理</h2>
-                  <div className={`flex items-center gap-3 mt-4 ${CENTER_PC_DIVIDER}`}>
-                    <div className="w-8 h-px bg-accent/50" />
-                    <div className="w-1 h-1 rounded-full bg-accent/70" />
-                    <div className="w-8 h-px bg-accent/50" />
-                  </div>
                   <p className={`${BODY_TEXT} mt-4 ${BODY_FONT}`}>
                     定番から季節のひと品まで。
                   </p>
@@ -260,8 +242,7 @@ export function SpaceSection({ images }: { images: SiteImages }) {
                     <br />
                     居心地の良い空間。
                   </h2>
-                  <SectionDivider />
-                  <p className={`${BODY_TEXT_SPLIT} leading-[2.1] md:leading-[2.2] mb-8 ${BODY_FONT}`}>
+                  <p className={`${BODY_TEXT_SPLIT} leading-[2.1] md:leading-[2.2] mt-5 mb-8 ${BODY_FONT}`}>
                     {proseLines([
                       "気の向くままに使える、そんな居心地を大事にしています。",
                       "カウンターは、お一人でも仕事帰りでも、",
@@ -375,11 +356,6 @@ export function InstagramOwnerSection() {
             <div className="relative grid grid-cols-1 lg:grid-cols-2 items-center gap-y-20 lg:gap-y-0 lg:before:absolute lg:before:inset-y-0 lg:before:left-1/2 lg:before:w-px lg:before:bg-border">
               <div className={`lg:px-12 ${CENTER_PC}`}>
                 <h2 className={`text-3xl md:text-4xl tracking-wide ${SERIF_HEADING}`}>最新情報</h2>
-                <div className={`flex items-center gap-3 mt-4 ${CENTER_PC_DIVIDER}`}>
-                  <div className="w-8 h-px bg-accent/50" />
-                  <div className="w-1 h-1 rounded-full bg-accent/70" />
-                  <div className="w-8 h-px bg-accent/50" />
-                </div>
                 <p className={`${BODY_TEXT} leading-[2.1] mt-6 mb-9 ${BODY_FONT}`}>
                   日々の料理や、急な営業の変更は
                   <br />
@@ -396,12 +372,6 @@ export function InstagramOwnerSection() {
                 </a>
               </div>
               <div className={`lg:px-12 ${CENTER_PC}`}>
-                {/* 飾り（線・点・線）。ほかの写真のない欄と同じ。lg 以上は真ん中、lg より狭い画面は左揃え */}
-                <div className={`flex items-center gap-3 mb-5 ${CENTER_PC_DIVIDER}`}>
-                  <div className="w-8 h-px bg-accent/50" />
-                  <div className="w-1 h-1 rounded-full bg-accent/70" />
-                  <div className="w-8 h-px bg-accent/50" />
-                </div>
                 <p className={`${BODY_TEXT} mb-5 ${BODY_FONT}`}>
                   きたげんの店主について。
                 </p>

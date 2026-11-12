@@ -16,11 +16,6 @@ function SectionHeading({ title }: { title: string }) {
   return (
     <div className="mb-10">
       <h2 className="text-xl font-bold text-foreground">{title}</h2>
-      <div className="flex items-center gap-3 mt-3">
-        <div className="w-8 h-px bg-accent/50" />
-        <div className="w-1 h-1 rounded-full bg-accent/60" />
-        <div className="w-8 h-px bg-accent/50" />
-      </div>
     </div>
   );
 }
@@ -75,11 +70,6 @@ export default async function LunchMenuPage() {
       {/* ── ページヘッダー ─────────────────────────────────── */}
       <section className="section-warm border-b border-border py-16 px-4 text-center">
         <h1 className="text-4xl font-bold text-foreground mb-4">ランチメニュー</h1>
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <div className="w-8 h-px bg-accent/50" />
-          <div className="w-1 h-1 rounded-full bg-accent/70" />
-          <div className="w-8 h-px bg-accent/50" />
-        </div>
         {/* ランチ臨時休業の告知（再開時は lib/businessHours.ts の LUNCH_SUSPENDED を false に） */}
         {LUNCH_SUSPENDED && (
           <p className="text-sm text-accent/90 mb-3 leading-relaxed">
@@ -122,12 +112,7 @@ export default async function LunchMenuPage() {
             <div className="flex items-center justify-center mb-8">
               <Utensils size={32} strokeWidth={1.2} className="text-accent/40" />
             </div>
-            <h2 className="text-xl font-bold mb-4">ランチメニューを準備中です</h2>
-            <div className="flex items-center justify-center gap-3 mb-6">
-              <div className="w-8 h-px bg-accent/40" />
-              <div className="w-1 h-1 rounded-full bg-accent/50" />
-              <div className="w-8 h-px bg-accent/40" />
-            </div>
+            <h2 className="text-xl font-bold mb-6">ランチメニューを準備中です</h2>
             <p className="text-sm text-muted leading-[2.0]">
               ランチの詳細メニューは現在準備中です。<br />
               最新情報はInstagramまたは店頭にてご確認ください。

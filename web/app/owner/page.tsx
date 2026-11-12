@@ -35,11 +35,6 @@ export default function OwnerPage() {
       {/* ── ページヘッダー ───────────────────────────────── */}
       <section className="section-warm py-16 px-4 text-center border-b border-foreground/10">
         <h1 className="text-3xl font-bold leading-snug">きたげんの店主より</h1>
-        <div className="flex items-center justify-center gap-3 mt-4">
-          <div className="w-8 h-px bg-accent/50" />
-          <div className="w-1 h-1 rounded-full bg-accent/70" />
-          <div className="w-8 h-px bg-accent/50" />
-        </div>
         <p className="text-sm text-muted mt-4">桃谷で、みんなの居場所になる店を。</p>
       </section>
 

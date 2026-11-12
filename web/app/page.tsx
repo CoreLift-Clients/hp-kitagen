@@ -85,11 +85,6 @@ export default async function Home() {
           <h1 className="text-5xl sm:text-7xl md:text-9xl font-bold mb-4 hero-animate-delay text-white text-shadow">
             きたげん
           </h1>
-          <div className="flex items-center justify-center gap-3 mb-4 hero-animate-delay">
-            <div className="w-10 h-px bg-white/40" />
-            <div className="w-1 h-1 rounded-full bg-accent" />
-            <div className="w-10 h-px bg-white/40" />
-          </div>
           <p className="text-[15px] sm:text-lg md:text-xl text-white/85 tracking-wide hero-animate-delay-2 text-shadow">
             ふらっと寄って、ちゃんとうまい。
           </p>
@@ -132,12 +127,6 @@ export default async function Home() {
       <section className="section-screen py-24 md:py-16 section-light story-glass">
         <SectionInner>
           <div>
-            {/* 飾り（線・点・線）。以前は上に小さな英語（OUR STORY）があったが、外した */}
-            <div className="flex items-center justify-center gap-3 mb-10 md:mb-14">
-              <div className="w-8 h-px bg-accent/50" />
-              <div className="w-1 h-1 rounded-full bg-accent/70" />
-              <div className="w-8 h-px bg-accent/50" />
-            </div>
             <div className="font-serif lg:flex lg:justify-center">
               <div className="lg:[writing-mode:vertical-rl]">
                 <div className="flex justify-center lg:block [margin-block-end:3.5rem] md:[margin-block-end:4rem] lg:[margin-block-end:5rem] xl:[margin-block-end:5.5rem]">

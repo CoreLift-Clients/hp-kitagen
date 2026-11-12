@@ -93,11 +93,6 @@ export default function InfoPage() {
       <section className="section-warm py-16 md:py-20 border-b border-foreground/15">
         <SectionInner className="text-center">
           <h1 className="text-3xl md:text-4xl font-bold">店舗情報</h1>
-          <div className="flex items-center justify-center gap-3 mt-4">
-            <div className="w-8 h-px bg-accent/50" />
-            <div className="w-1 h-1 rounded-full bg-accent/70" />
-            <div className="w-8 h-px bg-accent/50" />
-          </div>
           <p className="text-sm md:text-base text-muted mt-4">営業時間・アクセス・各種ご案内</p>
         </SectionInner>
       </section>

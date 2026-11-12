@@ -95,8 +95,9 @@ export function steam(x0: number, yStart: number, yEnd: number, phase: number, a
 // ─── 動きの指定 ───
 // 動かす部品（g や path）に、class の "scene-anim" と一緒に style={anim(...)} で付ける。
 // ・name … 動き（scenes.css の @keyframes の名前）
-// ・from・to … スクロールで進めるとき、場面の絵が画面の下から入り始めたとき（0）から
-//   絵が画面をすっかり通り過ぎるとき（100）までの、どこからどこまでで動くか（view() の cover の %）。
+// ・from・to … 動きの順番と長さを決める数（4〜60 の中で使う）。スクロールで進めるときは、
+//   4 が「絵が画面の中に全部入ったところ」、60 が「絵の真ん中が画面の真ん中に来たところ」になる
+//   （scenes.css で view() の contain 0%〜50% に割り当てる。60 より後ろは 60 として扱う）。
 //   使えないブラウザで1回だけ時間で動くときも、この数字から始まる時刻と長さを決める（scenes.css）
 // ・vars … 動きの中で使う値（--dy など）
 export function anim(name: string, from: number, to: number, vars: Record<string, string> = {}): CSSProperties {

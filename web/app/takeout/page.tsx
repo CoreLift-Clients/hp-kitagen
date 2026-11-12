@@ -118,11 +118,6 @@ export default async function TakeoutPage() {
       <section className="section-warm border-b border-border py-16 md:py-20 text-center">
         <SectionInner>
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">テイクアウト</h1>
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="w-8 h-px bg-accent/50" />
-            <div className="w-1 h-1 rounded-full bg-accent/70" />
-            <div className="w-8 h-px bg-accent/50" />
-          </div>
           <p className="text-sm md:text-base text-muted leading-relaxed">
             きたげんの人気メニューをご自宅でも。
             <br className="sm:hidden" />

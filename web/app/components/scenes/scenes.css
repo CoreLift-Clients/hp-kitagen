@@ -6,7 +6,9 @@
      1) scroll-driven animations が使えるブラウザ … スクロールの位置で進める（下に進む・上で巻き戻る）
      2) 使えないブラウザ … 場面が画面に入ったとき1回だけ、時間で進める（data-scene="play"）
    ・動かす部品には class の scene-anim と、style の --a（動きの名前）・--r0・--r1（どこからどこまで）を付ける
-     （draw.ts の anim()）。--r0・--r1 は、絵が画面の下から入り始めたとき 0、すっかり通り過ぎたとき 100
+     （draw.ts の anim()）。--r0・--r1 は 4〜60 くらいの数で、動きの順番と長さの割合を決める。
+     スクロールで進めるときは、この 4〜60 を「絵が画面の中に全部入ったところ」〜「絵の真ん中が画面の真ん中に来たところ」
+     に割り当てる（下の 1)）。画面に入る前の絵は、動く前の形（せいろはふたが閉じている など）で見える
    ・動かすのは transform・opacity・stroke-dashoffset だけ
    ・時間で揺れ続ける動き（scene-sway）は、場面が画面の外にあるあいだ止める（data-inview="false"）
    ・--scene-paper … 後ろの線を隠す塗り。場面の背景（section-*）と同じ色（下で背景ごとに決める） */
@@ -109,17 +111,35 @@
   }
   .scene-art[data-inview="false"] .scene-sway { animation-play-state: paused; }
 
-  /* 1) スクロールの位置で進める */
+  /* 1) スクロールの位置で進める
+     動きの範囲は、絵（.scene-art）が「画面の中に全部入ったところ」から「絵の真ん中が画面の真ん中に来たところ」まで。
+     これは view() の contain 0% 〜 contain 50%（entry 100% 〜 cover 50% と同じ位置）。
+     各部品の --r0・--r1（4〜60）を、この 0%〜50% に割り当てる：contain ((r − 4) ÷ 56 × 50%)
+     ・絵が画面より大きいとき：contain 0% は「絵の上の端が画面の上に来たところ」、contain 50% は「真ん中どうしが重なるところ」。
+       そのあいだ絵は画面いっぱいに見えているので、動きは見える範囲で進む（entry 100% 〜 cover 50% だと順番が逆になり、動かなくなる）
+     ・画面の上の固定ヘッダー（4rem）と、md より狭い画面の下の「電話する」ボタン（52px ＋ safe-area）に隠れる分は、
+       画面に入っていないものとして数える（view-timeline-inset）
+     ・animation の一括指定は animation-timeline・animation-range を初期値に戻すので、必ずその後ろに書く */
   @supports (animation-timeline: view()) {
-    .scene-art { view-timeline: --scene block; }
+    .scene-art {
+      view-timeline: --scene block;
+      view-timeline-inset: 4rem 0px;
+    }
     .scene-anim {
       animation: var(--a) linear both;
       animation-timeline: --scene;
-      animation-range: cover calc(var(--r0) * 1%) cover calc(var(--r1) * 1%);
+      animation-range:
+        contain calc(max(0, var(--r0) - 4) * 50% / 56)
+        contain calc(min(56, var(--r1) - 4) * 50% / 56);
+    }
+  }
+  @supports (animation-timeline: view()) {
+    @media (max-width: 767px) {
+      .scene-art { view-timeline-inset: 4rem calc(52px + env(safe-area-inset-bottom)); }
     }
   }
 
-  /* 2) 使えないブラウザ：画面に入ったとき1回だけ、時間で同じ順に進める（data-scene は ScenePlayOnView が付ける）。
+  /* 2) 使えないブラウザ：絵の 70% 以上が画面に入ったとき1回だけ、時間で同じ順に進める（data-scene は ScenePlayOnView が付ける）。
      始まる時刻は (--r0 − 4) × 0.045 秒、長さは (--r1 − --r0) × 0.05 秒（短くても 0.5 秒） */
   .scene-art[data-scene="wait"] .scene-anim {
     animation: var(--a) 1s linear both paused;
