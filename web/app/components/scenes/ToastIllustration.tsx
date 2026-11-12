@@ -1,11 +1,12 @@
 // ─── ビールとチューハイの乾杯の線画 ───
 // トップの「宴」の場面で使う飾りの絵（aria-hidden。意味は横の文で伝える）。
 // ・線は1色（currentColor ＝ 呼び出し側の text-foreground）。端と角は丸く。塗りは基本なし
-//   （ジョッキ・泡・グラス・氷・レモンにだけ、重なった後ろの線を隠すための塗り --scene-paper を付ける）
-// ・差し色は accent を1か所だけ（チューハイのグラスのふちのレモンの輪切り）
+//   （ジョッキ・泡・グラス・氷にだけ、重なった後ろの線を隠すための塗り --scene-paper を付ける）
+// ・差し色は accent を1か所だけ（ジョッキの中のビール。accent を fill-opacity 0.3 で薄く塗り、うすい琥珀色にする。
+//   ジョッキと一緒に寄ってくるときから見えている。泡は生成り色（--scene-paper）のまま）
 // ・手は描かない（グラスだけ）
 // ・部品ごとに g でまとめる：ジョッキ（toast-mug）・泡（toast-foam）・泡のしぶき（toast-splash）・
-//   グラス（toast-glass）・氷（toast-ice）・グラスの中の泡の粒（toast-bubbles）・レモン（toast-lemon）・
+//   ビールの色（toast-beer）・グラス（toast-glass）・氷（toast-ice）・グラスの中の泡の粒（toast-bubbles）・
 //   カチンの線（toast-clink）
 // ・ジョッキとグラスは、まっすぐ立てた形で描き、外側の g の rotate で少し内側へ傾けて、
 //   上のほうでぶつかる形にする（動き終わりの形。ジョッキの右上のふちが、グラスの左上の側面に当たる）
@@ -21,7 +22,7 @@ import { PI, anim, jitter, line, polygon, ring, smooth, type P } from "./draw";
 const MUG_TILT = 8;
 const MUG_PIVOT: P = [120, 260];
 const GLASS_TILT = -8;
-const GLASS_PIVOT: P = [282, 330];
+const GLASS_PIVOT: P = [272, 258];
 
 // ── ジョッキ（まっすぐ立てた形。取っ手は外側＝左） ──
 const MUG_OUTLINE: readonly P[] = [
@@ -36,6 +37,13 @@ const MUG_OUTLINE: readonly P[] = [
   [178, 72],
 ];
 const MUG_FILL = polygon(MUG_OUTLINE);
+// ビールの部分（ビールの線より下、底の厚みの線より上。ジョッキの内側）
+const BEER_FILL = polygon([
+  [64, 99],
+  [176, 99],
+  [175.6, 244],
+  [64.4, 244],
+]);
 const MUG = [
   smooth(MUG_OUTLINE.map(([x, y], i) => [x + jitter(8000 + i) * 0.6, y] as const)),
   line([62, 72], [177, 72], 8010, 0.5, 3), // ふち
@@ -102,32 +110,33 @@ const SPLASH: readonly [number, number, number][] = [
   [98, 26, 2.4],
 ];
 
-// ── グラス（背の高い、まっすぐなグラス。まっすぐ立てた形） ──
-const GLASS_SIDE_L = line([244, 62], [246, 320], 8200, 0.6, 3);
-const GLASS_SIDE_R = line([320, 62], [318, 320], 8210, 0.6, 3);
+// ── グラス（まっすぐなグラス。まっすぐ立てた形） ──
+// 高さ（底からふちまで）は 198。ジョッキの本体（ふち 72 〜 底 260）の 188 の約 1.05 倍にそろえる
+const GLASS_SIDE_L = line([234, 62], [236, 250], 8200, 0.6, 3);
+const GLASS_SIDE_R = line([310, 62], [308, 250], 8210, 0.6, 3);
 const GLASS_BOTTOM = smooth([
-  [246, 320],
-  [251, 329],
-  [282, 330],
-  [313, 329],
-  [318, 320],
+  [236, 250],
+  [241, 257],
+  [272, 258],
+  [303, 257],
+  [308, 250],
 ]);
 const GLASS_FILL = polygon([
-  [244, 60],
-  [320, 60],
-  [318, 320],
-  [313, 329],
-  [251, 329],
-  [246, 320],
+  [234, 60],
+  [310, 60],
+  [308, 250],
+  [303, 257],
+  [241, 257],
+  [236, 250],
 ]);
-const GLASS = [GLASS_SIDE_L, GLASS_SIDE_R, GLASS_BOTTOM, ring(282, 61, 38, 5, 8220, 0.4)];
+const GLASS = [GLASS_SIDE_L, GLASS_SIDE_R, GLASS_BOTTOM, ring(272, 61, 38, 5, 8220, 0.4)];
 const GLASS_FINE = [
-  line([248, 312], [316, 312], 8230, 0.4, 2), // 底の厚み
-  line([246, 88], [318, 88], 8240, 0.8, 4), // チューハイの水面
-  line([308, 214], [307, 296], 8250, 0.4, 1), // ガラスの照り
+  line([238, 242], [306, 242], 8230, 0.4, 2), // 底の厚み
+  line([236, 88], [308, 88], 8240, 0.8, 4), // チューハイの水面
+  line([300, 100], [299, 136], 8250, 0.3, 1), // ガラスの照り
 ];
 
-// ── 氷（3個。角の丸い四角を少しずつ傾ける） ──
+// ── 氷（3個。角の丸い四角を少しずつ傾けて、下のほうからまん中くらいまで積み重ねる） ──
 function ice(cx: number, cy: number, s: number, deg: number, seed: number) {
   const t = (deg * PI) / 180;
   const rot = ([x, y]: P): P => [cx + x * Math.cos(t) - y * Math.sin(t), cy + x * Math.sin(t) + y * Math.cos(t)];
@@ -154,37 +163,18 @@ function ice(cx: number, cy: number, s: number, deg: number, seed: number) {
     shine: line(rot([-h * 0.55, -h * 0.15]), rot([-h * 0.15, -h * 0.55]), seed + 20, 0.2, 1),
   };
 }
-const ICE = [ice(266, 112, 26, 12, 8300), ice(298, 138, 24, -16, 8330), ice(270, 166, 25, 24, 8360)];
+// いちばん下（底の厚みの線 242 の少し上）→ その右上に載る → いちばん上（グラスのまん中くらい）
+const ICE = [ice(255, 222, 27, 8, 8300), ice(285, 203, 26, -14, 8330), ice(261, 178, 25, 22, 8360)];
 
-// ── グラスの中の泡の粒（下のほう） ──
+// ── グラスの中の泡の粒（氷のすき間と、上のほう） ──
 const BUBBLES: readonly [number, number, number][] = [
-  [262, 214, 2.4],
-  [298, 226, 2.2],
-  [276, 252, 2.6],
-  [302, 270, 2],
-  [258, 282, 2.2],
-  [286, 296, 2.4],
+  [293, 232, 2.4],
+  [243, 199, 2],
+  [287, 164, 2.2],
+  [262, 128, 2.4],
+  [286, 114, 2],
+  [250, 150, 2.2],
 ];
-
-// ── レモンの輪切り（差し色。グラスのふちの外側に掛ける。輪と、放射状の線） ──
-const LEMON_C: P = [318, 64];
-const LEMON_R = 21;
-const LEMON = [
-  ring(LEMON_C[0], LEMON_C[1], LEMON_R, LEMON_R, 8400, 0.4), // 皮
-  ring(LEMON_C[0], LEMON_C[1], LEMON_R - 4.5, LEMON_R - 4.5, 8410, 0.3), // 皮の内側
-];
-const LEMON_SPOKES = Array.from({ length: 8 }, (_, i) => {
-  const t = (i / 8) * PI * 2 + 0.2;
-  const r0 = 3;
-  const r1 = LEMON_R - 7;
-  return line(
-    [LEMON_C[0] + r0 * Math.cos(t), LEMON_C[1] + r0 * Math.sin(t)],
-    [LEMON_C[0] + r1 * Math.cos(t), LEMON_C[1] + r1 * Math.sin(t)],
-    8420 + i * 3,
-    0.2,
-    1,
-  );
-});
 
 // ── カチン（ぶつかった所の上に、外へ向かう短い線3本。ぶつかった所の近くから描く） ──
 const CLINK = [
@@ -196,7 +186,7 @@ const CLINK = [
 export default function ToastIllustration({ className = "" }: { className?: string }) {
   return (
     <svg
-      viewBox="-30 -6 400 352"
+      viewBox="-30 -6 400 286"
       aria-hidden="true"
       focusable="false"
       className={`scene-svg ${className}`}
@@ -214,6 +204,8 @@ export default function ToastIllustration({ className = "" }: { className?: stri
           <g transform={`rotate(${MUG_TILT} ${MUG_PIVOT[0]} ${MUG_PIVOT[1]})`}>
             <g className="toast-mug">
               <path d={MUG_FILL} className="scene-paper" stroke="none" />
+              {/* 差し色（accent）はここだけ：ビールの色 */}
+              <path d={BEER_FILL} className="toast-beer scene-accent-fill" fillOpacity={0.3} stroke="none" />
               {MUG_FINE.map((d, i) => (
                 <path key={i} d={d} className="scene-fine" />
               ))}
@@ -277,16 +269,6 @@ export default function ToastIllustration({ className = "" }: { className?: stri
             <g className="toast-glass">
               {GLASS.map((d, i) => (
                 <path key={i} d={d} className="scene-line" />
-              ))}
-            </g>
-            {/* 差し色（accent）はここだけ：レモンの輪切り */}
-            <g className="toast-lemon">
-              <circle cx={LEMON_C[0]} cy={LEMON_C[1]} r={LEMON_R} className="scene-paper" stroke="none" />
-              {LEMON.map((d, i) => (
-                <path key={i} d={d} className="scene-line scene-accent" />
-              ))}
-              {LEMON_SPOKES.map((d, i) => (
-                <path key={i} d={d} className="scene-fine scene-accent" />
               ))}
             </g>
           </g>

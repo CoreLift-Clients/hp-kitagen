@@ -88,8 +88,27 @@ export function TextOnlyScene({
   );
 }
 
+// ─── 縦書きの中の半角の数字（縦中横） ───
+// 縦書きでは半角の数字が横に寝るので、1〜2 桁の半角の数字を、横に並べたまま1字分に立てる
+// （text-combine-upright: all）。3 桁以上と英字はそのまま（縦中横にすると字が細くなりすぎるため）。
+// 文章そのものは変えず、数字の所だけ span で囲む
+function withUprightDigits(text: string): ReactNode {
+  const parts = text.split(/([0-9]+)/);
+  if (parts.length === 1) return text;
+  return parts.map((part, i) =>
+    /^[0-9]{1,2}$/.test(part) ? (
+      <span key={i} className="[text-combine-upright:all]">
+        {part}
+      </span>
+    ) : (
+      part
+    ),
+  );
+}
+
 // ─── 縦書きの見出しと文 ───
 // 右から左へ読み、見出しが右端。高さは見出しの字数で決まる。
+// ・見出しと文の中の 1〜2 桁の半角の数字は、縦中横で立てる（withUprightDigits）
 // ・見出しは明朝体 700、文は明朝体 500（配列の1つが1行）
 // ・level … 見出しの階層（場面は h2。名物の欄の各品は、欄の見出しの下なので h3）
 // ・compact … 名物の欄の各品用。lg 以上で字を一段小さくする（絵を小さくした分に合わせる）
@@ -121,14 +140,14 @@ export function SceneText({
   return (
     <div className="font-serif [writing-mode:vertical-rl] text-foreground">
       <Heading className={`${headingSize} font-bold leading-[1.6] tracking-[0.16em] whitespace-nowrap`}>
-        {heading}
+        {withUprightDigits(heading)}
       </Heading>
       <p
         className={`${textGap} ${textSize} font-medium leading-[2] tracking-[0.14em] [padding-inline-start:2.5em]`}
       >
         {lines.map((l) => (
           <span key={l} className="block whitespace-nowrap">
-            {l}
+            {withUprightDigits(l)}
           </span>
         ))}
       </p>
