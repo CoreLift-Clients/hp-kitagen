@@ -6,7 +6,7 @@ import SectionInner from "./components/SectionInner";
 import Scene, { SceneLink, SCENE_LINK_CLASS, TextOnlyScene } from "./components/scenes/Scene";
 import SeiroIllustration from "./components/scenes/SeiroIllustration";
 import SeatIllustration from "./components/scenes/SeatIllustration";
-import ZashikiIllustration from "./components/scenes/ZashikiIllustration";
+import ToastIllustration from "./components/scenes/ToastIllustration";
 import { PHONE, INSTAGRAM_URL } from "./lib/contact";
 import { STORY } from "./content/story";
 
@@ -184,12 +184,12 @@ export default async function Home() {
         action={<SceneLink href="/info">店舗情報を見る →</SceneLink>}
       />
 
-      {/* 宴（右に絵。2階の座敷）。以前の PARTY & GROUP の欄の飛び先（/#group-reservation）を引き継ぐ */}
+      {/* 宴（右に絵。ビールとチューハイの乾杯）。以前の PARTY & GROUP の欄の飛び先（/#group-reservation）を引き継ぐ */}
       <Scene
         id="group-reservation"
         tone="light"
         reverse
-        art={<ZashikiIllustration className={ART} />}
+        art={<ToastIllustration className={ART} />}
         heading="ご宴会・貸切も。"
         lines={["2階の座敷で、", "人数に合わせて。"]}
         action={

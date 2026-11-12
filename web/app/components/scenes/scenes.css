@@ -105,6 +105,17 @@
   60%  { opacity: 1; transform: scale(1.02, 1.08); }
   to   { opacity: 1; transform: none; }
 }
+/* 乾杯の絵（ToastIllustration.tsx）：まっすぐ立った形から、少し内側へ傾く（底のまん中を支点に） */
+@keyframes toast-tilt {
+  from { transform: rotate(var(--tilt, 0deg)); }
+  to   { transform: none; }
+}
+/* 乾杯の絵の泡：ぶつかった勢いで、下を支点にふわっと少しはねて、元の形に戻る */
+@keyframes toast-bounce {
+  from { transform: none; }
+  45%  { transform: scale(1.04, 1.14); }
+  to   { transform: none; }
+}
 @keyframes seiro-lid-open {
   from { transform: none; }
   to   { transform: var(--seiro-lid-open); }
