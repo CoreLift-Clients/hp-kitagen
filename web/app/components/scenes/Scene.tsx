@@ -48,24 +48,53 @@ export default function Scene({
           <ScenePlayOnView className="shrink-0">{art}</ScenePlayOnView>
 
           <div className="flex max-w-full flex-col items-center">
-            {/* 縦書き。右から左へ読み、見出しが右端。高さは見出しの字数で決まる */}
-            <div className="font-serif [writing-mode:vertical-rl] text-foreground">
-              <h2 className="text-[1.75rem] md:text-[2rem] font-bold leading-[1.6] tracking-[0.16em] whitespace-nowrap">
-                {heading}
-              </h2>
-              <p className="[margin-block-start:1.75rem] md:[margin-block-start:2.25rem] text-[17px] md:text-[18px] font-medium leading-[2] tracking-[0.14em] [padding-inline-start:2.5em]">
-                {lines.map((l) => (
-                  <span key={l} className="block whitespace-nowrap">
-                    {l}
-                  </span>
-                ))}
-              </p>
-            </div>
+            <SceneText heading={heading} lines={lines} />
             <div className="mt-10">{action}</div>
           </div>
         </div>
       </SectionInner>
     </section>
+  );
+}
+
+// ─── 縦書きの見出しと文 ───
+// 右から左へ読み、見出しが右端。高さは見出しの字数で決まる。
+// ・見出しは明朝体 700、文は明朝体 500（配列の1つが1行）
+// ・level … 見出しの階層（場面は h2。名物の欄の各品は、欄の見出しの下なので h3）
+// ・compact … 名物の欄の各品用。lg 以上で字を一段小さくする（絵を小さくした分に合わせる）
+export function SceneText({
+  heading,
+  lines,
+  level = "h2",
+  compact = false,
+}: {
+  heading: string;
+  lines: readonly string[];
+  level?: "h2" | "h3";
+  compact?: boolean;
+}) {
+  const Heading = level;
+  return (
+    <div className="font-serif [writing-mode:vertical-rl] text-foreground">
+      <Heading
+        className={`text-[1.75rem] font-bold leading-[1.6] tracking-[0.16em] whitespace-nowrap ${
+          `md:text-[2rem] ${compact ? "lg:text-[1.625rem]" : ""}`
+        }`}
+      >
+        {heading}
+      </Heading>
+      <p
+        className={`[margin-block-start:1.75rem] text-[17px] font-medium leading-[2] tracking-[0.14em] [padding-inline-start:2.5em] ${
+          `md:[margin-block-start:2.25rem] md:text-[18px] ${compact ? "lg:[margin-block-start:1.5rem] lg:text-[16px]" : ""}`
+        }`}
+      >
+        {lines.map((l) => (
+          <span key={l} className="block whitespace-nowrap">
+            {l}
+          </span>
+        ))}
+      </p>
+    </div>
   );
 }
 

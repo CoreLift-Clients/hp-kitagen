@@ -24,6 +24,12 @@
 .scene-line { stroke-width: calc(2.6px * var(--scene-k)); }
 .scene-fine { stroke-width: calc(2.1px * var(--scene-k)); }
 .scene-paper { fill: var(--scene-paper); }
+/* 名物の欄の小さな絵（lg 以上 幅 280px、lg より狭い画面 画面の幅の 62%・最大 280px）。
+   絵が縮む分だけ太くして、線を 2〜3px に保つ（320px の画面で約 2.1px、幅 280px のとき約 2.5〜2.9px） */
+.scene-svg.scene-svg-small { --scene-k: 1.6; }
+@media (min-width: 1024px) {
+  .scene-svg.scene-svg-small { --scene-k: 1.4; }
+}
 /* 差し色（accent）。各場面に1か所だけ */
 .scene-accent { stroke: var(--accent); }
 .scene-accent-fill { fill: var(--accent); }
@@ -72,6 +78,12 @@
 @keyframes scene-slide-in {
   from { opacity: 0; transform: translateX(var(--dx, -56px)) rotate(var(--rot, -6deg)); }
   50%  { opacity: 1; }
+  to   { opacity: 1; transform: none; }
+}
+/* ふわっと盛り上がる（下を支点に、低く平たい形から。泡） */
+@keyframes scene-swell {
+  from { opacity: 0; transform: scale(0.9, 0.15); }
+  60%  { opacity: 1; transform: scale(1.02, 1.08); }
   to   { opacity: 1; transform: none; }
 }
 @keyframes seiro-lid-open {

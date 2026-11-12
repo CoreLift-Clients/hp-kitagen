@@ -4,10 +4,9 @@ import { getSiteImages } from "./lib/site-images";
 import HeroImage from "./components/HeroImage";
 import SectionInner from "./components/SectionInner";
 import Scene, { SceneLink, SCENE_LINK_CLASS } from "./components/scenes/Scene";
-import SeiroIllustration from "./components/scenes/SeiroIllustration";
-import TeppanIllustration from "./components/scenes/TeppanIllustration";
+import Specialties from "./components/scenes/Specialties";
 import SeatIllustration from "./components/scenes/SeatIllustration";
-import ToastIllustration from "./components/scenes/ToastIllustration";
+import ZashikiIllustration from "./components/scenes/ZashikiIllustration";
 import EntranceIllustration from "./components/scenes/EntranceIllustration";
 import { PHONE, INSTAGRAM_URL } from "./lib/contact";
 import { STORY } from "./content/story";
@@ -19,11 +18,13 @@ import "@fontsource/noto-serif-jp/500.css";
 import "@fontsource/noto-serif-jp/700.css";
 
 // ─── トップの並び ───
-// ヒーロー → OUR STORY → しゅうまい → 鉄鍋餃子 → 席 → 宴 → 結び →（フッター）
+// ヒーロー → OUR STORY → 名物（しゅうまい・鉄鍋餃子・生ビール）→ 席 → 宴 → 結び →（フッター）
 // トップは「場面をめくるように淡々と進む」入口。OUR STORY のあとの場面は components/scenes/Scene.tsx の共通の部品で、
 // 「動く線画・縦書きの短い見出し・2〜3行の短い文・詳しいページへの入口」の4つだけにする。詳しい説明は遷移先のページに任せる。
-// ・場面の背景は section-deep → section-warm → section-light → … の順に回し、隣どうしで色を変える
-// ・パソコンの並びは「左に絵、右に縦書き」と、その左右を入れ替えた形（reverse）を交互にする
+// 名物の欄は components/scenes/Specialties.tsx（3品を斜めに並べる）。
+// ・背景は OUR STORY の section-light から、light → deep → warm の順に回し、隣どうしで色を変える：
+//   OUR STORY light → 名物 deep → 席 warm → 宴 light → 結び deep →（フッター card-bg ＝ warm と同じ色）
+// ・席・宴・結びの並びは「左に絵、右に縦書き」と、その左右を入れ替えた形（reverse）を交互にする
 // ・以前トップにあった FOOD・GALLERY・SPACE・PARTY & GROUP・INSTAGRAM と OWNER の欄は
 //   components/home-sections/HomeSections.tsx に残している（トップでは使っていない）
 
@@ -173,40 +174,24 @@ export default async function Home() {
           部品は components/scenes/Scene.tsx、絵は components/scenes/*Illustration.tsx、線と動きは scenes.css。
           文章を変えるときは、縦書きが 320px の画面からはみ出さないよう Scene.tsx の計算を見ること */}
 
-      {/* しゅうまい（左に絵） */}
-      <Scene
-        tone="deep"
-        art={<SeiroIllustration className={ART} />}
-        heading="自家製の、しゅうまい。"
-        lines={["蒸したての", "しゅうまいを肴に、", "まずは一杯。"]}
-        action={<SceneLink href="/menu">お品書きを見る →</SceneLink>}
-      />
-
-      {/* 鉄鍋餃子（右に絵） */}
-      <Scene
-        tone="warm"
-        reverse
-        art={<TeppanIllustration className={ART} />}
-        heading="こんがり焼いた、鉄鍋餃子。"
-        lines={["手間を惜しまず、", "一品一品。"]}
-        action={<SceneLink href="/menu">お品書きを見る →</SceneLink>}
-      />
+      {/* 名物（しゅうまい・鉄鍋餃子・生ビールを斜めに並べる1つの欄）。中身と置き方は components/scenes/Specialties.tsx */}
+      <Specialties tone="deep" />
 
       {/* 席（左に絵） */}
       <Scene
-        tone="light"
+        tone="warm"
         art={<SeatIllustration className={ART} />}
         heading="ひとりでも、大勢でも。"
         lines={["カウンターと、", "2階の座敷。"]}
         action={<SceneLink href="/info">店舗情報を見る →</SceneLink>}
       />
 
-      {/* 宴（右に絵）。以前の PARTY & GROUP の欄の飛び先（/#group-reservation）を引き継ぐ */}
+      {/* 宴（右に絵。2階の座敷）。以前の PARTY & GROUP の欄の飛び先（/#group-reservation）を引き継ぐ */}
       <Scene
         id="group-reservation"
-        tone="deep"
+        tone="light"
         reverse
-        art={<ToastIllustration className={ART} />}
+        art={<ZashikiIllustration className={ART} />}
         heading="ご宴会・貸切も。"
         lines={["2階の座敷で、", "人数に合わせて。"]}
         action={
@@ -220,9 +205,10 @@ export default async function Home() {
         }
       />
 
-      {/* 結び（左に絵）。入口は横に3つ（md より狭い画面は縦に） */}
+      {/* 結び（左に絵）。入口は横に3つ（md より狭い画面は縦に）。
+          背景は section-deep（下のフッター（card-bg ＝ section-warm と同じ色）と分ける） */}
       <Scene
-        tone="warm"
+        tone="deep"
         art={<EntranceIllustration className={ART} />}
         heading="今日も桃谷で、"
         lines={["お待ちしています。"]}
