@@ -56,20 +56,18 @@ const ACCESS = {
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 // セクション見出し（ページ主要セクション用の大きい見出し）
-function SectionLabel({ en, ja }: { en: string; ja: string }) {
+function SectionLabel({ ja }: { ja: string }) {
   return (
     <div className="mb-8 md:mb-10">
-      <p className="text-[10px] md:text-[11px] tracking-[0.55em] text-accent/70 mb-2">{en}</p>
       <h2 className="text-3xl md:text-4xl font-bold">{ja}</h2>
     </div>
   );
 }
 
 // カード内の小見出し（席・支払い・予約・SNS の 2×2 グリッド用）
-function CardLabel({ en, ja }: { en: string; ja: string }) {
+function CardLabel({ ja }: { ja: string }) {
   return (
     <div className="mb-5">
-      <p className="text-[10px] tracking-[0.5em] text-accent/70 mb-1.5">{en}</p>
       <h3 className="text-xl md:text-2xl font-bold">{ja}</h3>
     </div>
   );
@@ -94,7 +92,6 @@ export default function InfoPage() {
       {/* ── ページヘッダー ───────────────────────────────── */}
       <section className="section-warm py-16 md:py-20 border-b border-foreground/15">
         <SectionInner className="text-center">
-          <p className="text-[10px] md:text-[11px] tracking-[0.45em] text-accent/80 mb-2">STORE INFO</p>
           <h1 className="text-3xl md:text-4xl font-bold">店舗情報</h1>
           <div className="flex items-center justify-center gap-3 mt-4">
             <div className="w-8 h-px bg-accent/50" />
@@ -128,7 +125,7 @@ export default function InfoPage() {
               ① 営業時間 — 情報の主役。左に営業時間カード、右に補足＋カレンダー
           ════════════════════════════════════════════════ */}
           <section className="pt-16 md:pt-24 pb-16">
-            <SectionLabel en="HOURS" ja="営業時間" />
+            <SectionLabel ja="営業時間" />
 
             <div className="md:grid md:grid-cols-2 md:gap-10 lg:gap-14 items-start">
 
@@ -187,7 +184,7 @@ export default function InfoPage() {
               ② アクセス — 左にテキスト、右に地図（PC 2カラム）
           ════════════════════════════════════════════════ */}
           <section className="py-16">
-            <SectionLabel en="ACCESS" ja="アクセス" />
+            <SectionLabel ja="アクセス" />
 
             <div className="md:grid md:grid-cols-2 md:gap-10 lg:gap-14 items-stretch">
 
@@ -249,7 +246,7 @@ export default function InfoPage() {
 
               {/* ③ 席・設備 */}
               <div className={CARD}>
-                <CardLabel en="SEATS" ja="席・設備" />
+                <CardLabel ja="席・設備" />
                 <dl>
                   {[
                     { label: "席数",   value: SEATS.count    },
@@ -274,7 +271,7 @@ export default function InfoPage() {
 
               {/* ④ お支払い */}
               <div className={CARD}>
-                <CardLabel en="PAYMENT" ja="お支払い" />
+                <CardLabel ja="お支払い" />
                 <div className="grid grid-cols-[5rem_1fr] items-baseline gap-x-6 py-3.5">
                   <span className="text-sm md:text-base text-muted">支払い</span>
                   <span className="text-base md:text-lg">{PAYMENT.join("・")}</span>
@@ -286,7 +283,7 @@ export default function InfoPage() {
 
               {/* ⑤ ご予約 */}
               <div className={CARD}>
-                <CardLabel en="RESERVATION" ja="ご予約" />
+                <CardLabel ja="ご予約" />
                 <p className="text-sm md:text-base text-muted mb-1.5 leading-relaxed">
                   ご宴会・団体でのご利用は、お電話でお席をご用意いたします。
                 </p>
@@ -306,7 +303,7 @@ export default function InfoPage() {
 
               {/* ⑥ 公式アカウント */}
               <div className={CARD}>
-                <CardLabel en="SOCIAL" ja="公式アカウント" />
+                <CardLabel ja="公式アカウント" />
                 <p className="text-sm md:text-base text-muted leading-relaxed mb-1.5">
                   料理や店内の様子をInstagramで発信しています。
                 </p>

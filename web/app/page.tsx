@@ -53,6 +53,7 @@ export default async function Home() {
           └──────────────────────────────────────────────────────────┘ */}
       {/* 「幕」の動き：ヒーローは固定ヘッダー（h-16）のすぐ下（top-16）に止まり、
           下の内容（下の relative z-10 の囲み）がその上にかぶさって流れてくる。
+          写真はスクロールに合わせて少しずつぼかす（HeroImage の .hero-photo-blur。globals.css）。
           sticky が効くよう、祖先（このページの div・main・body）に overflow を付けないこと。
           高さは hero-full（globals.css）：ヘッダーの下から画面のいちばん下まで（100svh − 4rem）。
           スマホ用の写真は横長で左右が大きく切れるため、入り口と看板が真ん中に来る位置（横 51%）にしている。 */}
@@ -76,7 +77,8 @@ export default async function Home() {
         <div className="hidden sm:block absolute bottom-12 max-md:bottom-[calc(3rem+52px+env(safe-area-inset-bottom))] left-8 w-8 h-8 border-b border-l border-white/25 z-10 hero-animate" />
         <div className="hidden sm:block absolute bottom-12 max-md:bottom-[calc(3rem+52px+env(safe-area-inset-bottom))] right-8 w-8 h-8 border-b border-r border-white/25 z-10 hero-animate" />
 
-        <div className="relative z-10 text-center px-4">
+        {/* 店名・キャッチコピー。ぼかさず、スクロールで薄くするだけ（hero-text-fade。globals.css） */}
+        <div className="hero-text-fade relative z-10 text-center px-4">
           <p className="text-xs tracking-[0.5em] text-white/70 mb-4 hero-animate text-shadow">
             IZAKAYA
           </p>
@@ -93,15 +95,14 @@ export default async function Home() {
           </p>
         </div>
 
-        {/* 下に続きがある目印（飾り。動かさない・読み上げない）。
+        {/* 下に続きがある目印（細い縦の線だけ。以前の「SCROLL」の文字は外した。飾り。動かさない・読み上げない）。
             高さを svh で決めているので、スマホのブラウザの下のバーが出ていても隠れない。
             画面の高さが低いとき（横向きのスマホなど）は店名と重なるので出さない。
             md より狭い画面では、下に固定した「電話する」ボタン（52px ＋ safe-area）と重ならないよう、その分だけ上げる。 */}
         <div
           aria-hidden="true"
-          className="absolute left-1/2 -translate-x-1/2 bottom-[calc(1.25rem+env(safe-area-inset-bottom))] max-md:bottom-[calc(1.25rem+52px+env(safe-area-inset-bottom))] z-10 flex flex-col items-center gap-2 [@media(max-height:480px)]:hidden"
+          className="absolute left-1/2 -translate-x-1/2 bottom-[calc(1.25rem+env(safe-area-inset-bottom))] max-md:bottom-[calc(1.25rem+52px+env(safe-area-inset-bottom))] z-10 flex flex-col items-center [@media(max-height:480px)]:hidden"
         >
-          <span className="text-[10px] tracking-[0.4em] pl-[0.4em] text-white/70 text-shadow">SCROLL</span>
           <span className="block w-px h-10 bg-white/40" />
         </div>
       </section>
@@ -131,10 +132,8 @@ export default async function Home() {
       <section className="section-screen py-24 md:py-16 section-light story-glass">
         <SectionInner>
           <div>
-            <p className="text-[10px] tracking-[0.5em] text-accent/80 text-center">
-              OUR STORY
-            </p>
-            <div className="flex items-center justify-center gap-3 mt-4 mb-10 md:mb-14">
+            {/* 飾り（線・点・線）。以前は上に小さな英語（OUR STORY）があったが、外した */}
+            <div className="flex items-center justify-center gap-3 mb-10 md:mb-14">
               <div className="w-8 h-px bg-accent/50" />
               <div className="w-1 h-1 rounded-full bg-accent/70" />
               <div className="w-8 h-px bg-accent/50" />

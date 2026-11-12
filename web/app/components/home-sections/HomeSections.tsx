@@ -170,9 +170,6 @@ export function FoodSection({ images, specialties }: { images: SiteImages; speci
 
                 {/* テキスト（スマホでは下に、PCでは右に） */}
                 <div>
-                  <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-3">
-                    FOOD
-                  </p>
                   <h2 className={`text-3xl md:text-4xl leading-snug ${SERIF_HEADING}`}>
                     手作りにこだわった、
                     <br />
@@ -222,9 +219,6 @@ export function GallerySection() {
             <SectionInner>
               <div>
                 <div className={`mb-10 ${CENTER_PC}`}>
-                  <p className="text-[10px] tracking-[0.45em] text-accent/80 mb-2">
-                    GALLERY
-                  </p>
                   <h2 className={`text-3xl md:text-4xl ${SERIF_HEADING}`}>きたげんの料理</h2>
                   <div className={`flex items-center gap-3 mt-4 ${CENTER_PC_DIVIDER}`}>
                     <div className="w-8 h-px bg-accent/50" />
@@ -261,9 +255,6 @@ export function SpaceSection({ images }: { images: SiteImages }) {
               <div className="grid grid-cols-1 md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] gap-12 md:gap-20 items-center">
                 {/* テキスト */}
                 <div>
-                  <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-3">
-                    SPACE
-                  </p>
                   <h2 className={`text-3xl md:text-4xl leading-snug ${SERIF_HEADING}`}>
                     肩肘張らない、
                     <br />
@@ -328,9 +319,6 @@ export function PartyGroupSection() {
           <SectionInner>
             <div>
               <div className={`rounded-xl border border-border bg-background/70 p-7 sm:p-8 max-w-xl mx-auto ${CENTER_PC}`}>
-                <p className="text-[9px] tracking-[0.55em] text-accent/70 font-medium mb-3">
-                  PARTY &amp; GROUP
-                </p>
                 <p className={`text-lg text-foreground mb-1.5 ${SERIF_HEADING}`}>
                   ご宴会・団体でのご利用は
                 </p>
@@ -386,9 +374,6 @@ export function InstagramOwnerSection() {
           <SectionInner>
             <div className="relative grid grid-cols-1 lg:grid-cols-2 items-center gap-y-20 lg:gap-y-0 lg:before:absolute lg:before:inset-y-0 lg:before:left-1/2 lg:before:w-px lg:before:bg-border">
               <div className={`lg:px-12 ${CENTER_PC}`}>
-                <p className="text-[10px] tracking-[0.5em] text-accent/70 mb-2">
-                  INSTAGRAM
-                </p>
                 <h2 className={`text-3xl md:text-4xl tracking-wide ${SERIF_HEADING}`}>最新情報</h2>
                 <div className={`flex items-center gap-3 mt-4 ${CENTER_PC_DIVIDER}`}>
                   <div className="w-8 h-px bg-accent/50" />
@@ -411,9 +396,6 @@ export function InstagramOwnerSection() {
                 </a>
               </div>
               <div className={`lg:px-12 ${CENTER_PC}`}>
-                <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-3">
-                  OWNER
-                </p>
                 {/* 飾り（線・点・線）。ほかの写真のない欄と同じ。lg 以上は真ん中、lg より狭い画面は左揃え */}
                 <div className={`flex items-center gap-3 mb-5 ${CENTER_PC_DIVIDER}`}>
                   <div className="w-8 h-px bg-accent/50" />

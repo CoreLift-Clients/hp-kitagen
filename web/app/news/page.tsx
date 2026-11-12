@@ -39,7 +39,6 @@ export default async function NewsPage({
       {/* ── ページヘッダー ───────────────────────────────── */}
       <section className="section-warm py-16 md:py-20 border-b border-foreground/15">
         <SectionInner className="text-center">
-          <p className="text-[10px] md:text-[11px] tracking-[0.45em] text-accent/80 mb-2">NEWS</p>
           <h1 className="text-3xl md:text-4xl font-bold">お知らせ</h1>
           <div className="flex items-center justify-center gap-3 mt-4">
             <div className="w-8 h-px bg-accent/50" />

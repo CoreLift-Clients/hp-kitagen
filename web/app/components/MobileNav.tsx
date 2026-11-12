@@ -54,11 +54,8 @@ export default function MobileNav() {
 
         {/* ナビゲーション */}
         <nav className="flex-1 overflow-y-auto flex flex-col px-7 py-8">
-          <p className="text-[9px] tracking-[0.5em] text-accent/60 mb-7 font-medium">
-            NAVIGATION
-          </p>
           <ul className="divide-y divide-border">
-            {NAV_LINKS.map(({ href, label, en }, i) => {
+            {NAV_LINKS.map(({ href, label }, i) => {
               const active = isNavActive(pathname, href);
               return (
                 <li
@@ -80,13 +77,6 @@ export default function MobileNav() {
                       }`}
                     >
                       {label}
-                    </span>
-                    <span
-                      className={`text-[10px] tracking-[0.3em] transition-colors duration-200 uppercase ${
-                        active ? "text-accent/70" : "text-muted/50 group-hover:text-accent/60"
-                      }`}
-                    >
-                      {en}
                     </span>
                   </Link>
                 </li>

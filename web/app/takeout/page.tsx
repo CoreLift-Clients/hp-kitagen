@@ -21,10 +21,9 @@ const CARD =
   "rounded-2xl border border-border bg-background/70 p-6 md:p-8 shadow-[0_1px_2px_rgba(90,65,30,0.04)]";
 
 // セクション見出し（dinner頁と共通のスケール）
-function SectionLabel({ en, ja }: { en: string; ja: string }) {
+function SectionLabel({ ja }: { ja: string }) {
   return (
     <div className="mb-8 md:mb-10">
-      <p className="text-[10px] md:text-[11px] tracking-[0.55em] text-accent/70 mb-2">{en}</p>
       <h2 className="text-3xl md:text-4xl font-bold">{ja}</h2>
     </div>
   );
@@ -118,7 +117,6 @@ export default async function TakeoutPage() {
       {/* ── ページヘッダー（案内文もここに集約し、間延びを解消） ───── */}
       <section className="section-warm border-b border-border py-16 md:py-20 text-center">
         <SectionInner>
-          <p className="text-[10px] md:text-[11px] tracking-[0.5em] text-accent/80 mb-3">TAKEOUT</p>
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">テイクアウト</h1>
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="w-8 h-px bg-accent/50" />
@@ -136,7 +134,7 @@ export default async function TakeoutPage() {
       {/* ── テイクアウトメニュー ──────────────────────────────── */}
       <section className="section-light py-24 md:py-28">
         <SectionInner>
-          <SectionLabel en="MENU" ja="テイクアウトメニュー" />
+          <SectionLabel ja="テイクアウトメニュー" />
 
           {menuSections.length > 0 ? (
             <MenuTable sections={menuSections} />
@@ -159,7 +157,7 @@ export default async function TakeoutPage() {
       {/* ── ご注文方法（電話CTA） ─────────────────────────────── */}
       <section className="section-warm py-24 md:py-28">
         <SectionInner>
-          <SectionLabel en="ORDER" ja="ご注文方法" />
+          <SectionLabel ja="ご注文方法" />
 
           <div className={`${CARD} max-w-xl mx-auto text-center`}>
             <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-xl border border-border/60 bg-card-bg">

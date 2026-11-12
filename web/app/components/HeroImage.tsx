@@ -17,6 +17,7 @@ interface Props {
 /**
  * トップのヒーロー写真（スマホ用・パソコン用の2枚）。
  * 写真はスクロールしても動かさない（以前のパララックスはやめた）。
+ * スクロールに合わせて、この入れ物（.hero-photo-blur）だけを少しずつぼかす（globals.css）。
  */
 export default function HeroImage({
   srcSp,
@@ -31,7 +32,7 @@ export default function HeroImage({
 
   return (
     <div
-      className="absolute inset-0"
+      className="hero-photo-blur absolute inset-0"
       aria-hidden="true"
     >
       {/* ── フォールバック背景 ─────────────────────────────

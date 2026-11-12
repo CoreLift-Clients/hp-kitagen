@@ -34,7 +34,6 @@ export default function OwnerPage() {
 
       {/* ── ページヘッダー ───────────────────────────────── */}
       <section className="section-warm py-16 px-4 text-center border-b border-foreground/10">
-        <p className="text-[10px] tracking-[0.45em] text-accent/80 mb-2">OWNER</p>
         <h1 className="text-3xl font-bold leading-snug">きたげんの店主より</h1>
         <div className="flex items-center justify-center gap-3 mt-4">
           <div className="w-8 h-px bg-accent/50" />
@@ -128,7 +127,6 @@ export default function OwnerPage() {
       {/* ── 導線（メニュー・店舗情報へ） ─────────────────── */}
       <section className="section-warm py-16 px-4 border-t border-border">
         <div className="max-w-lg mx-auto text-center">
-          <p className="text-[9px] tracking-[0.6em] text-accent/70 font-medium mb-4">VISIT</p>
           <p className="text-sm text-muted leading-[2.1] mb-9">
             気の向いたときに、ふらっと。
             <br />

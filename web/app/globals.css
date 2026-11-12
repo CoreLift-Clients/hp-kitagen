@@ -104,6 +104,53 @@ html {
   }
 }
 
+/* ─── トップのヒーロー：スクロールで写真をぼかす ───
+   ページのスクロール（scroll(root)）に合わせて、写真だけを少しずつぼかし、少し暗くする。
+   ヒーローの下の端が画面の上に来るまで（スクロール 0 → 100vh。main の pt-16 ＋ ヒーローの高さ ＝ 1画面）で
+   ぼかし 0 → 10px、明るさ 100% → 85%。上に戻ると元に戻る。
+   ・.hero-photo-blur … 写真の入れ物（components/HeroImage.tsx）。ぼかしはこの要素だけにかける（will-change: filter）。
+     ぼかすと写真のふちが透けて後ろの暗い背景がにじむので、入れ物を上下左右 24px ずつ大きくして、ふちを画面の外に出す
+     （ヒーローは overflow-hidden なので、はみ出した分は見えない）
+   ・.hero-text-fade … 店名・キャッチコピー。ぼかさず、薄くするだけ（スクロール 0 → 60vh で 100% → 0%）
+   scroll-driven animations が使えないブラウザ（@supports で判定）と、
+   prefers-reduced-motion: reduce のときは、何も付けない（写真も文字も今のままの見た目）。
+   ※ animation の一括指定は animation-timeline を初期値に戻すので、animation-timeline・animation-range は必ずその後ろに書く */
+@keyframes heroPhotoBlur {
+  from {
+    filter: blur(0) brightness(1);
+  }
+  to {
+    filter: blur(10px) brightness(0.85);
+  }
+}
+
+@keyframes heroTextFade {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-photo-blur {
+      inset: -24px;
+      will-change: filter;
+      animation: heroPhotoBlur linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 100vh;
+    }
+
+    .hero-text-fade {
+      animation: heroTextFade linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 60vh;
+    }
+  }
+}
+
 /* ─── トップの各欄の高さ（最低1画面） ───
    ヒーローと同じく、固定ヘッダー（h-16 = 4rem）の下から画面のいちばん下まで。
    「ちょうど」ではなく「最低」1画面：中身が収まらない欄はそのまま長くなる。
