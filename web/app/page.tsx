@@ -123,14 +123,22 @@ export default async function Home() {
             行の間隔は lg より狭い画面 2.0、lg 以上 1.95。段落の間は 2〜2.25 字分。
             lg の縦書きは 1024px の画面で横幅が約 924px（使える幅は約 943px）。
             xl の縦書きは横幅が約 1081px（使える幅は 1088px）。どちらも余裕が少ない。
-            文章を足して行や段落が増えたら、ここの計算を見直すこと */}
+          ・広い画面（2xl ＝ 1536px 以上と、1800px 以上）は、字を大きくして、かたまりの幅の上限も広げる
+            （1536px より狭い画面は上のまま）。行の間隔・段落の間・見出しと本文の間（見出しの字の 2.2 倍）の比率は同じ
+            ・2xl：本文 21px、見出し 46px、見出しと本文の間 約 101px、幅の上限 1320px（使える幅 1256px）。
+              縦書きの横幅は 見出し 156px ＋ あき 101px ＋ 本文 947px で約 1205px
+            ・1800px 以上（min-[112.5rem]。2xl の 96rem より後ろに並ぶよう、rem で書く）：本文 23px、見出し 52px、見出しと本文の間 約 114px、幅の上限 1440px（使える幅 1376px）。
+              縦書きの横幅は 見出し 177px ＋ あき 114px ＋ 本文 1037px で約 1329px
+            ・本文の横幅は 18 行 × 1.95 字 ＋ 段落の間 5 か所 × 2 字 ＝ 45.1 字分。見出しは 2 行 × 1.7 字 ＝ 3.4 字分
+            ・縦の長さは見出しの「気取らず、飾らず、」（9 字 × 1.18 字分）がいちばん長く、2xl で約 489px、1800px 以上で約 552px
+          文章を足して行や段落が増えたら、ここの計算を見直すこと */}
       <section className="section-screen py-24 md:py-16 section-light story-glass">
-        <SectionInner>
+        <SectionInner maxW="max-w-6xl 2xl:max-w-[1320px] min-[112.5rem]:max-w-[1440px]">
           <div>
             <div className="font-serif lg:flex lg:justify-center">
               <div className="lg:[writing-mode:vertical-rl]">
-                <div className="flex justify-center lg:block [margin-block-end:3.5rem] md:[margin-block-end:4rem] lg:[margin-block-end:5rem] xl:[margin-block-end:5.5rem]">
-                  <h2 className="[writing-mode:vertical-rl] text-[2.25rem] md:text-[2.5rem] lg:text-4xl xl:text-[2.5rem] font-bold leading-[1.7] tracking-[0.18em]">
+                <div className="flex justify-center lg:block [margin-block-end:3.5rem] md:[margin-block-end:4rem] lg:[margin-block-end:5rem] xl:[margin-block-end:5.5rem] 2xl:[margin-block-end:6.325rem] min-[112.5rem]:[margin-block-end:7.15rem]">
+                  <h2 className="[writing-mode:vertical-rl] text-[2.25rem] md:text-[2.5rem] lg:text-4xl xl:text-[2.5rem] 2xl:text-[2.875rem] min-[112.5rem]:text-[3.25rem] font-bold leading-[1.7] tracking-[0.18em]">
                     {STORY.heading.map((line) => (
                       <span key={line} className="block whitespace-nowrap">
                         {line}
@@ -138,7 +146,7 @@ export default async function Home() {
                     ))}
                   </h2>
                 </div>
-                <div className="mx-auto max-w-[33em] lg:mx-0 lg:max-w-none text-start text-[18px] lg:text-[16px] xl:text-[19px] font-sans font-normal lg:font-serif lg:font-medium text-foreground leading-[2] lg:leading-[1.95] tracking-wide lg:tracking-[0.12em] max-lg:[word-break:auto-phrase] max-lg:text-pretty">
+                <div className="mx-auto max-w-[33em] lg:mx-0 lg:max-w-none text-start text-[18px] lg:text-[16px] xl:text-[19px] 2xl:text-[21px] min-[112.5rem]:text-[23px] font-sans font-normal lg:font-serif lg:font-medium text-foreground leading-[2] lg:leading-[1.95] tracking-wide lg:tracking-[0.12em] max-lg:[word-break:auto-phrase] max-lg:text-pretty">
                   {STORY.paragraphs.map((para, i) => (
                     <p
                       key={i}
