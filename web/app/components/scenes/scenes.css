@@ -1,0 +1,112 @@
+/* ─── トップの線画の場面（スクロールで動く線画） ─────────────
+   場面の部品は Scene.tsx、絵の囲みは ScenePlayOnView.tsx、絵は *Illustration.tsx。
+   ・何も動かさないときの形が「動き終わった絵」。
+     prefers-reduced-motion: reduce のときと、JavaScript が動かないときは、この形のまま止まって見える
+   ・動きは「動く前 → 動き終わり」の @keyframes を、
+     1) scroll-driven animations が使えるブラウザ … スクロールの位置で進める（下に進む・上で巻き戻る）
+     2) 使えないブラウザ … 場面が画面に入ったとき1回だけ、時間で進める（data-scene="play"）
+   ・動かす部品には class の scene-anim と、style の --a（動きの名前）・--r0・--r1（どこからどこまで）を付ける
+     （draw.ts の anim()）。--r0・--r1 は、絵が画面の下から入り始めたとき 0、すっかり通り過ぎたとき 100
+   ・動かすのは transform・opacity・stroke-dashoffset だけ
+   ・時間で揺れ続ける動き（scene-sway）は、場面が画面の外にあるあいだ止める（data-inview="false"）
+   ・--scene-paper … 後ろの線を隠す塗り。場面の背景（section-*）と同じ色（下で背景ごとに決める） */
+
+.scene.section-light { --scene-paper: #F7F3EB; }
+.scene.section-warm  { --scene-paper: #F3EDE2; }
+.scene.section-deep  { --scene-paper: #EBE1D3; }
+
+/* 線の太さ。絵の幅が 400px（viewBox の幅と同じ）のとき 2.6px・2.1px。
+   スマホでは絵が画面の幅の 70% に縮むので、その分だけ太くして 2〜2.5px くらいに保つ */
+.scene-svg { --scene-k: 1; }
+@media (max-width: 767px) {
+  .scene-svg { --scene-k: 1.45; }
+}
+.scene-line { stroke-width: calc(2.6px * var(--scene-k)); }
+.scene-fine { stroke-width: calc(2.1px * var(--scene-k)); }
+.scene-paper { fill: var(--scene-paper); }
+/* 差し色（accent）。各場面に1か所だけ */
+.scene-accent { stroke: var(--accent); }
+.scene-accent-fill { fill: var(--accent); }
+
+/* 線を描き進める部品（pathLength="1" と一緒に使う） */
+.scene-stroke-draw {
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 0;
+}
+.scene-anim {
+  transform-box: fill-box;
+  transform-origin: var(--o, 50% 50%);
+}
+.scene-sway {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+/* せいろのふた（動き終わりは開いた形。右下を支点に、持ち上げて左を上げる） */
+.seiro-lid {
+  --seiro-lid-open: translateY(-44px) rotate(8deg);
+  transform: var(--seiro-lid-open);
+}
+
+/* ─── 動き（動く前 → 動き終わり） ─── */
+@keyframes scene-draw {
+  from { stroke-dashoffset: 1; opacity: 0; }
+  10%  { opacity: 1; }
+  to   { stroke-dashoffset: 0; opacity: 1; }
+}
+@keyframes scene-fade-up {
+  from { opacity: 0; transform: translateY(var(--dy, 12px)); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes scene-on {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+/* ぱっと出る（少し大きくなってから落ち着く） */
+@keyframes scene-pop {
+  from { opacity: 0; transform: scale(0.3); }
+  60%  { opacity: 1; transform: scale(1.15); }
+  to   { opacity: 1; transform: none; }
+}
+/* 横から寄ってくる（ジョッキ） */
+@keyframes scene-slide-in {
+  from { opacity: 0; transform: translateX(var(--dx, -56px)) rotate(var(--rot, -6deg)); }
+  50%  { opacity: 1; }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes seiro-lid-open {
+  from { transform: none; }
+  to   { transform: var(--seiro-lid-open); }
+}
+/* 湯気の揺れ（時間で、ずっとゆっくり。スクロールとは別） */
+@keyframes scene-sway {
+  from { transform: translateX(-2.5px) rotate(-1.6deg); }
+  to   { transform: translateX(2.5px) rotate(1.6deg); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .scene-sway {
+    animation: scene-sway var(--sway-dur, 5s) ease-in-out var(--sway-delay, 0s) infinite alternate;
+  }
+  .scene-art[data-inview="false"] .scene-sway { animation-play-state: paused; }
+
+  /* 1) スクロールの位置で進める */
+  @supports (animation-timeline: view()) {
+    .scene-art { view-timeline: --scene block; }
+    .scene-anim {
+      animation: var(--a) linear both;
+      animation-timeline: --scene;
+      animation-range: cover calc(var(--r0) * 1%) cover calc(var(--r1) * 1%);
+    }
+  }
+
+  /* 2) 使えないブラウザ：画面に入ったとき1回だけ、時間で同じ順に進める（data-scene は ScenePlayOnView が付ける）。
+     始まる時刻は (--r0 − 4) × 0.045 秒、長さは (--r1 − --r0) × 0.05 秒（短くても 0.5 秒） */
+  .scene-art[data-scene="wait"] .scene-anim {
+    animation: var(--a) 1s linear both paused;
+  }
+  .scene-art[data-scene="play"] .scene-anim {
+    animation: var(--a) calc(max(0.5, (var(--r1) - var(--r0)) * 0.05) * 1s) cubic-bezier(0.33, 1, 0.68, 1)
+      calc(max(0, var(--r0) - 4) * 0.045s) both;
+  }
+}
