@@ -352,22 +352,23 @@ const FIX_PIVOT = rot(
 ); // 右の靴のまん中（buildPair と同じまわし方）
 const FIX_VARS = { "--o": `${r1(FIX_PIVOT[0])}px ${r1(FIX_PIVOT[1])}px`, "--fix-rot": "-22deg", "--fix-dy": "6px" };
 
-// 右手（手首から先。手の甲を上から見た形）。子どもの右の靴の「かかと」をつまむ：
-//   親指を靴の内側（左）、ほかの4本の指を外側（右）にかけ、指先がかかとのふちにかかる。
-//   指は少し曲がって、先が下を向く（上から見ると短く見える）。親指はほかの4本と別の向きに出す
-// 形は、手の向きにそった手の中の座標 [t, s] で決める（t … 手首 0 から指先へ。s … 横。－が親指の側）。
-// HAND_ANG だけ左へ傾けた向きで、かかとの位置に合わせて置く（大きさは HAND_K 倍）。
-// 描き方は OwnerHandsIllustration.tsx の手と同じ：輪郭（scene-line）と、輪郭の中の塗り（scene-paper）。
-// 描き込みは、指のつけ根のでっぱり（手の甲のふちのゆるい波）と、親指のつけ根の短い線だけ（爪やしわは描かない）
-const HAND_ANG = 25; // 手の向き（真下から左へ、度）
-const HAND_K = 1.18; // 手首から中指の先まで 約 74（子どもの靴の長さ 62 の約 1.2 倍）
+// 右手（手首から先）。段の奥（座敷の側、右上）から斜めに差し出し、手のひらを下に、手の甲をやや上に向けて少し寝かせた形。
+// 子どもの右の靴の「かかとのふち」だけを、親指と人さし指の指先で軽くつまむ（靴を丸ごとつかまない）。
+// 中指・薬指・小指は軽く曲げて手のひらの側へ寄せ、ひとかたまりに見せる（分かれ目は短い線2本だけ）。
+// 指先は丸く、爪は描かない。
+// 形は、手の向きにそった手の中の座標 [t, s] で決める（t … 手首 0 から指先へ。s … 横。＋が親指の側）。
+// HAND_ANG だけ真下から右へ傾けた向き（＝左下へ差し出す向き）で、かかとのふちに指先を合わせて置く。
+// 手と靴は回る g（seat-fix）の中にあるので、ゆがんだ靴をつまんでいる形では、手は 22° 立った向き（真下から 40°）に見える。
+// 描き方は OwnerHandsIllustration.tsx の手と同じ：輪郭（scene-line）と、輪郭の中の塗り（scene-paper）
+const HAND_ANG = 62; // 手の向き（真下から、度）。そろった靴のときの向き
+const HAND_K = 1.08; // 手首から人さし指の先まで 約 62（子どもの靴の長さ 62 と同じくらい）
 const HA: P = [-Math.sin((HAND_ANG * Math.PI) / 180), Math.cos((HAND_ANG * Math.PI) / 180)]; // 手首 → 指先
-const HN: P = [Math.cos((HAND_ANG * Math.PI) / 180), Math.sin((HAND_ANG * Math.PI) / 180)]; // 横（＋が小指の側）
+const HN: P = [Math.cos((HAND_ANG * Math.PI) / 180), Math.sin((HAND_ANG * Math.PI) / 180)]; // 横（＋が親指の側）
 type L = readonly [number, number];
-// 親指の先と人さし指の先のまん中（手の中の座標）を、かかとの少し内側に合わせる
-const PINCH_LOCAL: L = [50.5, -13.5];
+// 親指の先と人さし指の先のまん中（手の中の座標）を、かかとのふちに合わせる
+const PINCH_LOCAL: L = [53.5, 12.4];
 const HEEL_PINCH = rot(
-  [CHILD.cx + CHILD.w + 2.5, CHILD.heel + 6],
+  [CHILD.cx + CHILD.w + 2.5, CHILD.heel + 0.5],
   CHILD.cx,
   CHILD.heel + CHILD.len / 2,
   CHILD.ang + 0.6,
@@ -381,30 +382,7 @@ const hp = ([t, sx]: L, seed = 0, amp = 0): P => [
   HO[1] + HAND_K * (t * HA[1] + sx * HN[1]) + jitter(seed + 17) * amp,
 ];
 
-// 手の甲（手首は細く、手のひらは広い。指のつけ根の側は、でっぱり4つのゆるい波）
-const PALM_L: readonly L[] = [
-  [0, -9.5],
-  [7, -11],
-  [16, -14.5],
-  [26, -16.5],
-  [35, -16],
-  [40, -13.5],
-  [42.2, -10.5],
-  [40.4, -7],
-  [43.2, -3.5],
-  [41.2, 0],
-  [43, 3.5],
-  [41, 6.8],
-  [42.2, 10],
-  [39.5, 13.5],
-  [30, 15.5],
-  [18, 14],
-  [8, 10.8],
-  [0, 9.5],
-];
-const PALM_PTS = PALM_L.map((q, i) => hp(q, 6900 + i, 0.25));
-
-// 指1本（つけ根 → まん中 → 先の中心線と、幅）。輪郭で1本ずつ描き分ける。つけ根は手の甲の下にかくれる
+// 指1本（つけ根 → まん中 → 先の中心線と、幅）。先は半円で丸く閉じる。つけ根は手の甲の下にかくれる
 function finger(base: L, mid: L, tip: L, w: number): L[] {
   const dir = (a: L, b: L): L => {
     const dx = b[0] - a[0];
@@ -416,61 +394,63 @@ function finger(base: L, mid: L, tip: L, w: number): L[] {
   const d1 = dir(mid, tip);
   const side = (q: L, d: L, k: number): L => [q[0] - d[1] * k, q[1] + d[0] * k];
   const h = w / 2;
-  return [
-    side(base, d0, h),
-    side(mid, d1, h * 0.98),
-    side(tip, d1, h * 0.86),
-    [tip[0] + d1[0] * h * 0.95, tip[1] + d1[1] * h * 0.95],
-    side(tip, d1, -h * 0.86),
-    side(mid, d1, -h * 0.98),
-    side(base, d0, -h),
-  ];
+  const cap: L[] = [0.25, 0.5, 0.75].map((f) => {
+    const a = Math.PI * f; // 先の半円
+    return [tip[0] + d1[0] * h * Math.sin(a) - d1[1] * h * Math.cos(a), tip[1] + d1[1] * h * Math.sin(a) + d1[0] * h * Math.cos(a)];
+  });
+  return [side(base, d0, h), side(mid, d1, h), side(tip, d1, h), ...cap, side(tip, d1, -h), side(mid, d1, -h), side(base, d0, -h)];
 }
-// 小指 → 薬指 → 中指 → 人さし指の順に重ねる（人さし指がいちばん上）
-const FINGERS_L: readonly L[][] = [
-  finger([35, 10.3], [44.5, 12.2], [51, 15], 6.6),
-  finger([36, 3.5], [48, 5], [57, 9], 7.4),
-  finger([36, -3.5], [49, -2.2], [59, 2], 7.8),
-  finger([36, -10.5], [47, -9.2], [56, -5.6], 7.6),
-];
-const FINGERS = FINGERS_L.map((f, k) => {
-  const pts = f.map((q, i) => hp(q, 6950 + k * 20 + i, 0.2));
-  return { fill: polygon(pts), line: closed(pts) };
-});
-// 親指（手の甲の親指の側から、ほかの4本と別の向きに。先がかかとの内側にかかる）
-const THUMB_PTS = finger([23, -12.5], [34, -19], [44.5, -21.5], 9).map((q, i) => hp(q, 7050 + i, 0.2));
-const THUMB = { fill: polygon(THUMB_PTS), line: closed(THUMB_PTS) };
-const PALM = { fill: polygon(PALM_PTS), line: closed(PALM_PTS) };
-const HAND_FINE = [smooth([hp([24, -13.5]), hp([30, -11]), hp([34, -7.5])])]; // 親指のつけ根
 
-// 袖（濃い色の袖口のまわりだけ。絵の右上の外から入ってくる）。
-// 手首より広い袖口・袖口のふちの線・布のしわ3本（短い曲線）・濃い色を表す短い斜線3本
+// 手の甲（手首は細く、手のひらは広い）。小指の側の先は、曲げた中指・薬指・小指のかたまり（丸いふくらみ）
+const PALM_L: readonly L[] = [
+  [0, -7.5],
+  [9, -10],
+  [20, -12.2],
+  [30, -12.5],
+  [37.5, -11.5],
+  [43, -9],
+  [46, -5],
+  [45.5, -0.5],
+  [42.5, 3],
+  [38, 5],
+  [32, 9.5],
+  [22, 11.5],
+  [10, 10],
+  [0, 8],
+];
+const PALM_PTS = PALM_L.map((q, i) => hp(q, 6900 + i, 0.2));
+const PALM = { fill: polygon(PALM_PTS), line: closed(PALM_PTS) };
+// 人さし指（まっすぐ前へ、先がかかとのふちにかかる）
+const INDEX_PTS = finger([33, 4.5], [44, 7], [53.5, 9], 7.2).map((q, i) => hp(q, 6950 + i, 0.15));
+const FINGERS = [{ fill: polygon(INDEX_PTS), line: closed(INDEX_PTS) }];
+// 親指（手の甲の親指の側から、人さし指とは別の向きに出て、先が人さし指の先に寄る）
+const THUMB_PTS = finger([17, 9], [31, 18.5], [49.5, 16], 8.4).map((q, i) => hp(q, 7050 + i, 0.15));
+const THUMB = { fill: polygon(THUMB_PTS), line: closed(THUMB_PTS) };
+// 曲げた3本の指の分かれ目（短い線2本）
+const HAND_FINE = [line(hp([45, -6.9]), hp([38.6, -7.7]), 6880, 0.15, 1), line(hp([46, -2.6]), hp([39.4, -3.3]), 6885, 0.15, 1)];
+
+// 袖（袖口のまわりだけ。絵の右上の外から入ってくる）。袖口の輪郭と、布のしわの短い曲線2本だけ
 const WRIST: P = hp([-1, 0]);
-const ARM_ANG = 25; // 腕の向き（手首から、右へ水平から上へ、度）
+const ARM_ANG = 28; // 腕の向き（手首から、右へ水平から上へ、度）。そろった靴のときの向き
 const AD: P = [Math.cos((ARM_ANG * Math.PI) / 180), -Math.sin((ARM_ANG * Math.PI) / 180)]; // 手首 → ひじ
-const AQ: P = [-AD[1], AD[0]]; // 袖の横（＋が下の側）
+const AQ: P = [-AD[1], AD[0]]; // 袖の横
 const ap = (along: number, across: number): P => [
   WRIST[0] + AD[0] * along + AQ[0] * across,
   WRIST[1] + AD[1] * along + AQ[1] * across,
 ];
-const CUFF_W = 15.5; // 袖口の半分の幅（手首の半分の幅 約 11 より広い）
+const CUFF_W = 12.5; // 袖口の半分の幅（手首の半分の幅 約 8 より広い）
 // 袖のふち（袖口で少し広がり、その先で一度すぼまってから、腕にそってゆるく太くなる）
-const SLEEVE_SIDE = (k: number): P[] => [ap(-1.5, k * CUFF_W), ap(14, k * (CUFF_W - 1.6)), ap(40, k * (CUFF_W - 0.4)), ap(130, k * (CUFF_W + 3))];
+const SLEEVE_SIDE = (k: number): P[] => [ap(-1.5, k * CUFF_W), ap(12, k * (CUFF_W - 1.4)), ap(36, k * (CUFF_W - 0.2)), ap(120, k * (CUFF_W + 3))];
 const SLEEVE_FILL = polygon([ap(-3, 0), ...SLEEVE_SIDE(1), ...SLEEVE_SIDE(-1).reverse()]);
 const SLEEVE = [
   smooth([ap(-1.5, -CUFF_W), ap(-3.2, 0), ap(-1.5, CUFF_W)]), // 袖口のふち
   smooth(SLEEVE_SIDE(-1)),
   smooth(SLEEVE_SIDE(1)),
 ];
+// 布のしわ（短い曲線2本）
 const SLEEVE_FINE = [
-  // 布のしわ（短い曲線）
-  smooth([ap(15, -CUFF_W + 1), ap(19, -CUFF_W + 5), ap(20, -CUFF_W + 10)]),
-  smooth([ap(26, CUFF_W - 1), ap(29.5, CUFF_W - 5.5), ap(30, CUFF_W - 11)]),
-  smooth([ap(36, -CUFF_W + 2), ap(39, -CUFF_W + 6.5), ap(39.5, -CUFF_W + 11)]),
-  // 濃い色を表す短い斜線
-  line(ap(4, -8), ap(10, -4), 6840, 0.2, 1),
-  line(ap(4, 0), ap(10, 4), 6845, 0.2, 1),
-  line(ap(4, 8), ap(10, 12), 6850, 0.2, 1),
+  smooth([ap(9, -CUFF_W + 1), ap(12.5, -CUFF_W + 4.5), ap(13, -CUFF_W + 8.5)]),
+  smooth([ap(17, CUFF_W - 1), ap(20, CUFF_W - 4.5), ap(20.5, CUFF_W - 8.5)]),
 ];
 
 // 4足目が置かれ終わる（41）と、手の動き（44〜60）。靴の回りと手は同じ範囲・同じ割合で進めるので、
