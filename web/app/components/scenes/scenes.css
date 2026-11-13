@@ -61,6 +61,15 @@
 .scene-accent-fill { fill: var(--accent); }
 /* 差し色の面をうすく塗る（肉みそ冷奴の肉みそ。後ろの線も隠したいので、紙の色の上にうすい accent を重ねる） */
 .scene-accent-wash { fill: color-mix(in srgb, var(--accent) 24%, var(--scene-paper)); }
+/* 鉄鍋餃子の焼き色（TeppanIllustration.tsx）。上の面全体は肉みそより少しだけ濃く、
+   焼けたしみはもう一段濃くする（どちらも紙の色の上に重ねるので、後ろの線は隠れる） */
+.teppan-brown-wash { fill: color-mix(in srgb, var(--accent) 32%, var(--scene-paper)); }
+.teppan-brown-spot { fill: color-mix(in srgb, var(--accent) 44%, var(--scene-paper)); }
+/* しみの輪郭（foreground のまま、細く、少し淡く。記号に見えないように） */
+.teppan-brown-spot-line {
+  stroke-width: calc(1.5px * var(--scene-k) * var(--scene-z, 1));
+  stroke-opacity: 0.55;
+}
 
 /* 線を描き進める部品（pathLength="1" と一緒に使う） */
 .scene-stroke-draw {
