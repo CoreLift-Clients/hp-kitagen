@@ -123,19 +123,24 @@
   from { transform: scale(1.28, 0.94); }
   to   { transform: none; }
 }
-/* 席の絵（SeatIllustration.tsx）の子どもの右の靴：ゆがんだ形（つま先が外へ開き、少し前）で待ち、
-   手がふれているあいだに、靴のまん中（--o。view-box の座標）を中心に回ってまっすぐになる */
+/* 席の絵（SeatIllustration.tsx）の子どもの右の靴：ずれた形（つま先が外へ開き、少し前）で待ち、
+   その場でちょこんとはね（ずれた位置から上へ 10px）、はねている間に靴のまん中（--o。view-box の座標）を中心に
+   向きを直して、そろった位置に着地（70%）。着地で縦に少しだけ縮んで戻る */
 @keyframes seat-fix {
-  from, 38% { transform: translateY(var(--fix-dy, 6px)) rotate(var(--fix-rot, -22deg)); }
-  62%, to   { transform: none; }
+  from, 12% { transform: translateY(var(--fix-dy, 6px)) rotate(var(--fix-rot, -22deg)) scaleY(1); }
+  28%       { transform: translateY(-0.5px) rotate(calc(var(--fix-rot, -22deg) * 0.8)) scaleY(1); }
+  42%       { transform: translateY(-4px) rotate(calc(var(--fix-rot, -22deg) * 0.45)) scaleY(1); }
+  56%       { transform: translateY(-2.5px) rotate(calc(var(--fix-rot, -22deg) * 0.12)) scaleY(1); }
+  70%       { transform: translateY(0px) rotate(0deg) scaleY(1); }
+  80%       { transform: translateY(0px) rotate(0deg) scaleY(0.94); }
+  90%, to   { transform: translateY(0px) rotate(0deg) scaleY(1); }
 }
-/* 席の絵の手：右上から腕の向きにそって入ってきて、かかとをつまみ（38%）、靴が回り終わるまでつまんだまま（〜72%）、
-   右上へ引いて消える（--hand-out は腕の向き。SeatIllustration.tsx で決める） */
-@keyframes seat-hand {
-  from      { opacity: 0; transform: translate(var(--hand-out)); }
-  12%       { opacity: 1; }
-  38%, 72%  { opacity: 1; transform: none; }
-  to        { opacity: 0; transform: translate(var(--hand-out)); }
+/* 席の絵の「きらっ」：靴がそろった瞬間（70%）に線が描かれ、すぐ薄くなって消える */
+@keyframes seat-sparkle {
+  from, 70% { stroke-dashoffset: 1; opacity: 0; }
+  72%       { opacity: 1; }
+  82%       { stroke-dashoffset: 0; opacity: 1; }
+  to        { stroke-dashoffset: 0; opacity: 0; }
 }
 /* 湯気の揺れ（時間で、ずっとゆっくり。スクロールとは別） */
 @keyframes scene-sway {

@@ -6,21 +6,20 @@
 //   ・段の手前（土間の側）に、脱いでそろえた靴が4足（つま先を手前に向けて、左右をそろえて置いた形。
 //     間隔と向きを少しずつ変えて、人が脱いでそろえた感じにする）
 //   左から、革靴・スニーカー・パンプス・小さな子どもの靴
-//   ・子どもの靴をそろえ直す右手（手首から先と袖口。動きの途中だけ見える）
+//   ・子どもの右の靴がそろった瞬間の、小さな「きらっ」（短い線3本。動きの途中だけ見える）
 // ・線は1色（currentColor ＝ 呼び出し側の text-foreground）。端と角は丸く。塗りはなし
-//   （手と袖口だけ、後ろの線を隠す塗り --scene-paper を付ける。描き方は店主紹介の手元の絵 OwnerHandsIllustration.tsx にそろえる）
-// ・差し色は accent を1か所だけ（スニーカーの横の線）。手には使わない
-// ・部品ごとに g でまとめる：段・畳・座布団（seat-room）・靴4足（seat-shoes。1足ごとに g）・
-//   子どもの右の靴と手（seat-fix ＝ 靴 ＋ seat-hand）
+// ・差し色は accent を1か所だけ（スニーカーの横の線）。「きらっ」は foreground
+// ・部品ごとに g でまとめる：段・畳・座布団（seat-room）・靴4足（seat-shoes。1足ごとに g。
+//   子どもの右の靴は seat-fix で包む）・「きらっ」（seat-sparkle）
 // ・動きの順番：段・畳・座布団の線が描かれる → 1足目（革靴）が少し上から置かれるように現れる →
 //   2足目・3足目が、間をあけて1足ずつ横に並んでいく → 4足目（子どもの靴）が、右の靴だけつま先が外へ開いて
-//   少し前にずれた形で置かれる → 上（段の奥）から手が下りてきて、右の靴の横にふれる →
-//   手と一緒に右の靴が回ってまっすぐになり、左の靴とそろう → 手が上へ引いて消える。
-//   最後は手が見えず、4足がそろって並んだ形で止まる（何も動かさないときの形がこれ）
+//   少し前にずれた形で置かれる → ずれた右の靴が、その場でちょこんとはね、はねている間にくるっと向きを直し、
+//   左の靴の隣にまっすぐ着地する（着地で少しだけ縦に縮んで戻る）→ そろった瞬間、靴の右上に「きらっ」が描かれて消える。
+//   最後は4足がそろって並び、「きらっ」は見えない形で止まる（何も動かさないときの形がこれ）
 //   （動きの名前と範囲は anim(...)、@keyframes は scenes.css）
 // 線の描き方の道具（揺らぎ）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
-import { type P, anim, jitter, line, polygon, r1, smooth } from "./draw";
+import { type P, anim, jitter, line, r1, smooth } from "./draw";
 
 // 閉じた形をなめらかな曲線でつなぐ（Catmull-Rom → 3次ベジェ。始めと終わりに角ができないように輪でつなぐ）
 function closed(pts: readonly P[]): string {
@@ -338,11 +337,11 @@ const SHOE_RANGES: readonly [number, number][] = [
   [36, 41],
 ];
 
-// ── 子どもの右の靴をそろえ直す（4足目） ──
+// ── 子どもの右の靴が、自分でそろう（4足目） ──
 // 子どもの右の靴は、置かれたときはつま先が外へ 22° 開き、少し前（手前）にずれている。
-// 右上から右手が入ってきて靴のかかとをつまみ、手と一緒に靴が回ってまっすぐになり、手は右上へ引いて消える。
-// 靴と手を1つの g（seat-fix）に入れ、靴のまん中を中心に回す（つまんだかかとは手からずれない）。
-// 手（seat-hand）はその中で、腕の向きにそって入ってきて・引く
+// そのあと、その場でちょこんとはね（上へ 10px）、はねている間に靴のまん中を中心にくるっと向きを直し、
+// 左の靴の隣のそろった位置にまっすぐ着地する（着地で縦に 0.94 まで縮んで戻る）。
+// そろった瞬間に、靴の右上で「きらっ」（短い線3本）が描かれ、すぐ薄くなって消える
 const CHILD = PAIRS[3];
 const FIX_PIVOT = rot(
   [CHILD.cx + CHILD.w + 2.5, CHILD.heel + CHILD.len / 2],
@@ -352,114 +351,17 @@ const FIX_PIVOT = rot(
 ); // 右の靴のまん中（buildPair と同じまわし方）
 const FIX_VARS = { "--o": `${r1(FIX_PIVOT[0])}px ${r1(FIX_PIVOT[1])}px`, "--fix-rot": "-22deg", "--fix-dy": "6px" };
 
-// 右手（手首から先）。段の奥（座敷の側、右上）から斜めに差し出し、手のひらを下に、手の甲をやや上に向けて少し寝かせた形。
-// 子どもの右の靴の「かかとのふち」だけを、親指と人さし指の指先で軽くつまむ（靴を丸ごとつかまない）。
-// 中指・薬指・小指は軽く曲げて手のひらの側へ寄せ、ひとかたまりに見せる（分かれ目は短い線2本だけ）。
-// 指先は丸く、爪は描かない。
-// 形は、手の向きにそった手の中の座標 [t, s] で決める（t … 手首 0 から指先へ。s … 横。＋が親指の側）。
-// HAND_ANG だけ真下から右へ傾けた向き（＝左下へ差し出す向き）で、かかとのふちに指先を合わせて置く。
-// 手と靴は回る g（seat-fix）の中にあるので、ゆがんだ靴をつまんでいる形では、手は 22° 立った向き（真下から 40°）に見える。
-// 描き方は OwnerHandsIllustration.tsx の手と同じ：輪郭（scene-line）と、輪郭の中の塗り（scene-paper）
-const HAND_ANG = 62; // 手の向き（真下から、度）。そろった靴のときの向き
-const HAND_K = 1.08; // 手首から人さし指の先まで 約 62（子どもの靴の長さ 62 と同じくらい）
-const HA: P = [-Math.sin((HAND_ANG * Math.PI) / 180), Math.cos((HAND_ANG * Math.PI) / 180)]; // 手首 → 指先
-const HN: P = [Math.cos((HAND_ANG * Math.PI) / 180), Math.sin((HAND_ANG * Math.PI) / 180)]; // 横（＋が親指の側）
-type L = readonly [number, number];
-// 親指の先と人さし指の先のまん中（手の中の座標）を、かかとのふちに合わせる
-const PINCH_LOCAL: L = [53.5, 12.4];
-const HEEL_PINCH = rot(
-  [CHILD.cx + CHILD.w + 2.5, CHILD.heel + 0.5],
-  CHILD.cx,
-  CHILD.heel + CHILD.len / 2,
-  CHILD.ang + 0.6,
-);
-const HO: P = [
-  HEEL_PINCH[0] - HAND_K * (PINCH_LOCAL[0] * HA[0] + PINCH_LOCAL[1] * HN[0]),
-  HEEL_PINCH[1] - HAND_K * (PINCH_LOCAL[0] * HA[1] + PINCH_LOCAL[1] * HN[1]),
-];
-const hp = ([t, sx]: L, seed = 0, amp = 0): P => [
-  HO[0] + HAND_K * (t * HA[0] + sx * HN[0]) + jitter(seed) * amp,
-  HO[1] + HAND_K * (t * HA[1] + sx * HN[1]) + jitter(seed + 17) * amp,
-];
+// 「きらっ」：そろった右の靴の右上（かかと寄り）を中心に、放射状に短い線3本
+const SPARKLE_C: P = [FIX_PIVOT[0] + 19, FIX_PIVOT[1] - 35];
+const SPARKLE = [-100, -42, 12].map((deg, i) => {
+  const t = (deg * Math.PI) / 180;
+  const at = (r: number): P => [SPARKLE_C[0] + Math.cos(t) * r, SPARKLE_C[1] + Math.sin(t) * r];
+  return line(at(4), at(i === 1 ? 12.5 : 10.5), 6860 + i * 5, 0.2, 1);
+});
 
-// 指1本（つけ根 → まん中 → 先の中心線と、幅）。先は半円で丸く閉じる。つけ根は手の甲の下にかくれる
-function finger(base: L, mid: L, tip: L, w: number): L[] {
-  const dir = (a: L, b: L): L => {
-    const dx = b[0] - a[0];
-    const dy = b[1] - a[1];
-    const m = Math.hypot(dx, dy);
-    return [dx / m, dy / m];
-  };
-  const d0 = dir(base, mid);
-  const d1 = dir(mid, tip);
-  const side = (q: L, d: L, k: number): L => [q[0] - d[1] * k, q[1] + d[0] * k];
-  const h = w / 2;
-  const cap: L[] = [0.25, 0.5, 0.75].map((f) => {
-    const a = Math.PI * f; // 先の半円
-    return [tip[0] + d1[0] * h * Math.sin(a) - d1[1] * h * Math.cos(a), tip[1] + d1[1] * h * Math.sin(a) + d1[0] * h * Math.cos(a)];
-  });
-  return [side(base, d0, h), side(mid, d1, h), side(tip, d1, h), ...cap, side(tip, d1, -h), side(mid, d1, -h), side(base, d0, -h)];
-}
-
-// 手の甲（手首は細く、手のひらは広い）。小指の側の先は、曲げた中指・薬指・小指のかたまり（丸いふくらみ）
-const PALM_L: readonly L[] = [
-  [0, -7.5],
-  [9, -10],
-  [20, -12.2],
-  [30, -12.5],
-  [37.5, -11.5],
-  [43, -9],
-  [46, -5],
-  [45.5, -0.5],
-  [42.5, 3],
-  [38, 5],
-  [32, 9.5],
-  [22, 11.5],
-  [10, 10],
-  [0, 8],
-];
-const PALM_PTS = PALM_L.map((q, i) => hp(q, 6900 + i, 0.2));
-const PALM = { fill: polygon(PALM_PTS), line: closed(PALM_PTS) };
-// 人さし指（まっすぐ前へ、先がかかとのふちにかかる）
-const INDEX_PTS = finger([33, 4.5], [44, 7], [53.5, 9], 7.2).map((q, i) => hp(q, 6950 + i, 0.15));
-const FINGERS = [{ fill: polygon(INDEX_PTS), line: closed(INDEX_PTS) }];
-// 親指（手の甲の親指の側から、人さし指とは別の向きに出て、先が人さし指の先に寄る）
-const THUMB_PTS = finger([17, 9], [31, 18.5], [49.5, 16], 8.4).map((q, i) => hp(q, 7050 + i, 0.15));
-const THUMB = { fill: polygon(THUMB_PTS), line: closed(THUMB_PTS) };
-// 曲げた3本の指の分かれ目（短い線2本）
-const HAND_FINE = [line(hp([45, -6.9]), hp([38.6, -7.7]), 6880, 0.15, 1), line(hp([46, -2.6]), hp([39.4, -3.3]), 6885, 0.15, 1)];
-
-// 袖（袖口のまわりだけ。絵の右上の外から入ってくる）。袖口の輪郭と、布のしわの短い曲線2本だけ
-const WRIST: P = hp([-1, 0]);
-const ARM_ANG = 28; // 腕の向き（手首から、右へ水平から上へ、度）。そろった靴のときの向き
-const AD: P = [Math.cos((ARM_ANG * Math.PI) / 180), -Math.sin((ARM_ANG * Math.PI) / 180)]; // 手首 → ひじ
-const AQ: P = [-AD[1], AD[0]]; // 袖の横
-const ap = (along: number, across: number): P => [
-  WRIST[0] + AD[0] * along + AQ[0] * across,
-  WRIST[1] + AD[1] * along + AQ[1] * across,
-];
-const CUFF_W = 12.5; // 袖口の半分の幅（手首の半分の幅 約 8 より広い）
-// 袖のふち（袖口で少し広がり、その先で一度すぼまってから、腕にそってゆるく太くなる）
-const SLEEVE_SIDE = (k: number): P[] => [ap(-1.5, k * CUFF_W), ap(12, k * (CUFF_W - 1.4)), ap(36, k * (CUFF_W - 0.2)), ap(120, k * (CUFF_W + 3))];
-const SLEEVE_FILL = polygon([ap(-3, 0), ...SLEEVE_SIDE(1), ...SLEEVE_SIDE(-1).reverse()]);
-const SLEEVE = [
-  smooth([ap(-1.5, -CUFF_W), ap(-3.2, 0), ap(-1.5, CUFF_W)]), // 袖口のふち
-  smooth(SLEEVE_SIDE(-1)),
-  smooth(SLEEVE_SIDE(1)),
-];
-// 布のしわ（短い曲線2本）
-const SLEEVE_FINE = [
-  smooth([ap(9, -CUFF_W + 1), ap(12.5, -CUFF_W + 4.5), ap(13, -CUFF_W + 8.5)]),
-  smooth([ap(17, CUFF_W - 1), ap(20, CUFF_W - 4.5), ap(20.5, CUFF_W - 8.5)]),
-];
-
-// 4足目が置かれ終わる（41）と、手の動き（44〜60）。靴の回りと手は同じ範囲・同じ割合で進めるので、
-// 時間で進めるとき（動かせないブラウザ）もずれない
+// 4足目が置かれ終わる（41）と、はねてそろう動き（44〜60）。靴の動きと「きらっ」は同じ範囲・同じ割合で進めるので、
+// 時間で進めるとき（動かせないブラウザ）もずれない（着地は 70%、「きらっ」は 70〜100%）
 const FIX_RANGE: readonly [number, number] = [44, 60];
-// 手が入ってくる・引いていく向きと長さ（腕の向きにそって 70）
-const HAND_VARS = { "--hand-out": `${r1(AD[0] * 70)}px, ${r1(AD[1] * 70)}px` };
-
-const paths = (ds: readonly string[], className: string) => ds.map((d, i) => <path key={i} d={d} className={className} />);
 
 export default function SeatIllustration({ className = "" }: { className?: string }) {
   return (
@@ -571,29 +473,28 @@ export default function SeatIllustration({ className = "" }: { className?: strin
                 </g>
               );
               if (i !== 3 || k !== 1) return body;
-              // 子どもの右の靴：ゆがんだ形で置かれ、手と一緒にまっすぐに戻る
+              // 子どもの右の靴：ずれた形で置かれ、はねて向きを直し、まっすぐ着地する
               return (
                 <g key={k} className="seat-fix scene-anim" style={anim("seat-fix", FIX_RANGE[0], FIX_RANGE[1], FIX_VARS)}>
                   {body}
-                  {/* 手（何も動かさないときは見えない。opacity は動きで上書きされる） */}
-                  <g className="seat-hand scene-anim" opacity={0} style={anim("seat-hand", FIX_RANGE[0], FIX_RANGE[1], HAND_VARS)}>
-                    {[...FINGERS, THUMB].map((f, j) => (
-                      <g key={j}>
-                        <path d={f.fill} className="scene-paper" stroke="none" />
-                        <path d={f.line} className="scene-line" />
-                      </g>
-                    ))}
-                    <path d={PALM.fill} className="scene-paper" stroke="none" />
-                    <path d={PALM.line} className="scene-line" />
-                    {paths(HAND_FINE, "scene-fine")}
-                    <path d={SLEEVE_FILL} className="scene-paper" stroke="none" />
-                    {paths(SLEEVE, "scene-line")}
-                    {paths(SLEEVE_FINE, "scene-fine")}
-                  </g>
                 </g>
               );
             })}
           </g>
+        ))}
+      </g>
+
+      {/* そろった瞬間の「きらっ」（何も動かさないときは見えない。opacity は動きで上書きされる） */}
+      <g className="seat-sparkle">
+        {SPARKLE.map((d, i) => (
+          <path
+            key={i}
+            d={d}
+            pathLength={1}
+            opacity={0}
+            className="scene-fine scene-stroke-draw scene-anim"
+            style={anim("seat-sparkle", FIX_RANGE[0], FIX_RANGE[1])}
+          />
         ))}
       </g>
     </svg>
