@@ -23,14 +23,31 @@
 @media (max-width: 767px) {
   .scene-svg { --scene-k: 1.45; }
 }
-.scene-line { stroke-width: calc(2.6px * var(--scene-k)); }
-.scene-fine { stroke-width: calc(2.1px * var(--scene-k)); }
+/* --scene-z … viewBox を 400 より狭く切り出して絵を大きく見せる絵（名物の欄のカードの新しい絵）で、
+   線が太くなりすぎないように、切り出した幅 ÷ 400 を掛ける（付けていない絵は 1） */
+.scene-line { stroke-width: calc(2.6px * var(--scene-k) * var(--scene-z, 1)); }
+.scene-fine { stroke-width: calc(2.1px * var(--scene-k) * var(--scene-z, 1)); }
 .scene-paper { fill: var(--scene-paper); }
-/* 名物の欄のカードの絵（lg 以上 幅 約 300〜344px、lg より狭い画面 カードの幅（画面の幅の 85%）から余白を引いた幅）。
-   絵が縮む分だけ太くして、線を 2〜3px に保つ（320px の画面で約 2.0px、lg 以上で約 2.3〜2.7px） */
-.scene-svg.scene-svg-small { --scene-k: 1.35; }
-@media (min-width: 1024px) {
-  .scene-svg.scene-svg-small { --scene-k: 1.2; }
+/* 名物の欄のイラストのカード（Specialties.tsx）の絵。絵の幅（正方形の場所の幅）に合わせて太さを段に分け、
+   線（scene-line）を 2〜3px くらいに保つ。絵の幅はおおよそ
+   ・md より狭い画面：2列で、画面の幅の半分から約 56px を引いた幅（320px の画面で約 104px、767px で約 327px）
+   ・md〜lg：2列で約 296〜304px（欄の幅を 720px までにしている）
+   ・lg 以上：3列で約 258px（欄の幅を 960px までにしている） */
+.scene-svg.scene-svg-card { --scene-k: 1.45; }
+@media (max-width: 1023px) {
+  .scene-svg.scene-svg-card { --scene-k: 1.25; }
+}
+@media (max-width: 767px) {
+  .scene-svg.scene-svg-card { --scene-k: 1.35; }
+}
+@media (max-width: 639px) {
+  .scene-svg.scene-svg-card { --scene-k: 1.7; }
+}
+@media (max-width: 499px) {
+  .scene-svg.scene-svg-card { --scene-k: 2.3; }
+}
+@media (max-width: 399px) {
+  .scene-svg.scene-svg-card { --scene-k: 3; }
 }
 /* 名物の欄の和紙のカード。絵の中の「後ろの線を隠す塗り」をカードの色（section-light と同じ）にする */
 .scene-card { --scene-paper: #F7F3EB; }
@@ -42,6 +59,8 @@
 /* 差し色（accent）。各場面に1か所だけ */
 .scene-accent { stroke: var(--accent); }
 .scene-accent-fill { fill: var(--accent); }
+/* 差し色の面をうすく塗る（肉みそ冷奴の肉みそ。後ろの線も隠したいので、紙の色の上にうすい accent を重ねる） */
+.scene-accent-wash { fill: color-mix(in srgb, var(--accent) 24%, var(--scene-paper)); }
 
 /* 線を描き進める部品（pathLength="1" と一緒に使う） */
 .scene-stroke-draw {
@@ -142,6 +161,14 @@
   82%       { stroke-dashoffset: 0; opacity: 1; }
   to        { stroke-dashoffset: 0; opacity: 0; }
 }
+/* ぱっと出て、すぐ消える（からあげの油のパチパチ）。動き終わりは消えた形。
+   動かないとき（prefers-reduced-motion など）は、消えずに見えたままの形で止まる */
+@keyframes scene-flicker {
+  from { opacity: 0; transform: scale(0.4); }
+  30%  { opacity: 1; transform: none; }
+  65%  { opacity: 1; transform: none; }
+  to   { opacity: 0; transform: scale(1.15); }
+}
 /* 湯気の揺れ（時間で、ずっとゆっくり。スクロールとは別） */
 @keyframes scene-sway {
   from { transform: translateX(-2.5px) rotate(-1.6deg); }
@@ -162,7 +189,10 @@
        そのあいだ絵は画面いっぱいに見えているので、動きは見える範囲で進む（entry 100% 〜 cover 50% だと順番が逆になり、動かなくなる）
      ・画面の上の固定ヘッダー（4rem）と、md より狭い画面の下の「電話する」ボタン（52px ＋ safe-area）に隠れる分は、
        画面に入っていないものとして数える（view-timeline-inset）
-     ・animation の一括指定は animation-timeline・animation-range を初期値に戻すので、必ずその後ろに書く */
+     ・animation の一括指定は animation-timeline・animation-range を初期値に戻すので、必ずその後ろに書く
+     ・--scene-col … 名物の欄のカードの、同じ段の中での列の番号（左から 0・1・2。Specialties.tsx が付ける）。
+       列ごとに、動きの始まりと終わりを contain 6% ずつ後ろへずらす（左のカードから順に、少しずつ遅れて動き始める）。
+       付けていない絵（トップの場面など）は 0 で、今までと同じ */
   @supports (animation-timeline: view()) {
     .scene-art {
       view-timeline: --scene block;
@@ -172,8 +202,8 @@
       animation: var(--a) linear both;
       animation-timeline: --scene;
       animation-range:
-        contain calc(max(0, var(--r0) - 4) * 50% / 56)
-        contain calc(min(56, var(--r1) - 4) * 50% / 56);
+        contain calc(max(0, var(--r0) - 4) * 50% / 56 + var(--scene-col, 0) * 6%)
+        contain calc(min(56, var(--r1) - 4) * 50% / 56 + var(--scene-col, 0) * 6%);
     }
   }
   @supports (animation-timeline: view()) {
@@ -183,12 +213,13 @@
   }
 
   /* 2) 使えないブラウザ：絵の 70% 以上が画面に入ったとき1回だけ、時間で同じ順に進める（data-scene は ScenePlayOnView が付ける）。
-     始まる時刻は (--r0 − 4) × 0.045 秒、長さは (--r1 − --r0) × 0.05 秒（短くても 0.5 秒） */
+     始まる時刻は (--r0 − 4) × 0.045 秒、長さは (--r1 − --r0) × 0.05 秒（短くても 0.5 秒）。
+     名物の欄のカードは、列ごとに 0.15 秒ずつ遅らせる（--scene-col × 0.15 秒） */
   .scene-art[data-scene="wait"] .scene-anim {
     animation: var(--a) 1s linear both paused;
   }
   .scene-art[data-scene="play"] .scene-anim {
     animation: var(--a) calc(max(0.5, (var(--r1) - var(--r0)) * 0.05) * 1s) cubic-bezier(0.33, 1, 0.68, 1)
-      calc(max(0, var(--r0) - 4) * 0.045s) both;
+      calc(max(0, var(--r0) - 4) * 0.045s + var(--scene-col, 0) * 0.15s) both;
   }
 }

@@ -108,3 +108,27 @@ export function anim(name: string, from: number, to: number, vars: Record<string
 export function sway(duration: number, delay: number): CSSProperties {
   return { "--sway-dur": `${duration}s`, "--sway-delay": `${delay}s` } as CSSProperties;
 }
+
+// ごつごつ・こんもりした閉じた形の点（からあげ・肉みそなど）。
+// 角度ごとに、決まった数式で半径を少し出し入れする（bumps … 出っぱりの数、bumpAmp … 出入りの大きさの割合）。
+// 輪の書き始めと書き終わりを少し重ねるので、線（smooth）はそのまま筆で描いた輪になる。
+// 塗り（polygon）に使うときは、重ねた分も含めてそのまま渡してよい
+export function blobPts(
+  cx: number,
+  cy: number,
+  rx: number,
+  ry: number,
+  seed: number,
+  bumps = 7,
+  bumpAmp = 0.08,
+  steps = 28,
+): P[] {
+  const pts: P[] = [];
+  const over = 0.12; // 重ねる分（ラジアン）
+  for (let i = 0; i <= steps; i++) {
+    const t = -over + ((PI * 2 + over * 2) * i) / steps;
+    const w = 1 + bumpAmp * Math.sin(bumps * t + seed * 0.37) + jitter(seed + (i % steps)) * bumpAmp * 0.45;
+    pts.push([cx + rx * w * Math.cos(t), cy + ry * w * Math.sin(t)]);
+  }
+  return pts;
+}
