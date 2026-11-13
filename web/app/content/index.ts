@@ -13,9 +13,15 @@ import { DEFAULT_SITE_IMAGES } from "../lib/site-image-defaults";
 import { MENUS, type MenuDisplay } from "./menus";
 import { NEWS } from "./news";
 import { SPECIALTIES, displayableSpecialties, type DisplaySpecialty } from "./specialties";
-import { SPECIALTY_CARDS, type SpecialtyCardId, type SpecialtyCardContent } from "./specialty-prices";
+import { SPECIALTY_FOOD, SPECIALTY_DRINKS, type SpecialtyItem, type SpecialtyArt } from "./specialty-prices";
 
-export type { MenuDisplay, DisplaySpecialty, SpecialtyCardId, SpecialtyCardContent };
+export type { MenuDisplay, DisplaySpecialty, SpecialtyItem, SpecialtyArt };
+
+/** 名物の欄のカード（料理とお飲みもの） */
+export interface SpecialtyCards {
+  food: SpecialtyItem[];
+  drinks: SpecialtyItem[];
+}
 
 export interface SiteImages {
   hero:  { sp: string; pc: string };
@@ -49,13 +55,10 @@ export async function getSpecialties(): Promise<DisplaySpecialty[]> {
   return displayableSpecialties(SPECIALTIES).map((item) => ({ ...item }));
 }
 
-/** トップの「名物」の欄の各品の値段（税込み・円）とこだわりの文。
+/** ディナーメニューの「きたげんの名物」の欄のカード（料理6品・お飲みもの3つ）。
  *  値段が数字でない品は undefined にする（値段の行を出さない） */
-export async function getSpecialtyCards(): Promise<Record<SpecialtyCardId, SpecialtyCardContent>> {
+export async function getSpecialtyCards(): Promise<SpecialtyCards> {
   const valid = (n: number | undefined) => (typeof n === "number" && Number.isFinite(n) ? n : undefined);
-  const pick = (id: SpecialtyCardId): SpecialtyCardContent => ({
-    price: valid(SPECIALTY_CARDS[id].price),
-    text: SPECIALTY_CARDS[id].text,
-  });
-  return { shumai: pick("shumai"), gyoza: pick("gyoza"), beer: pick("beer") };
+  const pick = (item: SpecialtyItem): SpecialtyItem => ({ ...item, price: valid(item.price) });
+  return { food: SPECIALTY_FOOD.map(pick), drinks: SPECIALTY_DRINKS.map(pick) };
 }

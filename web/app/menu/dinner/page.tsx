@@ -9,7 +9,7 @@ import { LUNCH_SUSPENDED, dinnerTimeLabel } from "../../lib/businessHours";
 import Specialties from "../../components/scenes/Specialties";
 import { getSpecialtyCards } from "../../content";
 
-// 明朝体（Noto Serif JP）。名物の欄（縦書きの見出し・こだわりの文）のために、このページでも読み込む。
+// 明朝体（Noto Serif JP）。名物の欄（縦書きの見出し・小見出し・カードの番号と品名）のために、このページでも読み込む。
 // 太さはトップと同じく 500・700 だけ
 import "@fontsource/noto-serif-jp/500.css";
 import "@fontsource/noto-serif-jp/700.css";
@@ -159,7 +159,7 @@ export default async function DinnerMenuPage() {
     groupByCategorySub(allItems.filter((i) => i.category_main === "drink")),
   );
 
-  // 名物の欄（3品のカードとこだわりの文）の値段と文は content/specialty-prices.ts から
+  // 名物の欄（料理6品・お飲みもの3つのカード）の品名・ひとこと・値段は content/specialty-prices.ts から
   const specialtyCards = await getSpecialtyCards();
 
   return (
@@ -225,10 +225,10 @@ export default async function DinnerMenuPage() {
         </SectionInner>
       </div>
 
-      {/* ── ① 名物・おすすめ（しゅうまい・鉄鍋餃子・生ビール）────────────
+      {/* ── ① 名物・おすすめ（料理6品・お飲みもの3つの、イラストのカード）────────────
            トップの名物の場面の入口「お品書きを見る →」の行き先なので、ページのいちばん上に置く。
            目次の帯の「名物・おすすめ」（#recommend）の飛び先もここ。
-           中身と並べ方は components/scenes/Specialties.tsx（以前トップにあった欄をそのまま使う）。
+           中身と並べ方は components/scenes/Specialties.tsx。
            背景は section-deep：上のページヘッダー（section-warm）・下のテイクアウトのご案内（section-light）と色を変える。
            以前ここの下にあった、写真の枠のカードの「名物・おすすめ」の欄は外した。
            カードの部品は components/RecommendCard.tsx、品の一覧は lib/recommendedMenu.ts に残している
