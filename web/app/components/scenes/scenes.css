@@ -121,6 +121,13 @@
   from { transform: scale(1.28, 0.94); }
   to   { transform: none; }
 }
+/* 席の絵の子どもの足（SeatIllustration.tsx）：靴の中（--fy だけ下）で現れ → 少し持ち上がる → 段の上へ一歩上がって止まる */
+@keyframes seat-step {
+  from { opacity: 0; transform: translateY(var(--fy, 75px)); }
+  20%  { opacity: 1; transform: translateY(var(--fy, 75px)); }
+  45%  { opacity: 1; transform: translateY(calc(var(--fy, 75px) - 10px)) scale(1.06); }
+  to   { opacity: 1; transform: none; }
+}
 /* 湯気の揺れ（時間で、ずっとゆっくり。スクロールとは別） */
 @keyframes scene-sway {
   from { transform: translateX(-2.5px) rotate(-1.6deg); }
