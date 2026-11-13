@@ -2,7 +2,7 @@
 // ディナーメニューの「きたげんの名物」の欄の、料理の弐（鉄鍋餃子）のカードで使う飾りの絵（aria-hidden。意味はカードの品名で伝える）。
 // トップでは使っていない（トップの名物の場面はせいろの絵）。
 // 本物の盛り付け（代表者から届いた写真）に合わせる：黒くて厚みのある丸い鉄のスキレット（ふちが厚く、太く短い取っ手が1本。
-// 先に小さな穴）に、半月の餃子が8個、焼き目の面を上にして、鍋の中で輪を描くように並び、となりどうし少しずつ重なる。
+// 先に小さな穴）に、半月の餃子が8個、焼き目の面を上にして、鍋の中心に向けて花びらのように並び、となりどうし少しずつ重なる。
 // 鍋の下に薄い1枚の木の板。
 // ・線は1色（currentColor ＝ 呼び出し側の text-foreground）。端と角は丸く
 //   （鍋・取っ手・餃子にだけ、後ろの線を隠すための塗り --scene-paper を付ける）
@@ -12,7 +12,7 @@
 // ・部品ごとに g でまとめる：木の板（teppan-board）・取っ手（teppan-handle）・鍋（teppan-pan）・
 //   餃子8個（teppan-gyoza。焼き色 teppan-brown は餃子ごとに中に入れる）・湯気（teppan-steam）
 // ・見る角度は少し斜め上から。床の面の点を縦につぶして描く（pr()）
-// ・動きの順番：木の板と鍋が現れる（ふちが描かれる）→ 餃子が輪の奥から時計回りに1つずつ置かれる
+// ・動きの順番：木の板と鍋が現れる（ふちが描かれる）→ 餃子が奥から時計回りに1つずつ置かれる
 //   → 餃子の上の面に焼き色がじわっと出る → 湯気が2本立つ
 //   （動きの名前と範囲は anim(...)、@keyframes は scenes.css）
 // ・絵は viewBox を 360 の幅に切り出して大きく見せる（線の太さは --scene-z で 400 の幅の絵とそろえる。scenes.css）
@@ -154,47 +154,55 @@ const HOLE = smooth(
   }),
 );
 
-// ── 餃子（8個。焼き目の面を上に、鍋の中で輪を描くように並ぶ） ──
-// 輪の中心は鍋の中心、輪の大きさは鍋の内側のふち（R_IN）の少し内側。輪のまん中は鍋の底が見える。
-// 1つずつ半月の形：外側（輪の外に向く側）は大きくふくらんだ曲線、内側はゆるい曲線、両端は丸い。
-// 長い向きは輪の接線の向き（円周に沿わせ、輪に合わせて少しだけ弓なりにする）。
+// ── 餃子（8個。焼き目の面を上に、鍋の中心に向けて花のように並ぶ） ──
+// 1つずつ、長い向きを鍋の中心に向ける（放射状）。内側の端は鍋の中心のすぐ近くまで寄せ、まん中で少しずつ重ね合わせる
+// （中央に鍋の底が見えるすき間はつくらない）。外側の端は鍋の内側のふち（R_IN）の少し内側まで。
+// 1つずつ半月の形：ふくらんだ側は大きな曲線、平らな側はゆるい曲線、両端は丸い。中心側の端は少しだけ細くする（とがらせない）。
 // 上の面の下に、厚みを表す下のふちの線を見える側（手前）だけ細く入れる。
-// 8個は 45° ずつを基本に、角度と中心からの距離を1つずつ手で決めてばらつかせる（乱数は使わない）。
-// 並ぶ順（動きの順）：輪の奥から時計回り。となりどうし少しずつ重なり、重なる向きはすべて同じ回り方
-// （時計回りに、前の餃子の上に次の餃子がのる。最後の1つの上に最初の1つがのる所は、
-//   最後の1つから最初の1つの形をくりぬく（mask）。くりぬいたふちは最初の1つの輪郭の線の下に入るので、継ぎ目は見えない）
+// 8個は 45° ずつを基本に、向きと大きさを1つずつ手で決めてばらつかせる（乱数は使わない）。
+// 並ぶ順（動きの順）：奥から時計回り。花びらのように、前の餃子の平らな側に、次の餃子のふくらんだ側が少しかぶさる
+// （ふくらんだ側は、すべて前の餃子の側＝反時計回りの側を向く。GSIDE）。
+// 最後の1つの上に最初の1つがのる所は、最後の1つから最初の1つの形をくりぬく（mask）。
+// くりぬいたふちは最初の1つの輪郭の線の下に入るので、継ぎ目は見えない。
+// 中心の近くは、長い向きの線を少しずつずらして（GOFF）8個の端が1点に集まらないようにし、
+// さらに下になる餃子の線を、中心のまわりの小さな範囲だけ隠す（mask teppan-center。塗りは残すので、すき間は見えない）
 const GZ = DEPTH - 2; // 餃子の上の面の高さ（ふちと同じくらいまで、こんもり）
-const GLEN = 39; // 長さの半分（床の面。円周に沿った長さ）
-const GW = 44; // 幅（内側のふちから外側のふくらみのいちばん外まで）
-const GROUND = 0.42; // 置く距離（下の表の値）を、幅のどこに合わせるか（0 が内側のふち、1 が外側のいちばん外）
+const GLEN = 50; // 長さの半分（床の面。中心に向かう長さ）
+const GW = 52; // 幅（平らな側のふちから、ふくらみのいちばん外まで）
+const GIN = 0; // 中心側の端の、鍋の中心からの距離
+const GTAPER = 0.72; // 中心側の端の幅の割合（少し細く）
+const GSIDE = -1; // ふくらんだ側の向き（-1 … 反時計回りの側＝前に置いた餃子の側、1 … 時計回りの側）
 const GT = 7; // ふっくらした厚み（上の面と下のふちの差。絵の座標）
-const GBEND = 0.3; // 円周に沿わせて弓なりにする割合（0 はまっすぐ、1 は輪にぴったり沿う）
 const DEG = PI / 180;
+const [GCX, GCY] = pr(PU, PV, GZ); // 鍋の中心（餃子の上の面の高さ）
+const G_CENTER = 5; // 下になる餃子の線を隠す、中心のまわりの半径（床の面）
+const G_CENTER_TOP = 2; // 中心で線を隠さない、いちばん上になる餃子の数（最後に置く2つ）
+const GOFF = 14; // 長い向きの線を、中心から平らな側へずらす長さ（8個の端が1点に集まらず、小さな渦のように重なる）
 
-// [置く向き（度。-90 が奥、時計回りに増える）, 中心からの距離]。基本は 45° ずつ・距離 74
+// [置く向き（度。-90 が奥、時計回りに増える）, 大きさ]。基本は 45° ずつ・大きさ 1
 const GYOZA_AT: readonly [number, number][] = [
-  [-86, 74.5], // 奥（-90 +4）
-  [-49, 71], // 右奥（-45 -4）
-  [3, 77], // 右（0 +3）
-  [40, 72.5], // 右手前（45 -5）
-  [94, 76], // 手前（90 +4）
-  [132, 70.5], // 左手前（135 -3）
-  [185, 77.5], // 左（180 +5）
-  [221, 73], // 左奥（225 -4）
+  [-86, 1.0], // 奥（-90 +4）
+  [-49, 0.97], // 右奥（-45 -4）
+  [3, 1.03], // 右（0 +3）
+  [40, 0.96], // 右手前（45 -5）
+  [94, 1.02], // 手前（90 +4）
+  [132, 0.95], // 左手前（135 -3）
+  [185, 1.04], // 左（180 +5）
+  [221, 0.98], // 左奥（225 -4）
 ];
 
-// 半月の形（餃子の中の座標。x … 円周に沿った向き、y … 0 が内側のふち、GW が外側のいちばん外）。
-// 外側は大きなだ円の弧、内側はゆるい弧。2つの境の角を、なめらかに丸める（smax）
+// 半月の形（餃子の中の座標。x … 長い向き（マイナスが中心側）、y … 0 が平らな側のふち、GW がふくらみのいちばん外）。
+// ふくらんだ側は大きなだ円の弧、平らな側はゆるい弧。2つの境の角を、なめらかに丸める（smax）
 const smax = (a: number, b: number, k: number) => {
   const h = Math.max(k - Math.abs(a - b), 0) / k;
   return Math.max(a, b) + (h * h * k) / 4;
 };
 function moonInside(x: number, y: number): number {
-  const ey0 = 3; // 外側のだ円の中心（内側のふちより少しだけ外）
+  const ey0 = 3; // ふくらんだ側のだ円の中心（平らな側のふちより少しだけ内）
   const ex = GLEN * 1.04;
   const ey = GW - ey0;
-  const fo = (Math.hypot(x / ex, (y - ey0) / ey) - 1) * Math.min(ex, ey); // 外側（だ円）
-  const fi = 4 * (1 - (x / GLEN) ** 2) - 4 - y; // 内側（まん中が少しだけ内へふくらむ、ゆるい弧）
+  const fo = (Math.hypot(x / ex, (y - ey0) / ey) - 1) * Math.min(ex, ey); // ふくらんだ側（だ円）
+  const fi = 4 * (1 - (x / GLEN) ** 2) - 4 - y; // 平らな側（まん中が少しだけふくらむ、ゆるい弧）
   return smax(fo, fi, 20); // 0 より小さいと中
 }
 // 形のまわりの点（1周 n 個）。形の中の1点から、角度ごとに境までの長さを二分法で探す
@@ -203,7 +211,7 @@ function moonOutline(n: number): [number, number][] {
   return Array.from({ length: n }, (_, j) => {
     const t = (PI * 2 * j) / n;
     const dx = Math.cos(t);
-    const dy = -Math.sin(t); // j が増えると、外側（y が大きい側）→ 左 → 内側 → 右 の順
+    const dy = -Math.sin(t); // j が増えると、ふくらんだ側（y が大きい側）→ 中心側の端 → 平らな側 → 外側の端 の順
     let lo = 0;
     let hi = GLEN * 2;
     for (let k = 0; k < 30; k++) {
@@ -230,19 +238,18 @@ const SPOTS: readonly (readonly [number, number, number])[][] = [
 
 type Gyoza = { under: string; underLine: string; fill: string; line: string; brown: string; spots: string[] };
 
-function gyoza([deg, dist]: readonly [number, number], i: number): Gyoza {
+function gyoza([deg, k]: readonly [number, number], i: number): Gyoza {
   const phi = deg * DEG;
-  const ri = dist - GROUND * GW; // 内側のふちの、輪の中心からの距離
-  const rm = dist; // 弓なりにするときの基準の半径
-  // 餃子の中の点 → 床の面の点。まっすぐ（接線の向き）と、輪にぴったり沿う形の間をとる
+  const rx = Math.cos(phi); // 中心から外への向き
+  const ry = Math.sin(phi);
+  // 餃子の中の点 → 床の面の点。x は中心からの距離に、y は向きに直角な横（GSIDE の側）に。
+  // 中心側の端は幅を少し細くする（GTAPER）
   const ground = (x: number, y: number): [number, number] => {
-    const r = ri + y;
-    const sx = PU + r * Math.cos(phi) - x * Math.sin(phi);
-    const sy = PV + r * Math.sin(phi) + x * Math.cos(phi);
-    const a = phi + x / rm;
-    const px = PU + r * Math.cos(a);
-    const py = PV + r * Math.sin(a);
-    return [sx + (px - sx) * GBEND, sy + (py - sy) * GBEND];
+    const inner = Math.min(Math.max(-x / GLEN, 0), 1);
+    const w = 1 - (1 - GTAPER) * inner * inner;
+    const r = GIN + (x + GLEN * 1.04) * k;
+    const side = GSIDE * (y * w * k - GOFF);
+    return [PU + r * rx - side * ry, PV + r * ry + side * rx];
   };
   const s = 8000 + i * 60;
   const n = MOON.length;
@@ -276,9 +283,9 @@ function gyoza([deg, dist]: readonly [number, number], i: number): Gyoza {
   const spots = spotAt.map(([x, y, r], j) => {
     const [gu, gv] = ground(x, y);
     const [px, py] = pr(gu, gv, GZ);
-    // 円周に沿った向きに少し長い形（絵の上では、置く向きで向きが変わる）
-    const tx = -Math.sin(phi);
-    const ty = Math.cos(phi) * SQ;
+    // 長い向き（中心に向かう向き）に少し長い形（絵の上では、置く向きで向きが変わる）
+    const tx = rx;
+    const ty = ry * SQ;
     const tl = Math.hypot(tx, ty);
     const rot = Math.atan2(ty / tl, tx / tl);
     const pts = blobPts(0, 0, 7.5 * r, 4.2 * r, s + 50 + j * 9, 3, 0.14, 14).map(
@@ -304,10 +311,12 @@ const STEAM_SWAY = [sway(5.4, -0.8), sway(6.1, -2.4)];
 
 // 餃子1つ（置かれる動きと、そのあと焼き色がじわっと出る動き）
 function GyozaPiece({ g, i }: { g: Gyoza; i: number }) {
+  // 中心で下になる餃子は、中心のまわりの線を隠す（端の線が重なってごちゃごちゃしないように）
+  const lineMask = i < GYOZA_AT.length - G_CENTER_TOP ? "url(#teppan-center)" : undefined;
   return (
     <g className="scene-anim" style={anim("scene-fade-up", 20 + i * 2.6, 26 + i * 2.6, { "--dy": "-12px" })}>
       <path d={g.under} className="scene-paper" stroke="none" />
-      <path d={g.underLine} className="scene-fine" />
+      <path d={g.underLine} className="scene-fine" mask={lineMask} />
       <path d={g.fill} className="scene-paper" stroke="none" />
       <g className="teppan-brown scene-anim" style={anim("scene-fade-up", 44 + i * 1.2, 51 + i * 1.2, { "--dy": "0px" })}>
         <path d={g.brown} className="teppan-brown-wash" stroke="none" />
@@ -315,7 +324,7 @@ function GyozaPiece({ g, i }: { g: Gyoza; i: number }) {
           <path key={k} d={d} className="teppan-brown-spot" stroke="none" />
         ))}
       </g>
-      <path d={g.line} className="scene-line" />
+      <path d={g.line} className="scene-line" mask={lineMask} />
     </g>
   );
 }
@@ -340,6 +349,11 @@ export default function TeppanIllustration({ className = "" }: { className?: str
           <stop offset="0.5" stopColor="currentColor" stopOpacity="0.6" />
           <stop offset="1" stopColor="currentColor" stopOpacity="0" />
         </linearGradient>
+        {/* 中心で下になる餃子の線を、中心のまわりだけ隠す */}
+        <mask id="teppan-center" maskUnits="userSpaceOnUse" x="0" y="0" width="400" height="500">
+          <rect x="0" y="0" width="400" height="500" fill="white" />
+          <ellipse cx={GCX} cy={GCY} rx={G_CENTER} ry={G_CENTER * SQ} fill="black" />
+        </mask>
         {/* 最後の餃子から、最初の餃子の形（上の面・厚み・輪郭の線の太さ）をくりぬく */}
         <mask id="teppan-under-first" maskUnits="userSpaceOnUse" x="0" y="0" width="400" height="500">
           <rect x="0" y="0" width="400" height="500" fill="white" />
@@ -379,7 +393,7 @@ export default function TeppanIllustration({ className = "" }: { className?: str
         ))}
       </g>
 
-      {/* 2. 餃子（奥のまん中から時計回りに、1つずつ上から置かれる。後から置くものが前のものに少し重なる）
+      {/* 2. 餃子（奥から時計回りに、1つずつ上から置かれる。後から置くものが前のものに少し重なる）
           3. 差し色（accent）はここだけ：餃子の上の面の焼き色（うすい accent の面）と小さなしみ。置かれたあと、じわっと出る */}
       <g className="teppan-gyoza">
         {GYOZA.map((g, i) =>
