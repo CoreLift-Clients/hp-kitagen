@@ -129,12 +129,13 @@
   from, 38% { transform: translateY(var(--fix-dy, 6px)) rotate(var(--fix-rot, -22deg)); }
   62%, to   { transform: none; }
 }
-/* 席の絵の手：上から下りてきて靴にふれ（38%）、靴が回り終わるまでふれたまま（〜72%）、上へ引いて消える */
+/* 席の絵の手：右上から腕の向きにそって入ってきて、かかとをつまみ（38%）、靴が回り終わるまでつまんだまま（〜72%）、
+   右上へ引いて消える（--hand-out は腕の向き。SeatIllustration.tsx で決める） */
 @keyframes seat-hand {
-  from      { opacity: 0; transform: translateY(-70px); }
+  from      { opacity: 0; transform: translate(var(--hand-out)); }
   12%       { opacity: 1; }
   38%, 72%  { opacity: 1; transform: none; }
-  to        { opacity: 0; transform: translateY(-60px); }
+  to        { opacity: 0; transform: translate(var(--hand-out)); }
 }
 /* 湯気の揺れ（時間で、ずっとゆっくり。スクロールとは別） */
 @keyframes scene-sway {
