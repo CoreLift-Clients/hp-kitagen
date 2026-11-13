@@ -2,22 +2,25 @@
 // トップの「席」の場面で使う飾りの絵（aria-hidden。意味は横の文で伝える）。
 // きたげんの2階の座敷は、靴を脱いで上がり、座布団がある。その上がり口を、少し上から見た形で描く：
 //   横に長い木の段（上がりかまち。上の面と、木目の入った手前の面）・段の奥の畳（へりの帯と、一部にだけ薄い畳の目）
-//   ・左奥に座布団の丸みのある角と房
+//   ・左奥に、ふっくらした四角い座布団の角（角の2辺と厚み）と房
 //   ・段の手前（土間の側）に、脱いでそろえた靴が4足（つま先を手前に向けて、左右をそろえて置いた形。
 //     間隔と向きを少しずつ変えて、人が脱いでそろえた感じにする）
 //   左から、革靴・スニーカー・パンプス・小さな子どもの靴
+//   ・子どもの靴をそろえ直す右手（手首から先と袖口。動きの途中だけ見える）
 // ・線は1色（currentColor ＝ 呼び出し側の text-foreground）。端と角は丸く。塗りはなし
-//   （子どもの足だけ、後ろの線を隠す塗り --scene-paper を付ける）
-// ・差し色は accent を1か所だけ（スニーカーの横の線）
-// ・部品ごとに g でまとめる：段・畳・座布団（seat-room）・靴4足（seat-shoes。1足ごとに g）・子どもの足（seat-feet）
+//   （手と袖口だけ、後ろの線を隠す塗り --scene-paper を付ける。描き方は店主紹介の手元の絵 OwnerHandsIllustration.tsx にそろえる）
+// ・差し色は accent を1か所だけ（スニーカーの横の線）。手には使わない
+// ・部品ごとに g でまとめる：段・畳・座布団（seat-room）・靴4足（seat-shoes。1足ごとに g）・
+//   子どもの右の靴と手（seat-fix ＝ 靴 ＋ seat-hand）
 // ・動きの順番：段・畳・座布団の線が描かれる → 1足目（革靴）が少し上から置かれるように現れる →
-//   2足目・3足目・4足目が、間をあけて1足ずつ横に並んでいく →
-//   子どもの靴下の足が、靴の中から少し持ち上がり、段の上へ一歩上がる（左足が先）。
-//   最後は4足がそろって並び、子どもの両足が段の上に乗った形で止まる（脱いだ子どもの靴は元の場所に残る）
+//   2足目・3足目が、間をあけて1足ずつ横に並んでいく → 4足目（子どもの靴）が、右の靴だけつま先が外へ開いて
+//   少し前にずれた形で置かれる → 上（段の奥）から手が下りてきて、右の靴の横にふれる →
+//   手と一緒に右の靴が回ってまっすぐになり、左の靴とそろう → 手が上へ引いて消える。
+//   最後は手が見えず、4足がそろって並んだ形で止まる（何も動かさないときの形がこれ）
 //   （動きの名前と範囲は anim(...)、@keyframes は scenes.css）
 // 線の描き方の道具（揺らぎ）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
-import { type P, anim, jitter, line, r1, smooth } from "./draw";
+import { type P, anim, jitter, line, polygon, r1, smooth } from "./draw";
 
 // 閉じた形をなめらかな曲線でつなぐ（Catmull-Rom → 3次ベジェ。始めと終わりに角ができないように輪でつなぐ）
 function closed(pts: readonly P[]): string {
@@ -69,38 +72,49 @@ const TATAMI = [
   line([160, 59], [238, 58.4], 6095, 0.35, 2),
 ];
 // 座布団（左奥。ほとんどは絵の外で、右手前の角とその近くだけがのぞく）。
-// 角は、綿が入ってふっくらした丸みのある形にする
+// ふっくらした四角い座布団の角：上の面の2辺（手前の横の辺と、奥へ向かう右の辺。どちらも外へ少しふくらむ）と、
+// その下の厚み（2本目の線。手前の辺の下から角を回って、右の辺の下へ）で描く。畳のへり（y 81）より奥に収める
 const CUSHION = [
   smooth(
     (
       [
-        [2, 56],
-        [40, 55.5],
-        [72, 54.2],
-        [92, 51.8],
-        [103.5, 46.5],
-        [109.5, 37],
-        [111.5, 22],
-        [110, 2],
+        [2, 50],
+        [30, 51.6],
+        [60, 51.8],
+        [84, 50.2],
+        [97, 47.4],
+        [102.5, 42.5],
+        [104.5, 32],
+        [105, 18],
+        [104, 2],
       ] as const
-    ).map(([x, y], i) => [x + jitter(6100 + i) * 0.5, y] as const),
+    ).map(([x, y], i) => [x + jitter(6100 + i) * 0.4, y + jitter(6110 + i) * 0.3] as const),
   ),
 ];
-// 座布団の厚み（手前のふちの下に1本。角の丸みの手前で止める）
 const CUSHION_FINE = [
-  smooth([
-    [2, 63],
-    [42, 62.4],
-    [74, 61],
-    [92, 58.6],
-  ]),
+  smooth(
+    (
+      [
+        [2, 58],
+        [30, 59.8],
+        [60, 60],
+        [86, 58.4],
+        [101, 55],
+        [108.5, 48],
+        [111, 36],
+        [111.5, 26],
+        [111, 16],
+      ] as const
+    ).map(([x, y], i) => [x + jitter(6120 + i) * 0.4, y + jitter(6130 + i) * 0.3] as const),
+  ),
+  line([99.5, 46.5], [104.5, 53.5], 6140, 0.2, 1), // 角の厚み（上の面の角と、下の角をつなぐ短い線）
 ];
 // 角の房（短い線4本を、角の先から束ねて垂らす）
 const TASSEL = [
-  line([105.2, 48.6], [108.6, 59], 6150, 0.3, 1),
-  line([106.2, 48], [111.8, 58.4], 6155, 0.3, 1),
-  line([107.2, 47.2], [114.8, 56.8], 6160, 0.3, 1),
-  line([108, 46.2], [117.2, 54.6], 6165, 0.3, 1),
+  line([105, 54], [107.6, 64.6], 6150, 0.3, 1),
+  line([106, 53.6], [110.6, 64], 6155, 0.3, 1),
+  line([107, 53], [113.6, 62.6], 6160, 0.3, 1),
+  line([107.8, 52.2], [116, 60.6], 6165, 0.3, 1),
 ];
 
 // ── 靴 ──
@@ -293,7 +307,7 @@ const PAIRS: ShoeSpec[] = [
   },
   // 4足目：小さな子どもの靴（小さめ。丸いつま先と、甲のベルト）
   {
-    cx: 346,
+    cx: 340,
     ang: 3.5,
     heel: 166,
     len: 62,
@@ -318,63 +332,76 @@ const SHOES = PAIRS.map((s, i) => buildPair(s, 6200 + i * 100));
 
 // 1足ずつ、間をあけて現れる（少し上から置かれるように）
 const SHOE_RANGES: readonly [number, number][] = [
-  [18, 24],
-  [25, 31],
-  [32, 38],
-  [39, 45],
+  [18, 23],
+  [24, 29],
+  [30, 35],
+  [36, 41],
 ];
 
-// ── 子どもの足（4足目の靴から抜けて、段の上へ一歩上がる） ──
-// くるぶしから下の両足を、靴下をはいた形で描く（足の形の輪郭と、足首の口ゴムの線1本だけ。指は描かない）。
-// 子どもは座敷のほうを向いているので、かかとが手前（下）、つま先が奥（上）。
-// 足首から上は描かない（口ゴムの線で切れて、すねは見る人の側へ立ち上がる形）。
-// 輪郭の中は場面の背景の色で塗り、後ろの線（段の奥のふち・靴）を隠す。
-// 止まった形（動きのない形）は、段の上に両足が乗った形
-const FOOT: Shape = [
-  [0, 0],
-  [0.04, 0.64],
-  [0.2, 0.88],
-  [0.45, 0.9],
-  [0.7, 0.96],
-  [0.88, 0.84],
-  [0.98, 0.46],
-  [1.02, -0.06],
-  [0.97, -0.52],
-  [0.84, -0.8],
-  [0.64, -0.78],
-  [0.44, -0.66],
-  [0.2, -0.78],
-  [0.04, -0.62],
+// ── 子どもの右の靴をそろえ直す（4足目） ──
+// 子どもの右の靴は、置かれたときはつま先が外へ 22° 開き、少し前（手前）にずれている。
+// 上から右手が下りてきて靴の横にふれ、手と一緒に靴が回ってまっすぐになり、手は上へ引いて消える。
+// 靴と手を1つの g（seat-fix）に入れ、靴のまん中を中心に回す。手（seat-hand）はその中で下りて・引く
+const CHILD = PAIRS[3];
+const FIX_PIVOT = rot(
+  [CHILD.cx + CHILD.w + 2.5, CHILD.heel + CHILD.len / 2],
+  CHILD.cx,
+  CHILD.heel + CHILD.len / 2,
+  CHILD.ang + 0.6,
+); // 右の靴のまん中（buildPair と同じまわし方）
+const FIX_VARS = { "--o": `${r1(FIX_PIVOT[0])}px ${r1(FIX_PIVOT[1])}px`, "--fix-rot": "-22deg", "--fix-dy": "6px" };
+
+// 右手（手の甲側から見た形。指はそろえて下へ向け、指先で靴の外側の横にふれる。親指は見る人から見て右）。
+// 描き方は OwnerHandsIllustration.tsx の手と同じ：輪郭（scene-line）と、輪郭の中の塗り（scene-paper）、
+// 指の分かれ目と親指のつけ根の短い線（scene-fine）
+const HAND_PTS: readonly P[] = [
+  [373, 150.5],
+  [385, 149],
+  [395, 150.5],
+  [397.5, 160],
+  [398, 170],
+  [394.5, 177.5],
+  [389.5, 183],
+  [387.5, 192],
+  [384.5, 201],
+  [381, 207.5],
+  [377, 210],
+  [373.2, 208],
+  [371.4, 201],
+  [370.8, 190],
+  [371.2, 176],
+  [372, 162],
 ];
-const SOCK_CUFF: Shape = [
-  [0.3, -0.84],
-  [0.22, -0.24],
-  [0.21, 0.3],
-  [0.3, 0.88],
-]; // 足首の口ゴム（かかとの側へふくらむ弧）
-const FOOT_CX = 346; // 子どもの靴のまん中と同じ
-const FOOT_HEEL = 125; // 段の上の面（鼻の少し奥）にかかとを置く
-const FOOT_LEN = 40;
-const FOOT_W = 12.5;
-// 靴の中の位置（動き始め）から、段の上（止まった形）までの縦の差（px ＝ viewBox の1単位）
-const FOOT_FROM_SHOE = 75;
-const FEET = [-1, 1].map((side, k) => {
-  const cx = FOOT_CX + side * (FOOT_W + 2);
-  const sd = 6700 + k * 40;
-  const at = ([v, u]: readonly [number, number], i: number, amp: number): P => [
-    cx + side * u * FOOT_W + jitter(sd + i) * amp,
-    FOOT_HEEL - v * FOOT_LEN + jitter(sd + i + 17) * amp,
-  ];
-  return {
-    outline: closed(FOOT.map((p, i) => at(p, i, 0.35))),
-    cuff: smooth(SOCK_CUFF.map((p, i) => at(p, i + 30, 0.15))),
-  };
-});
-// 左足が先、右足があと。子どもの靴が置かれ終わって（45）、少し間をあけてから
-const FOOT_RANGES: readonly [number, number][] = [
-  [50, 58],
-  [52, 60],
+const HAND_FILL = polygon(HAND_PTS);
+const HAND = closed(HAND_PTS);
+const HAND_FINE = [
+  line([376.6, 193], [376.2, 203], 6800, 0.25, 1), // 指の分かれ目
+  line([381.6, 193.5], [380.6, 202.5], 6805, 0.25, 1),
+  line([389.5, 183], [386.5, 172.5], 6810, 0.25, 1), // 親指のつけ根
 ];
+// 濃い色の袖口（手首から上。上は絵の外へ出る）。ふちの線と、濃い色を表す短い斜線3本
+const SLEEVE_FILL = polygon([
+  [369, 152],
+  [399, 150],
+  [404, -10],
+  [362, -10],
+]);
+const SLEEVE = [
+  line([369, 152], [399, 150.5], 6820, 0.3, 1), // 袖口のふち
+  line([369, 152], [362, -10], 6825, 0.5, 2),
+  line([399, 150.5], [404, -10], 6830, 0.5, 2),
+];
+const SLEEVE_FINE = [
+  line([373.5, 144], [380, 135], 6840, 0.2, 1),
+  line([382.5, 143.5], [389, 134.5], 6845, 0.2, 1),
+  line([391.5, 143], [397, 134.5], 6850, 0.2, 1),
+];
+
+// 4足目が置かれ終わる（41）と、手の動き（44〜60）。靴の回りと手は同じ範囲・同じ割合で進めるので、
+// 時間で進めるとき（動かせないブラウザ）もずれない
+const FIX_RANGE: readonly [number, number] = [44, 60];
+
+const paths = (ds: readonly string[], className: string) => ds.map((d, i) => <path key={i} d={d} className={className} />);
 
 export default function SeatIllustration({ className = "" }: { className?: string }) {
   return (
@@ -473,31 +500,35 @@ export default function SeatIllustration({ className = "" }: { className?: strin
             className="scene-anim"
             style={anim("scene-fade-up", SHOE_RANGES[i][0], SHOE_RANGES[i][1], { "--dy": "-12px" })}
           >
-            {pair.map((shoe, k) => (
-              <g key={k}>
-                <path d={shoe.outline} className="scene-line" />
-                <path d={shoe.open} className="scene-fine" />
-                {shoe.details.map((d, j) => (
-                  <path key={j} d={d} className="scene-fine" />
-                ))}
-                {/* 差し色（accent）はここだけ：スニーカーの横の線 */}
-                {shoe.accent && <path d={shoe.accent} className="scene-fine scene-accent" />}
-              </g>
-            ))}
-          </g>
-        ))}
-      </g>
-
-      {/* 子どもの足（靴の中 → 少し持ち上がる → 段の上へ。止まった形は段の上） */}
-      <g className="seat-feet">
-        {FEET.map((foot, i) => (
-          <g
-            key={i}
-            className="scene-anim"
-            style={anim("seat-step", FOOT_RANGES[i][0], FOOT_RANGES[i][1], { "--fy": `${FOOT_FROM_SHOE}px` })}
-          >
-            <path d={foot.outline} className="scene-line scene-paper" />
-            <path d={foot.cuff} className="scene-fine" />
+            {pair.map((shoe, k) => {
+              const body = (
+                <g key={k}>
+                  <path d={shoe.outline} className="scene-line" />
+                  <path d={shoe.open} className="scene-fine" />
+                  {shoe.details.map((d, j) => (
+                    <path key={j} d={d} className="scene-fine" />
+                  ))}
+                  {/* 差し色（accent）はここだけ：スニーカーの横の線 */}
+                  {shoe.accent && <path d={shoe.accent} className="scene-fine scene-accent" />}
+                </g>
+              );
+              if (i !== 3 || k !== 1) return body;
+              // 子どもの右の靴：ゆがんだ形で置かれ、手と一緒にまっすぐに戻る
+              return (
+                <g key={k} className="seat-fix scene-anim" style={anim("seat-fix", FIX_RANGE[0], FIX_RANGE[1], FIX_VARS)}>
+                  {body}
+                  {/* 手（何も動かさないときは見えない。opacity は動きで上書きされる） */}
+                  <g className="seat-hand scene-anim" opacity={0} style={anim("seat-hand", FIX_RANGE[0], FIX_RANGE[1])}>
+                    <path d={SLEEVE_FILL} className="scene-paper" stroke="none" />
+                    {paths(SLEEVE, "scene-line")}
+                    {paths(SLEEVE_FINE, "scene-fine")}
+                    <path d={HAND_FILL} className="scene-paper" stroke="none" />
+                    <path d={HAND} className="scene-line" />
+                    {paths(HAND_FINE, "scene-fine")}
+                  </g>
+                </g>
+              );
+            })}
           </g>
         ))}
       </g>

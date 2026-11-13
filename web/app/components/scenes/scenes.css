@@ -52,6 +52,8 @@
   transform-box: fill-box;
   transform-origin: var(--o, 50% 50%);
 }
+/* 席の絵の子どもの右の靴と手：回る中心を、靴のまん中（絵の座標で --o）に置く */
+.scene-anim.seat-fix { transform-box: view-box; }
 .scene-sway {
   transform-box: fill-box;
   transform-origin: 50% 100%;
@@ -121,12 +123,18 @@
   from { transform: scale(1.28, 0.94); }
   to   { transform: none; }
 }
-/* 席の絵の子どもの足（SeatIllustration.tsx）：靴の中（--fy だけ下）で現れ → 少し持ち上がる → 段の上へ一歩上がって止まる */
-@keyframes seat-step {
-  from { opacity: 0; transform: translateY(var(--fy, 75px)); }
-  20%  { opacity: 1; transform: translateY(var(--fy, 75px)); }
-  45%  { opacity: 1; transform: translateY(calc(var(--fy, 75px) - 10px)) scale(1.06); }
-  to   { opacity: 1; transform: none; }
+/* 席の絵（SeatIllustration.tsx）の子どもの右の靴：ゆがんだ形（つま先が外へ開き、少し前）で待ち、
+   手がふれているあいだに、靴のまん中（--o。view-box の座標）を中心に回ってまっすぐになる */
+@keyframes seat-fix {
+  from, 38% { transform: translateY(var(--fix-dy, 6px)) rotate(var(--fix-rot, -22deg)); }
+  62%, to   { transform: none; }
+}
+/* 席の絵の手：上から下りてきて靴にふれ（38%）、靴が回り終わるまでふれたまま（〜72%）、上へ引いて消える */
+@keyframes seat-hand {
+  from      { opacity: 0; transform: translateY(-70px); }
+  12%       { opacity: 1; }
+  38%, 72%  { opacity: 1; transform: none; }
+  to        { opacity: 0; transform: translateY(-60px); }
 }
 /* 湯気の揺れ（時間で、ずっとゆっくり。スクロールとは別） */
 @keyframes scene-sway {
