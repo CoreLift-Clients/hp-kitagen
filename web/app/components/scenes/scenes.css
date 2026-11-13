@@ -61,10 +61,18 @@
 .scene-accent-fill { fill: var(--accent); }
 /* 差し色の面をうすく塗る（肉みそ冷奴の肉みそ。後ろの線も隠したいので、紙の色の上にうすい accent を重ねる） */
 .scene-accent-wash { fill: color-mix(in srgb, var(--accent) 24%, var(--scene-paper)); }
-/* 鉄鍋餃子の焼き色（TeppanIllustration.tsx）。上の面全体は肉みそより少しだけ濃く、
-   焼けたしみはもう一段濃くする（どちらも紙の色の上に重ねるので、後ろの線は隠れる。しみは輪郭を描かない） */
-.teppan-brown-wash { fill: color-mix(in srgb, var(--accent) 32%, var(--scene-paper)); }
-.teppan-brown-spot { fill: color-mix(in srgb, var(--accent) 44%, var(--scene-paper)); }
+/* 鉄鍋餃子の焼き色（TeppanIllustration.tsx）。上の面全体はうすく、
+   まん中のこげ目は濃くする（どちらも紙の色の上に重ねるので、後ろの線は隠れる。こげ目は輪郭を描かない） */
+.teppan-brown-wash { fill: color-mix(in srgb, var(--accent) 26%, var(--scene-paper)); }
+.teppan-koge { fill: color-mix(in srgb, var(--accent) 65%, var(--scene-paper)); }
+/* 鉄鍋餃子のふくらみの稜線（細く、やや淡く） */
+.teppan-ridge {
+  stroke-width: calc(1.6px * var(--scene-k) * var(--scene-z, 1));
+  stroke-opacity: 0.5;
+}
+/* 鉄鍋餃子のジュッという音の印（細め。動き終わりは少し薄くなって残る） */
+.teppan-sizzle-line { stroke-width: calc(1.8px * var(--scene-k) * var(--scene-z, 1)); }
+.teppan-sizzle-mark { opacity: 0.7; }
 
 /* 線を描き進める部品（pathLength="1" と一緒に使う） */
 .scene-stroke-draw {
@@ -172,6 +180,12 @@
   30%  { opacity: 1; transform: none; }
   65%  { opacity: 1; transform: none; }
   to   { opacity: 0; transform: scale(1.15); }
+}
+/* 鉄鍋餃子のジュッという音の印：ぱっと出て、少し薄くなって残る（動き終わりは .teppan-sizzle-mark と同じ 0.7） */
+@keyframes teppan-sizzle {
+  from { opacity: 0; transform: scale(0.5); }
+  40%  { opacity: 1; transform: scale(1.1); }
+  to   { opacity: 0.7; transform: none; }
 }
 /* 湯気の揺れ（時間で、ずっとゆっくり。スクロールとは別） */
 @keyframes scene-sway {
