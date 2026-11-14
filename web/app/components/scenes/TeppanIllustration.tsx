@@ -9,7 +9,7 @@
 //   重なった所では、上にのった餃子のふちから、ひだの白っぽい皮が細い帯のようにのぞく
 // ・線は1色（currentColor ＝ 呼び出し側の text-foreground）。端と角は丸く
 //   （鍋・取っ手・餃子にだけ、後ろの線を隠すための塗り --scene-paper を付ける）
-// ・鍋の黒さは、鍋の内側（底）の塗り（foreground の色を不透明度 0.8 で）と、鍋の外側の側面の短い斜線で表す
+// ・鍋の黒さは、鍋の内側（底）の塗り（foreground の色を不透明度 0.9 で。餃子の形がくっきり浮かぶ濃さ）と、鍋の外側の側面の短い斜線で表す
 // ・差し色は accent の焼き色だけ（scenes.css の .teppan-kitsune・.teppan-spot と、まだらの面の radialGradient の .teppan-yaki-stop）。
 //   この絵だけの決まりとして、焼き目の濃い所（まだらの面とこげの点）にかぎり、foreground の色を少し重ねて、写真のこげ茶に寄せる
 // ・部品ごとに g でまとめる：取っ手（teppan-handle）・鍋（teppan-pan）・
@@ -62,7 +62,7 @@ const HATCH = Array.from({ length: 11 }, (_, i) => {
 });
 // 鍋の内側（底）の黒い塗り：内側のふちのだ円の中（ふちの線の下に入る）
 const PAN_DARK = polygon(ovalPts(PU, PV, R_IN + 1, DEPTH, 0, PI * 2, 56, 0, 0));
-const PAN_DARK_OPACITY = 0.8;
+const PAN_DARK_OPACITY = 0.9;
 // 餃子を、鍋の内側のふちの中だけに見せる（手前の餃子のはしが、ふちの線にかからないように）
 const [PCX, PCY] = pr(PU, PV, DEPTH);
 const CLIP_R = R_IN - 1.5;
@@ -130,7 +130,7 @@ const GW = 84; // 幅（床の面。長さ：幅 ≒ 1.71：1）
 const GA = 0.6; // ふくらんだ側の幅の割合（残りが、ゆるくふくらむ側）
 const GBOW = 3; // 弓なりの反り（両端で、時計回りの側へ）
 const GR = 80; // 餃子のまん中の、鍋の中心からの距離（外側の端が鍋の内側のふちに届く）
-const SKIN = 5.5; // ひだの白い皮の帯の幅（床の面）
+const SKIN = 7; // ひだの白い皮の帯の幅（床の面。小さい絵でもはっきり見える太さ）
 const SKIN_WAVE = 3.2; // 帯の外のふちの、ひだの波の高さ
 const SKIN_WAVES = 6; // 帯の、ひだの波の数
 const DEG = PI / 180;
@@ -397,18 +397,19 @@ function GyozaPiece({ g, i }: { g: Gyoza; i: number }) {
         <clipPath id={`teppan-top-${i}`}>
           <path d={g.fill} />
         </clipPath>
-        {/* 光の面：左上のふちから、ふくらみの背の少し左上でいちばん明るく（不透明度 0.55）、右下へやわらかく消える */}
+        {/* 光の面：左上のふちから、ふくらみの背の少し左上でいちばん明るく（不透明度 0.38）、右下へやわらかく消える。
+            焼き色が淡くならないように控えめに */}
         <linearGradient id={`teppan-lit-${i}`} gradientUnits="userSpaceOnUse" x1={g.lightFrom[0]} y1={g.lightFrom[1]} x2={g.lightTo[0]} y2={g.lightTo[1]}>
-          <stop offset="0" stopColor="#fff" stopOpacity="0.3" />
-          <stop offset={LIT_PEAK} stopColor="#fff" stopOpacity="0.55" />
-          <stop offset={(LIT_PEAK + LIT_END) / 2} stopColor="#fff" stopOpacity="0.2" />
+          <stop offset="0" stopColor="#fff" stopOpacity="0.2" />
+          <stop offset={LIT_PEAK} stopColor="#fff" stopOpacity="0.38" />
+          <stop offset={(LIT_PEAK + LIT_END) / 2} stopColor="#fff" stopOpacity="0.14" />
           <stop offset={LIT_END} stopColor="#fff" stopOpacity="0" />
         </linearGradient>
-        {/* 形の陰：まん中より右下から、右下のふちへ少しずつ暗く（いちばん暗い所で不透明度 0.36） */}
+        {/* 形の陰：まん中より右下から、右下のふちへ少しずつ暗く（いちばん暗い所で不透明度 0.32） */}
         <linearGradient id={`teppan-shade-${i}`} gradientUnits="userSpaceOnUse" x1={g.lightFrom[0]} y1={g.lightFrom[1]} x2={g.lightTo[0]} y2={g.lightTo[1]}>
           <stop offset={SHADE_FROM} stopColor="currentColor" stopOpacity="0" />
-          <stop offset="0.78" stopColor="currentColor" stopOpacity="0.16" />
-          <stop offset="1" stopColor="currentColor" stopOpacity="0.36" />
+          <stop offset="0.78" stopColor="currentColor" stopOpacity="0.14" />
+          <stop offset="1" stopColor="currentColor" stopOpacity="0.32" />
         </linearGradient>
       </defs>
       {/* 落ち影（この餃子の下に描くので、形の外の右下にだけ見える） */}
@@ -474,17 +475,17 @@ export default function TeppanIllustration({ className = "" }: { className?: str
         </linearGradient>
         {/* まだらの焼き色の面（1つずつの形の中で、まん中が濃く、ふちはやわらかく消える。重なった所ほど濃い） */}
         <radialGradient id="teppan-mottle">
-          <stop offset="0" className="teppan-yaki-stop" stopOpacity="0.42" />
-          <stop offset="0.45" className="teppan-yaki-stop" stopOpacity="0.38" />
-          <stop offset="0.78" className="teppan-yaki-stop" stopOpacity="0.15" />
+          <stop offset="0" className="teppan-yaki-stop" stopOpacity="0.49" />
+          <stop offset="0.45" className="teppan-yaki-stop" stopOpacity="0.44" />
+          <stop offset="0.78" className="teppan-yaki-stop" stopOpacity="0.175" />
           <stop offset="1" className="teppan-yaki-stop" stopOpacity="0" />
         </radialGradient>
         {/* こげ茶：焼き色の面と同じ形に重ねる foreground の色（この絵だけの決まり。焼き目の濃い所にかぎる）。
-            1つの面の中心で不透明度 0.105、2つ重なった所でも 0.2 くらいまで。真っ黒にはしない */}
+            1つの面の中心で不透明度 0.125、2つ重なった所でも 0.23 くらいまで。真っ黒にはしない */}
         <radialGradient id="teppan-char">
-          <stop offset="0" stopColor="currentColor" stopOpacity="0.105" />
-          <stop offset="0.45" stopColor="currentColor" stopOpacity="0.09" />
-          <stop offset="0.78" stopColor="currentColor" stopOpacity="0.03" />
+          <stop offset="0" stopColor="currentColor" stopOpacity="0.125" />
+          <stop offset="0.45" stopColor="currentColor" stopOpacity="0.105" />
+          <stop offset="0.78" stopColor="currentColor" stopOpacity="0.035" />
           <stop offset="1" stopColor="currentColor" stopOpacity="0" />
         </radialGradient>
         {/* 餃子は鍋の内側のふちの中だけに見せる */}

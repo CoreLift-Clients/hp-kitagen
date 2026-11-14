@@ -62,14 +62,14 @@
 /* 差し色の面をうすく塗る（肉みそ冷奴の肉みそ。後ろの線も隠したいので、紙の色の上にうすい accent を重ねる） */
 .scene-accent-wash { fill: color-mix(in srgb, var(--accent) 24%, var(--scene-paper)); }
 /* 鉄鍋餃子の焼き色（TeppanIllustration.tsx）。本物の写真に合わせ、まだら（明るい所と濃いこげ茶の所が入り交じる）。
-   ・上の面の明るいきつね色（.teppan-kitsune。紙の色の上に accent 41%）
-   ・まだらの焼き色の面（radialGradient の stop に .teppan-yaki-stop。数個ずつ重なった所ほど濃く、いちばん濃い所で accent 約 75%）
-   ・こげ茶：まだらの面と同じ形に、foreground の色をうすく重ねる（TeppanIllustration.tsx の teppan-char。いちばん濃い所で不透明度 0.2 くらい）
-   まだらの濃い所と明るい所の差は、光と陰の明暗が勝つように、前より約 25% 小さくしている（明るい所を少し上げ、濃い所の重ねを 0.75 倍）
+   ・上の面の明るいきつね色（.teppan-kitsune。紙の色の上に accent 38%）
+   ・まだらの焼き色の面（radialGradient の stop に .teppan-yaki-stop。数個ずつ重なった所ほど濃く、いちばん濃い所で accent 約 77%）
+   ・こげ茶：まだらの面と同じ形に、foreground の色をうすく重ねる（TeppanIllustration.tsx の teppan-char。いちばん濃い所で不透明度 0.23 くらい）
+   まだらの濃い所と明るい所の差は、いちばん強かった時（de823c9）の約 87%（09a3abe で 25% 小さくした分の半分を戻した）
    ・黒に近いこげの点（.teppan-spot。accent 55% に foreground の色 45% を混ぜる）
    この絵だけの決まりとして、焼き目の濃い所にかぎり foreground の色を混ぜる */
 .teppan-yaki-stop { stop-color: var(--accent); }
-.teppan-kitsune { fill: color-mix(in srgb, var(--accent) 41%, var(--scene-paper)); }
+.teppan-kitsune { fill: color-mix(in srgb, var(--accent) 38%, var(--scene-paper)); }
 .teppan-spot { fill: color-mix(in srgb, var(--accent) 55%, currentColor); }
 /* 鉄鍋餃子の光と陰（光は左上から）は TeppanIllustration.tsx の linearGradient。光の面は白、陰・落ち影・側面の陰は
    foreground の色を不透明度で重ねる（この絵だけの決まり）。
