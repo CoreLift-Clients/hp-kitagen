@@ -104,7 +104,27 @@ const HANDLE_FILL = polygon([...HANDLE_TOP, hp(H1, HW1, HZ - HT), hp(H0, HW0, HZ
 // 最後の1つ（7）だけは、最初の1つ（0）の下にもぐらせる（7 から 0 の形をくりぬく。mask teppan-under-first）。
 // 向き・大きさ・中心からの距離・焼き色の面の置き方は、1つずつ手で決める（ずらしは jitter の決まった数。乱数は使わない）。
 const GZ = DEPTH - 6; // 餃子の上の面の高さ（鍋の中に、ふちより少し低く）
-const GT = 7; // ふっくらした厚み（上の面と下のふちの差。絵の座標）。手前に見える白っぽい側面
+// ふっくらした厚み（上の面と下のふちの差。絵の座標）。手前に見える皮の側面。
+// 斜めから見ているので、手前の餃子ほど大きく（最大 GT_FRONT）、奥の餃子ほど小さく（GT_BACK）
+const GT_FRONT = 10;
+const GT_BACK = 2.5;
+// ── 立体感（光は左上から。ハイライト・形の陰・落ち影をこの向きにそろえる） ──
+const LIGHT: P = [-Math.SQRT1_2, -Math.SQRT1_2]; // 絵の上で、光の来る向き
+const HL_RIDGE = 0.1; // ふくらみの背（いちばん高い所）の位置（幅の向き。幅に対する割合）
+// 光と陰は、1つの餃子の上の面に、左上のふち → 右下のふちへの線形グラデーションで重ねる（0 が左上のふち、1 が右下のふち）。
+// ・光の面（白）：左上の半分ほど。ふくらみの背の少し左上（LIT_PEAK）でいちばん明るく、右下へやわらかく 0 に消える
+// ・形の陰（foreground）：まん中より右下（SHADE_FROM）から、右下のふちへ向かって暗くなる
+const LIT_PEAK = 0.36;
+const LIT_END = 0.62;
+const SHADE_FROM = 0.5;
+// 落ち影：右下へずらした形を、ずらす量を変えて重ねる [ずれ, 不透明度]。重なりのふちに沿って（いちばん濃い所で約 0.45）、
+// 外へやわらかく消える（幅 9）
+const DROP: readonly (readonly [number, number])[] = [
+  [3, 0.18],
+  [6, 0.17],
+  [9, 0.16],
+];
+const WALL_SHADE = 0.24; // 厚み（皮の側面）の陰
 const GLEN = 72; // 長さの半分（床の面。長さ 144）
 const GW = 84; // 幅（床の面。長さ：幅 ≒ 1.71：1）
 const GA = 0.6; // ふくらんだ側の幅の割合（残りが、ゆるくふくらむ側）
@@ -215,6 +235,8 @@ type Gyoza = {
   mottle: string[]; // 焼き色の面
   spots: string[]; // こげの点
   crust: string[]; // 質感の短い線
+  lightFrom: P; // 光と陰のグラデーションの始まり（左上のふち）と終わり（右下のふち）
+  lightTo: P;
 };
 
 function gyoza([deg, tilt, k, dr]: readonly [number, number, number, number], i: number): Gyoza {
@@ -239,6 +261,8 @@ function gyoza([deg, tilt, k, dr]: readonly [number, number, number, number], i:
     }
     return pts;
   };
+  // 厚み：手前（phi = 90°）ほど大きく、奥（phi = -90°）ほど小さく
+  const GT = (GT_FRONT + GT_BACK) / 2 + ((GT_FRONT - GT_BACK) / 2) * Math.sin(phi);
   const top = outline(GZ, 0.85, s);
   const low = outline(GZ - GT, 0.4, s + 500);
   // 下のふち（白っぽい側面のすそ）：上の面の形の外に出ている所（手前の側）だけ
@@ -284,6 +308,13 @@ function gyoza([deg, tilt, k, dr]: readonly [number, number, number, number], i:
       }),
     ),
   );
+  // 光と陰：左上のふち → 右下のふち（光の向きにそって、上の面のいちばん外の点まで）
+  const [mx, my] = at(0, GW * HL_RIDGE);
+  const proj = topRing.map(([x, y]) => (x - mx) * LIGHT[0] + (y - my) * LIGHT[1]);
+  const toLight = Math.max(...proj);
+  const toDark = -Math.min(...proj);
+  const lightFrom: P = [mx + LIGHT[0] * toLight, my + LIGHT[1] * toLight];
+  const lightTo: P = [mx - LIGHT[0] * toDark, my - LIGHT[1] * toDark];
   return {
     under: polygon(low),
     underLine: smooth(run),
@@ -294,6 +325,8 @@ function gyoza([deg, tilt, k, dr]: readonly [number, number, number, number], i:
     mottle,
     spots,
     crust,
+    lightFrom,
+    lightTo,
   };
 }
 const GYOZA = GYOZA_AT.map(gyoza);
@@ -337,24 +370,60 @@ const SIZZLE = SIZZLE_AT.map(([deg, lens], c) => {
   });
 });
 
-// 餃子1つ（置かれる動きと、そのあと焼き色がじわっと出る動き）
+// 落ち影（上にのった餃子が、下の餃子と鍋の底に落とす影。右下へずらした形を重ねる。foreground の色）
+function DropShadow({ g }: { g: Gyoza }) {
+  return (
+    <>
+      {DROP.map(([d, o], k) => (
+        <g key={k} transform={`translate(${d} ${d})`} fill="currentColor" fillOpacity={o} stroke="none">
+          <path d={g.under} />
+          <path d={g.skin} />
+          <path d={g.fill} />
+        </g>
+      ))}
+    </>
+  );
+}
+
+// 焼き色・陰・落ち影・ハイライトがじわっと出る動き（餃子ごと）
+const lateAnim = (i: number) => anim("scene-fade-up", 42 + i * 0.6, 47 + i * 0.6, { "--dy": "0px" });
+
+// 餃子1つ（置かれる動きと、そのあと焼き色・陰・落ち影・ハイライトがじわっと出る動き）
 function GyozaPiece({ g, i }: { g: Gyoza; i: number }) {
   return (
     <g className="scene-anim" style={anim("scene-fade-up", 20 + i * 2.2, 26 + i * 2.2, { "--dy": "-12px" })}>
       <defs>
-        {/* 焼き色の面は、上の面の形の中だけに見せる */}
+        {/* 焼き色・陰・ハイライトは、上の面の形の中だけに見せる */}
         <clipPath id={`teppan-top-${i}`}>
           <path d={g.fill} />
         </clipPath>
+        {/* 光の面：左上のふちから、ふくらみの背の少し左上でいちばん明るく（不透明度 0.55）、右下へやわらかく消える */}
+        <linearGradient id={`teppan-lit-${i}`} gradientUnits="userSpaceOnUse" x1={g.lightFrom[0]} y1={g.lightFrom[1]} x2={g.lightTo[0]} y2={g.lightTo[1]}>
+          <stop offset="0" stopColor="#fff" stopOpacity="0.3" />
+          <stop offset={LIT_PEAK} stopColor="#fff" stopOpacity="0.55" />
+          <stop offset={(LIT_PEAK + LIT_END) / 2} stopColor="#fff" stopOpacity="0.2" />
+          <stop offset={LIT_END} stopColor="#fff" stopOpacity="0" />
+        </linearGradient>
+        {/* 形の陰：まん中より右下から、右下のふちへ少しずつ暗く（いちばん暗い所で不透明度 0.36） */}
+        <linearGradient id={`teppan-shade-${i}`} gradientUnits="userSpaceOnUse" x1={g.lightFrom[0]} y1={g.lightFrom[1]} x2={g.lightTo[0]} y2={g.lightTo[1]}>
+          <stop offset={SHADE_FROM} stopColor="currentColor" stopOpacity="0" />
+          <stop offset="0.78" stopColor="currentColor" stopOpacity="0.16" />
+          <stop offset="1" stopColor="currentColor" stopOpacity="0.36" />
+        </linearGradient>
       </defs>
-      {/* 白っぽい側面（皮の厚み）と、ひだの白い皮の帯（下の餃子の上にのぞく）。紙の色 */}
+      {/* 落ち影（この餃子の下に描くので、形の外の右下にだけ見える） */}
+      <g className="scene-anim" style={lateAnim(i)}>
+        <DropShadow g={g} />
+      </g>
+      {/* 皮の側面（厚み。紙の色の上に、側面の陰）と、ひだの白い皮の帯（下の餃子の上にのぞく） */}
       <path d={g.under} className="scene-paper" stroke="none" />
+      <path d={g.under} fill="currentColor" fillOpacity={WALL_SHADE} stroke="none" className="scene-anim" style={lateAnim(i)} />
       <path d={g.skin} className="scene-paper" stroke="none" />
       <path d={g.skinLine} className="teppan-crust" />
       {/* 上の面（後ろの線を隠す紙の色） */}
       <path d={g.fill} className="scene-paper" stroke="none" />
-      {/* 焼き色：明るいきつね色の上に、まだらの焼き色の面と、こげの点。置かれたあと、じわっと出る */}
-      <g className="scene-anim" stroke="none" style={anim("scene-fade-up", 42 + i * 0.6, 47 + i * 0.6, { "--dy": "0px" })}>
+      {/* 焼き色：明るいきつね色の上に、まだらの焼き色の面と、こげの点。その上に形の陰とハイライト。置かれたあと、じわっと出る */}
+      <g className="scene-anim" stroke="none" style={lateAnim(i)}>
         <path d={g.fill} className="teppan-kitsune" />
         <g clipPath={`url(#teppan-top-${i})`}>
           {g.mottle.map((d, k) => (
@@ -367,14 +436,17 @@ function GyozaPiece({ g, i }: { g: Gyoza; i: number }) {
           {g.spots.map((d, k) => (
             <path key={k} d={d} className="teppan-spot" />
           ))}
+          <path d={g.fill} fill={`url(#teppan-lit-${i})`} />
+          <path d={g.fill} fill={`url(#teppan-shade-${i})`} />
         </g>
       </g>
       {/* ごつごつした質感の短い線（細め） */}
       {g.crust.map((d, k) => (
         <path key={k} d={d} className="teppan-crust" />
       ))}
-      <path d={g.underLine} className="scene-fine" />
-      <path d={g.line} className="scene-line" />
+      {/* 餃子の輪郭の線（ほかの線より少し細く。teppan-outline・teppan-outline-fine） */}
+      <path d={g.underLine} className="teppan-outline-fine" />
+      <path d={g.line} className="teppan-outline" />
     </g>
   );
 }
@@ -402,22 +474,27 @@ export default function TeppanIllustration({ className = "" }: { className?: str
         </linearGradient>
         {/* まだらの焼き色の面（1つずつの形の中で、まん中が濃く、ふちはやわらかく消える。重なった所ほど濃い） */}
         <radialGradient id="teppan-mottle">
-          <stop offset="0" className="teppan-yaki-stop" stopOpacity="0.56" />
-          <stop offset="0.45" className="teppan-yaki-stop" stopOpacity="0.5" />
-          <stop offset="0.78" className="teppan-yaki-stop" stopOpacity="0.2" />
+          <stop offset="0" className="teppan-yaki-stop" stopOpacity="0.42" />
+          <stop offset="0.45" className="teppan-yaki-stop" stopOpacity="0.38" />
+          <stop offset="0.78" className="teppan-yaki-stop" stopOpacity="0.15" />
           <stop offset="1" className="teppan-yaki-stop" stopOpacity="0" />
         </radialGradient>
         {/* こげ茶：焼き色の面と同じ形に重ねる foreground の色（この絵だけの決まり。焼き目の濃い所にかぎる）。
-            1つの面の中心で不透明度 0.14、2つ重なった所でも 0.25 くらいまで。真っ黒にはしない */}
+            1つの面の中心で不透明度 0.105、2つ重なった所でも 0.2 くらいまで。真っ黒にはしない */}
         <radialGradient id="teppan-char">
-          <stop offset="0" stopColor="currentColor" stopOpacity="0.14" />
-          <stop offset="0.45" stopColor="currentColor" stopOpacity="0.12" />
-          <stop offset="0.78" stopColor="currentColor" stopOpacity="0.04" />
+          <stop offset="0" stopColor="currentColor" stopOpacity="0.105" />
+          <stop offset="0.45" stopColor="currentColor" stopOpacity="0.09" />
+          <stop offset="0.78" stopColor="currentColor" stopOpacity="0.03" />
           <stop offset="1" stopColor="currentColor" stopOpacity="0" />
         </radialGradient>
         {/* 餃子は鍋の内側のふちの中だけに見せる */}
         <clipPath id="teppan-inside">
           <ellipse cx={PCX} cy={PCY} rx={CLIP_R} ry={CLIP_R * SQ} />
+        </clipPath>
+        {/* 最初の餃子の落ち影を、最後の餃子の上にだけ見せる（最後の餃子の形で切り抜く） */}
+        <clipPath id="teppan-on-last">
+          <path d={GYOZA[GYOZA.length - 1].under} />
+          <path d={GYOZA[GYOZA.length - 1].fill} />
         </clipPath>
         {/* 最後の餃子から、最初の餃子の形（上の面・厚み・輪郭の線の太さ）をくりぬく（最初の1つの下にもぐる） */}
         <mask id="teppan-under-first" maskUnits="userSpaceOnUse" x="0" y="0" width="420" height="500">
@@ -464,6 +541,12 @@ export default function TeppanIllustration({ className = "" }: { className?: str
           i === last ? (
             <g key={i} mask="url(#teppan-under-first)">
               <GyozaPiece g={g} i={i} />
+              {/* 最初の1つが、最後の1つの上に落とす影（最初の1つの形の中は mask でくりぬかれ、外の右下だけ見える） */}
+              <g clipPath="url(#teppan-on-last)">
+                <g className="scene-anim" style={lateAnim(i)}>
+                  <DropShadow g={GYOZA[0]} />
+                </g>
+              </g>
             </g>
           ) : (
             <GyozaPiece key={i} g={g} i={i} />
