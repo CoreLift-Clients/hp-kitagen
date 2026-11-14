@@ -7,13 +7,13 @@
 // ・線は1色（currentColor ＝ 呼び出し側の text-foreground）。端と角は丸く
 //   （鍋・取っ手・餃子にだけ、後ろの線を隠すための塗り --scene-paper を付ける）
 // ・鍋の黒さは塗りつぶさず、鍋の外側の側面の短い斜線で表す
-// ・差し色は accent を1か所だけ（餃子の焼き色。平らな側のふちに沿った帯だけで、外のふちが濃く（accent 60%）内へ淡くなる。
-//   linearGradient ＋ scenes.css の .teppan-yaki-stop。上の面のほかは紙の色＝皮の色のまま）
+// ・差し色は accent の焼き色だけ（餃子の上の面全体のごく淡いきつね色（accent 12%。scenes.css の .teppan-kitsune）と、
+//   平らな側のふちに沿った焼き色の帯（外のふちが accent 60%、内へ淡くなる。linearGradient ＋ .teppan-yaki-stop））
 // ・部品ごとに g でまとめる：木の板（teppan-board）・取っ手（teppan-handle）・鍋（teppan-pan）・
 //   餃子8個（teppan-gyoza。焼き色の帯・ひだの折り目の線は餃子ごとに中に入れる）・湯気（teppan-steam）・ジュッの線（teppan-sizzle）
 // ・見る角度は少し斜め上から。床の面の点を縦につぶして描く（pr()）
 // ・動きの順番：木の板と鍋が現れる（ふちが描かれる）→ 餃子が奥から時計回りに1つずつ置かれる
-//   → 平らな側のふちに焼き色の帯がじわっと出る
+//   → 淡いきつね色と、平らな側のふちの焼き色の帯が、一緒にじわっと出る
 //   → 湯気が3本立つ → ジュッの線がぱっと出て、少し薄くなって残る
 //   （動きの名前と範囲は anim(...)、@keyframes は scenes.css）
 // ・絵は viewBox を 360 の幅に切り出して大きく見せる（線の太さは --scene-z で 400 の幅の絵とそろえる。scenes.css）
@@ -162,10 +162,11 @@ const HOLE = smooth(
 // ふくらんだ側のふちは、ひだの波（PLEATS）。波の谷から内へ、ひだの折り目の細い線を3本（FOLDS）。
 // 上の面の下に、厚みを表す下のふちの線を見える側（手前）だけ細く入れる。
 // 8個は 45° ずつを基本に、向きと大きさを1つずつ手で決めてばらつかせる（乱数は使わない）。
-// 並ぶ順（動きの順）：奥から時計回り。花びらのように、前の餃子の平らな側に、次の餃子のふくらんだ側が少しかぶさる
-// （ふくらんだ側は、すべて前の餃子の側＝反時計回りの側を向く。GSIDE）。
-// 最後の1つの上に最初の1つがのる所は、最後の1つから最初の1つの形をくりぬく（mask）。
-// くりぬいたふちは最初の1つの輪郭の線の下に入るので、継ぎ目は見えない。
+// 並ぶ順（動きの順）：奥から時計回り。ふくらんだ側は、すべて前の餃子の側＝反時計回りの側を向く（GSIDE）。
+// 重なりの上下：焼き色の帯のある平らな側が、となりの餃子のふくらんだ側（ひだ）に少しかぶさる
+// （上下は置く順と逆。重ねる順は 7 → 6 → … → 0 で、前の番号の餃子ほど上。置く動きの時間の順は変えない）。
+// いちばん上になる最初の1つの平らな側の上に、最後の1つの平らな側がのる所は、最初の1つから最後の1つの形をくりぬく（mask）。
+// くりぬいたふちは最後の1つの輪郭の線の下に入るので、継ぎ目は見えない。
 // 中心の近くは、長い向きの線を少しずつずらして（GOFF）8個の端が1点に集まらないようにし、
 // さらに下になる餃子の線を、中心のまわりの小さな範囲だけ隠す（mask teppan-center。塗りは残すので、すき間は見えない）
 const GZ = DEPTH - 2; // 餃子の上の面の高さ（ふちと同じくらいまで、こんもり）
@@ -182,7 +183,7 @@ const GT = 7; // ふっくらした厚み（上の面と下のふちの差。絵
 const DEG = PI / 180;
 const [GCX, GCY] = pr(PU, PV, GZ); // 鍋の中心（餃子の上の面の高さ）
 const G_CENTER = 5; // 下になる餃子の線を隠す、中心のまわりの半径（床の面）
-const G_CENTER_TOP = 2; // 中心で線を隠さない、いちばん上になる餃子の数（最後に置く2つ）
+const G_CENTER_TOP = 2; // 中心で線を隠さない、いちばん上になる餃子の数（重ねる順の最後＝番号 0・1 の2つ）
 const GOFF = 14; // 長い向きの線を、中心から平らな側へずらす長さ（8個の端が1点に集まらず、小さな渦のように重なる）
 
 // [置く向き（度。-90 が奥、時計回りに増える）, 大きさ]。基本は 45° ずつ・大きさ 1
@@ -386,13 +387,13 @@ const SIZZLE = SIZZLE_AT.map(([deg, lens], c) => {
 // 餃子1つ（置かれる動きと、そのあと焼き色がじわっと出る動き）
 function GyozaPiece({ g, i }: { g: Gyoza; i: number }) {
   // 中心で下になる餃子は、中心のまわりの線を隠す（端の線が重なってごちゃごちゃしないように）
-  const lineMask = i < GYOZA_AT.length - G_CENTER_TOP ? "url(#teppan-center)" : undefined;
+  const lineMask = i >= G_CENTER_TOP ? "url(#teppan-center)" : undefined;
   return (
     <g className="scene-anim" style={anim("scene-fade-up", 20 + i * 2.2, 26 + i * 2.2, { "--dy": "-12px" })}>
       <path d={g.under} className="scene-paper" stroke="none" />
       <path d={g.underLine} className="scene-fine" mask={lineMask} />
       <path d={g.fill} className="scene-paper" stroke="none" />
-      {/* 焼き色：平らな側のふちに沿った帯だけ。外のふちが濃く、内へ淡く。置かれたあと、じわっと出る */}
+      {/* 焼き色：上の面全体の淡いきつね色と、平らな側のふちに沿った帯（外のふちが濃く、内へ淡く）。置かれたあと、一緒にじわっと出る */}
       <defs>
         <linearGradient
           id={`teppan-yaki-${i}`}
@@ -402,18 +403,18 @@ function GyozaPiece({ g, i }: { g: Gyoza; i: number }) {
           x2={g.yakiTo[0]}
           y2={g.yakiTo[1]}
         >
+          {/* 外のふち 60% から内へ。終わりをなだらかにして、帯の内側のさかいに白っぽい筋が見えないようにする */}
           <stop offset="0" className="teppan-yaki-stop" stopOpacity="0.6" />
-          <stop offset="0.45" className="teppan-yaki-stop" stopOpacity="0.45" />
+          <stop offset="0.3" className="teppan-yaki-stop" stopOpacity="0.5" />
+          <stop offset="0.6" className="teppan-yaki-stop" stopOpacity="0.27" />
+          <stop offset="0.85" className="teppan-yaki-stop" stopOpacity="0.07" />
           <stop offset="1" className="teppan-yaki-stop" stopOpacity="0" />
         </linearGradient>
       </defs>
-      <path
-        d={g.yaki}
-        fill={`url(#teppan-yaki-${i})`}
-        stroke="none"
-        className="scene-anim"
-        style={anim("scene-fade-up", 38 + i * 0.7, 43 + i * 0.7, { "--dy": "0px" })}
-      />
+      <g className="scene-anim" stroke="none" style={anim("scene-fade-up", 38 + i * 0.7, 43 + i * 0.7, { "--dy": "0px" })}>
+        <path d={g.fill} className="teppan-kitsune" />
+        <path d={g.yaki} fill={`url(#teppan-yaki-${i})`} />
+      </g>
       {/* ひだの折り目の線（波の谷から内へ。細め） */}
       {g.folds.map((d, k) => (
         <path key={k} d={d} className="teppan-pleat" />
@@ -448,11 +449,11 @@ export default function TeppanIllustration({ className = "" }: { className?: str
           <rect x="0" y="0" width="400" height="500" fill="white" />
           <ellipse cx={GCX} cy={GCY} rx={G_CENTER} ry={G_CENTER * SQ} fill="black" />
         </mask>
-        {/* 最後の餃子から、最初の餃子の形（上の面・厚み・輪郭の線の太さ）をくりぬく */}
-        <mask id="teppan-under-first" maskUnits="userSpaceOnUse" x="0" y="0" width="400" height="500">
+        {/* 最初の餃子から、最後の餃子の形（上の面・厚み・輪郭の線の太さ）をくりぬく */}
+        <mask id="teppan-under-last" maskUnits="userSpaceOnUse" x="0" y="0" width="400" height="500">
           <rect x="0" y="0" width="400" height="500" fill="white" />
-          <path d={GYOZA[0].under} fill="black" stroke="black" className="scene-line" />
-          <path d={GYOZA[0].fill} fill="black" stroke="black" className="scene-line" />
+          <path d={GYOZA[GYOZA.length - 1].under} fill="black" stroke="black" className="scene-line" />
+          <path d={GYOZA[GYOZA.length - 1].fill} fill="black" stroke="black" className="scene-line" />
         </mask>
       </defs>
 
@@ -487,19 +488,22 @@ export default function TeppanIllustration({ className = "" }: { className?: str
         ))}
       </g>
 
-      {/* 2. 餃子（奥から時計回りに、1つずつ上から置かれる。後から置くものが前のものに少し重なる）
-          3. 差し色（accent）はここだけ：餃子の平らな側のふちに沿った焼き色の帯（外が濃く、内へ淡く）。置かれたあと、じわっと出る */}
+      {/* 2. 餃子（奥から時計回りに、1つずつ上から置かれる。重なりは、平らな側（焼き色の帯）がとなりのひだの側にかぶさる向き。
+             そのため重ねる順は置く順と逆（7 → 0）
+          3. 差し色（accent）はここだけ：餃子の上の面の淡いきつね色と、平らな側のふちに沿った焼き色の帯。置かれたあと、じわっと出る */}
       <g className="teppan-gyoza">
-        {GYOZA.map((g, i) =>
-          i === GYOZA.length - 1 ? (
-            // 最後の1つは、最初の1つの下にもぐる（重なる向きを時計回りでそろえる）
-            <g key={i} mask="url(#teppan-under-first)">
+        {GYOZA.map((_, k) => {
+          const i = GYOZA.length - 1 - k;
+          const g = GYOZA[i];
+          return i === 0 ? (
+            // 最初の1つは、最後の1つの下にもぐる（重なる向きを、平らな側が上でそろえる）
+            <g key={i} mask="url(#teppan-under-last)">
               <GyozaPiece g={g} i={i} />
             </g>
           ) : (
             <GyozaPiece key={i} g={g} i={i} />
-          ),
-        )}
+          );
+        })}
       </g>
 
       {/* 4. 湯気（3本。時間でゆっくり揺れ続ける。画面の外では止まる） */}
