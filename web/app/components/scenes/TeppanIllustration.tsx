@@ -7,13 +7,13 @@
 // ・線は1色（currentColor ＝ 呼び出し側の text-foreground）。端と角は丸く
 //   （鍋・取っ手・餃子にだけ、後ろの線を隠すための塗り --scene-paper を付ける）
 // ・鍋の黒さは塗りつぶさず、鍋の外側の側面の短い斜線で表す
-// ・差し色は accent を1か所だけ（餃子の上の面の焼き色。面をうすい accent で塗り、まん中のこげ目を濃い accent で塗る。
-//   scenes.css の .teppan-brown-wash・.teppan-koge。こげ目は輪郭を描かない）
+// ・差し色は accent を1か所だけ（餃子の焼き色。平らな側のふちに沿った帯だけで、外のふちが濃く（accent 60%）内へ淡くなる。
+//   linearGradient ＋ scenes.css の .teppan-yaki-stop。上の面のほかは紙の色＝皮の色のまま）
 // ・部品ごとに g でまとめる：木の板（teppan-board）・取っ手（teppan-handle）・鍋（teppan-pan）・
-//   餃子8個（teppan-gyoza。焼き色・こげ目・稜線は餃子ごとに中に入れる）・湯気（teppan-steam）・ジュッの線（teppan-sizzle）
+//   餃子8個（teppan-gyoza。焼き色の帯・ひだの折り目の線は餃子ごとに中に入れる）・湯気（teppan-steam）・ジュッの線（teppan-sizzle）
 // ・見る角度は少し斜め上から。床の面の点を縦につぶして描く（pr()）
 // ・動きの順番：木の板と鍋が現れる（ふちが描かれる）→ 餃子が奥から時計回りに1つずつ置かれる
-//   → 餃子の上の面に焼き色（淡い面 → こげ目）がじわっと出る → ふくらみの稜線が描かれる
+//   → 平らな側のふちに焼き色の帯がじわっと出る
 //   → 湯気が3本立つ → ジュッの線がぱっと出て、少し薄くなって残る
 //   （動きの名前と範囲は anim(...)、@keyframes は scenes.css）
 // ・絵は viewBox を 360 の幅に切り出して大きく見せる（線の太さは --scene-z で 400 の幅の絵とそろえる。scenes.css）
@@ -159,6 +159,7 @@ const HOLE = smooth(
 // 1つずつ、長い向きを鍋の中心に向ける（放射状）。内側の端は鍋の中心のすぐ近くまで寄せ、まん中で少しずつ重ね合わせる
 // （中央に鍋の底が見えるすき間はつくらない）。外側の端は鍋の内側のふち（R_IN）の少し内側まで。
 // 1つずつ半月の形：ふくらんだ側は大きな曲線、平らな側はゆるい曲線、両端は丸い。中心側の端は少しだけ細くする（とがらせない）。
+// ふくらんだ側のふちは、ひだの波（PLEATS）。波の谷から内へ、ひだの折り目の細い線を3本（FOLDS）。
 // 上の面の下に、厚みを表す下のふちの線を見える側（手前）だけ細く入れる。
 // 8個は 45° ずつを基本に、向きと大きさを1つずつ手で決めてばらつかせる（乱数は使わない）。
 // 並ぶ順（動きの順）：奥から時計回り。花びらのように、前の餃子の平らな側に、次の餃子のふくらんだ側が少しかぶさる
@@ -173,8 +174,10 @@ const GW = 52; // 幅（平らな側のふちから、ふくらみのいちば�
 const GIN = 0; // 中心側の端の、鍋の中心からの距離
 const GTAPER = 0.72; // 中心側の端の幅の割合（少し細く）
 const GSIDE = -1; // ふくらんだ側の向き（-1 … 反時計回りの側＝前に置いた餃子の側、1 … 時計回りの側）
-const PLEATS = 6; // ひだの波の数（ふくらんだ側のふち）
-const PLEAT_H = 2.4; // ひだの波の高さ（床の面。ふちの線の揺らぎより少し大きい程度）
+const PLEATS = 5; // ひだの波の数（ふくらんだ側のふち。両端の近くは波を小さくする）
+const PLEAT_H = 3.6; // ひだの波の高さ（床の面。ひと目で波と分かる大きさ）
+const FOLD_TO = 0.5; // ひだの折り目の線の内側の端（ふくらんだ側のふちから、上の面の半分くらいまで。平らな側には届かせない）
+const YAKI_W = 0.3; // 焼き色の帯の幅（餃子の幅 GW に対する割合）
 const GT = 7; // ふっくらした厚み（上の面と下のふちの差。絵の座標）
 const DEG = PI / 180;
 const [GCX, GCY] = pr(PU, PV, GZ); // 鍋の中心（餃子の上の面の高さ）
@@ -200,21 +203,24 @@ const smax = (a: number, b: number, k: number) => {
   const h = Math.max(k - Math.abs(a - b), 0) / k;
   return Math.max(a, b) + (h * h * k) / 4;
 };
-function moonInside(x: number, y: number): number {
+function moonInside(x: number, y: number, pleatH = PLEAT_H): number {
   const ey0 = 3; // ふくらんだ側のだ円の中心（平らな側のふちより少しだけ内）
   const ex = GLEN * 1.04;
   const ey = GW - ey0;
   const fo = (Math.hypot(x / ex, (y - ey0) / ey) - 1) * Math.min(ex, ey); // ふくらんだ側（だ円）
   const fi = 4 * (1 - (x / GLEN) ** 2) - 4 - y; // 平らな側（まん中が少しだけふくらむ、ゆるい弧）
-  // ひだ：ふくらんだ側のふちだけを、小さな波（ひだの重なりのでこぼこ）にする。両端の近くは波を小さく
+  // ひだ：ふくらんだ側のふちだけを、ひだの波にする（山は丸く、谷は内へ切れこむ）。両端の近くは波を小さく
   const u = Math.min(Math.max((x + GLEN) / (2 * GLEN), 0), 1);
-  const env = Math.pow(Math.max(1 - (x / GLEN) ** 2, 0), 0.8) * Math.min(Math.max((y - GW * 0.3) / (GW * 0.3), 0), 1);
-  const pleat = PLEAT_H * env * Math.abs(Math.sin(PI * PLEATS * u));
+  const env = Math.pow(Math.max(1 - (x / GLEN) ** 2, 0), 0.6) * Math.min(Math.max((y - GW * 0.3) / (GW * 0.3), 0), 1);
+  const pleat = pleatH * env * Math.abs(Math.sin(PI * PLEATS * u));
   return smax(fo - pleat, fi, 20); // 0 より小さいと中
 }
-// 形のまわりの点（1周 n 個）。形の中の1点から、角度ごとに境までの長さを二分法で探す
-function moonOutline(n: number): [number, number][] {
-  const oy = GW * 0.42;
+// 平らな側のふち（moonInside の fi が 0 になる所）
+const flatY = (x: number) => -4 * (x / GLEN) ** 2;
+// 焼き色の帯の中（平らな側のふちから YAKI_W × GW まで。両端は餃子の形に合わせて丸く）
+const yakiInside = (x: number, y: number) => Math.max(moonInside(x, y), y - flatY(x) - YAKI_W * GW);
+// 形のまわりの点（1周 n 個）。形の中の1点 (0, oy) から、角度ごとに境までの長さを二分法で探す
+function moonOutline(n: number, inside = moonInside, oy = GW * 0.42): [number, number][] {
   return Array.from({ length: n }, (_, j) => {
     const t = (PI * 2 * j) / n;
     const dx = Math.cos(t);
@@ -223,26 +229,40 @@ function moonOutline(n: number): [number, number][] {
     let hi = GLEN * 2;
     for (let k = 0; k < 30; k++) {
       const m = (lo + hi) / 2;
-      if (moonInside(m * dx, oy + m * dy) < 0) lo = m;
+      if (inside(m * dx, oy + m * dy) < 0) lo = m;
       else hi = m;
     }
     return [lo * dx, oy + lo * dy];
   });
 }
 const MOON = moonOutline(96);
+// 下のふち（厚み）は、ひだの波を付けない形で描く（上の面の波と二重になってごちゃつかないように）
+const MOON_LOW = moonOutline(96, (x, y) => moonInside(x, y, 0));
+const YAKI = moonOutline(64, yakiInside, YAKI_W * GW * 0.45);
 
-// こげ目（餃子ごとに 1〜2個）。上の面のまん中の、長い向きにそった帯に重ねる、細長いやわらかい形。
-// [x, y, 長さの半分, 幅の半分]（餃子の中の座標。x … 長い向き、y … 0 が平らな側、GW がふくらみのいちばん外）
-const KOGE: readonly (readonly [number, number, number, number])[][] = [
-  [[-2, 20, 21, 7.5], [24, 24, 9, 5]],
-  [[4, 19, 20, 7]],
-  [[-6, 21, 18, 7.5], [20, 18, 10, 5]],
-  [[2, 20, 22, 7]],
-  [[-8, 19, 16, 7], [16, 23, 11, 5.5]],
-  [[0, 21, 21, 8]],
-  [[6, 19, 19, 7], [-22, 21, 9, 5]],
-  [[-2, 22, 21, 7.5]],
-];
+// ひだの折り目の線（波の谷から内へ。1本ずつ [始まり, 弧のなか, 終わり]。餃子の中の座標）
+// 谷は x = -GLEN + 2GLEN·m/PLEATS。中心にいちばん近い谷（m = 1）は、となりの餃子と重なって込み合うので線を入れず、
+// m = 2〜PLEATS-1 の3本。ふくらんだ側のふちの少し内から始め、上の面の半分くらい（FOLD_TO）まで。
+// 少し中心側へ寄せながら、ゆるい弧を描く
+const FOLDS: [number, number][][] = Array.from({ length: PLEATS - 2 }, (_, m) => {
+  const x = -GLEN + (2 * GLEN * (m + 2)) / PLEATS;
+  let lo = GW * 0.4;
+  let hi = GW * 1.4;
+  for (let k = 0; k < 30; k++) {
+    const mid = (lo + hi) / 2;
+    if (moonInside(x, mid) < 0) lo = mid;
+    else hi = mid;
+  }
+  const y0 = lo - 1.5; // 谷の少し内（線の丸い端がふちの線に重なる）
+  const y1 = Math.max(lo * FOLD_TO, YAKI_W * GW + 4);
+  const x1 = x * 0.84;
+  const bend = 2.6; // 弧のふくらみ
+  return [
+    [x, y0],
+    [(x + x1) / 2 + bend, (y0 + y1) / 2],
+    [x1, y1],
+  ];
+});
 
 // ふちの線の揺らぎ（点が多いので、1点ずつではなく 6点ごとの揺らぎをなめらかにつなぐ。ひだの波が埋もれないように）
 function softJitter(seed: number, j: number, n: number): number {
@@ -255,7 +275,16 @@ function softJitter(seed: number, j: number, n: number): number {
   return a + (b - a) * t * t * (3 - 2 * t);
 }
 
-type Gyoza = { under: string; underLine: string; fill: string; line: string; brown: string; koge: string[]; ridge: string };
+type Gyoza = {
+  under: string;
+  underLine: string;
+  fill: string;
+  line: string;
+  yaki: string; // 焼き色の帯
+  yakiFrom: P; // 帯の濃さの向き（外のふち → 内）
+  yakiTo: P;
+  folds: string[]; // ひだの折り目の線
+};
 
 function gyoza([deg, k]: readonly [number, number], i: number): Gyoza {
   const phi = deg * DEG;
@@ -272,10 +301,10 @@ function gyoza([deg, k]: readonly [number, number], i: number): Gyoza {
   };
   const s = 8000 + i * 60;
   const n = MOON.length;
-  const outline = (z: number, amp: number, seed: number): P[] => {
+  const outline = (z: number, amp: number, seed: number, shape = MOON): P[] => {
     const pts: P[] = [];
     for (let j = 0; j <= n + 2; j++) {
-      const [x, y] = MOON[j % n];
+      const [x, y] = shape[j % n];
       const [gu, gv] = ground(x, y);
       const [px, py] = pr(gu, gv, z);
       pts.push([px + softJitter(seed, j % n, n) * amp, py + softJitter(seed + 7, j % n, n) * amp * 0.6]);
@@ -283,7 +312,7 @@ function gyoza([deg, k]: readonly [number, number], i: number): Gyoza {
     return pts;
   };
   const top = outline(GZ, 0.6, s);
-  const low = outline(GZ - GT, 0.45, s + 30);
+  const low = outline(GZ - GT, 0.45, s + 30, MOON_LOW);
   // 下のふち：上の面より下に出る所（手前の側）だけ。両はしは上の面のふちへつなぐ
   const below = top.slice(0, n).map((p, j) => low[j][1] > p[1] + GT * 0.55);
   let start = below.findIndex((b, j) => b && !below[(j - 1 + n) % n]);
@@ -291,40 +320,30 @@ function gyoza([deg, k]: readonly [number, number], i: number): Gyoza {
   const run: P[] = [top[(start - 1 + n) % n]];
   for (let j = 0; j < n && below[(start + j) % n]; j++) run.push(low[(start + j) % n]);
   run.push(top[(start + run.length - 1) % n]);
-  // 焼き色（上の面の内側。ふちを少し残す）
-  const brown: P[] = Array.from({ length: n }, (_, j) => {
-    const [x, y] = MOON[j];
-    const [gu, gv] = ground(x * 0.8, GW * 0.45 + (y - GW * 0.45) * 0.72);
+  const at = (x: number, y: number): P => {
+    const [gu, gv] = ground(x, y);
     return pr(gu, gv, GZ);
-  });
-  // こげ目（1〜2個。輪郭は描かず、濃い accent の面だけ。細長いやわらかい形。餃子の向きに合わせて床の面で描く）
-  const koge = KOGE[i].map(([cx, cy, a, b], j) =>
-    polygon(
-      Array.from({ length: 20 }, (_, m) => {
-        const t = (PI * 2 * m) / 20;
-        const w = 1 + 0.12 * Math.sin(3 * t + i + j) + jitter(s + 80 + j * 20 + m) * 0.06;
-        const [gu, gv] = ground(cx + a * w * Math.cos(t), cy + b * w * Math.sin(t));
-        return pr(gu, gv, GZ);
+  };
+  // 焼き色の帯（平らな側のふちに沿って。濃さは外のふち → 内へ、linearGradient で淡くする）
+  const yaki = polygon(YAKI.map(([x, y]) => at(x, y)));
+  // ひだの折り目の線（細め。筆ペンのような小さな揺らぎ）
+  const folds = FOLDS.map((pts, f) =>
+    smooth(
+      pts.map(([x, y], m) => {
+        const [px, py] = at(x, y);
+        return [px + jitter(s + 120 + f * 7 + m) * 0.35, py + jitter(s + 140 + f * 7 + m) * 0.25] as const;
       }),
     ),
-  );
-  // ふくらみの稜線（長い向きにそって、ふくらんだ側へ少し弧を描く細い線）
-  const ridge = smooth(
-    Array.from({ length: 7 }, (_, m) => {
-      const x = -0.45 * GLEN + (1.0 * GLEN * m) / 6;
-      const [gu, gv] = ground(x, GW * 0.46 + 9 * (1 - (x / (0.6 * GLEN)) ** 2));
-      const [px, py] = pr(gu, gv, GZ);
-      return [px + jitter(s + 120 + m) * 0.4, py + jitter(s + 130 + m) * 0.3] as const;
-    }),
   );
   return {
     under: polygon(low),
     underLine: smooth(run),
     fill: polygon(top),
     line: smooth(top),
-    brown: polygon(brown),
-    koge,
-    ridge,
+    yaki,
+    yakiFrom: at(0, flatY(0) - 1),
+    yakiTo: at(0, YAKI_W * GW),
+    folds,
   };
 }
 const GYOZA = GYOZA_AT.map(gyoza);
@@ -373,25 +392,32 @@ function GyozaPiece({ g, i }: { g: Gyoza; i: number }) {
       <path d={g.under} className="scene-paper" stroke="none" />
       <path d={g.underLine} className="scene-fine" mask={lineMask} />
       <path d={g.fill} className="scene-paper" stroke="none" />
-      {/* 焼き色：淡い面 → こげ目の順に、じわっと出る */}
+      {/* 焼き色：平らな側のふちに沿った帯だけ。外のふちが濃く、内へ淡く。置かれたあと、じわっと出る */}
+      <defs>
+        <linearGradient
+          id={`teppan-yaki-${i}`}
+          gradientUnits="userSpaceOnUse"
+          x1={g.yakiFrom[0]}
+          y1={g.yakiFrom[1]}
+          x2={g.yakiTo[0]}
+          y2={g.yakiTo[1]}
+        >
+          <stop offset="0" className="teppan-yaki-stop" stopOpacity="0.6" />
+          <stop offset="0.45" className="teppan-yaki-stop" stopOpacity="0.45" />
+          <stop offset="1" className="teppan-yaki-stop" stopOpacity="0" />
+        </linearGradient>
+      </defs>
       <path
-        d={g.brown}
-        className="teppan-brown-wash scene-anim"
+        d={g.yaki}
+        fill={`url(#teppan-yaki-${i})`}
         stroke="none"
+        className="scene-anim"
         style={anim("scene-fade-up", 38 + i * 0.7, 43 + i * 0.7, { "--dy": "0px" })}
       />
-      <g className="scene-anim" style={anim("scene-fade-up", 42 + i * 0.7, 47 + i * 0.7, { "--dy": "0px" })}>
-        {g.koge.map((d, k) => (
-          <path key={k} d={d} className="teppan-koge" stroke="none" />
-        ))}
-      </g>
-      {/* ふくらみの稜線（細く、やや淡く。焼き色のあとに描かれる） */}
-      <path
-        d={g.ridge}
-        pathLength={1}
-        className="teppan-ridge scene-stroke-draw scene-anim"
-        style={anim("scene-draw", 45 + i * 0.6, 50 + i * 0.6)}
-      />
+      {/* ひだの折り目の線（波の谷から内へ。細め） */}
+      {g.folds.map((d, k) => (
+        <path key={k} d={d} className="teppan-pleat" />
+      ))}
       <path d={g.line} className="scene-line" mask={lineMask} />
     </g>
   );
@@ -462,7 +488,7 @@ export default function TeppanIllustration({ className = "" }: { className?: str
       </g>
 
       {/* 2. 餃子（奥から時計回りに、1つずつ上から置かれる。後から置くものが前のものに少し重なる）
-          3. 差し色（accent）はここだけ：餃子の上の面の焼き色（うすい accent の面）とこげ目（濃い accent の面）。置かれたあと、じわっと出る */}
+          3. 差し色（accent）はここだけ：餃子の平らな側のふちに沿った焼き色の帯（外が濃く、内へ淡く）。置かれたあと、じわっと出る */}
       <g className="teppan-gyoza">
         {GYOZA.map((g, i) =>
           i === GYOZA.length - 1 ? (
