@@ -1,13 +1,24 @@
-/* ─── 料理の絵の決まり（「いい塩梅」の抽象化。名物の欄の料理の絵と、トップの場面の料理の絵に当てはめる） ───
-   写真に寄せすぎず、ほかの素朴な線画（ビール・焼酎と日本酒・ソフトドリンク・からあげ）とトップの静かな雰囲気に揃える。
-   「ひと目で何の料理か分かる」ことは保つ。小さい大きさ（124px くらい）では、細かい線がかえってごちゃごちゃするため
-   1. 形（シルエット）で伝える：輪郭だけで何か分かる形にする
-   2. 特徴は1〜2個だけ描く。それ以外の細かい描き込みはしない
-   3. 中の線は少なく：1つの物に、中の線は 5〜6 本まで
-   4. 色は、べた塗り＋陰1段。質感の点・つぶつぶ・細かいしわ・グラデーションは使わない
-      （どうしても要る所だけ、点を2〜3個まで。湯気が上で薄くなるのは線の濃さの変化なので、この決まりの外）
-   5. 色の差・明暗の差は残す（小さい大きさで効くため）
-   当てはめた絵：せいろ（SeiroIllustration.tsx） */
+/* ─── 料理の絵の決まり（「基本は線、強調する所だけ色」。名物の欄の9枚と、トップの場面の料理の絵に当てはめる） ───
+   料理と飲み物の絵を、素朴な線画にそろえる（カードを並べたときに揃って見え、トップの静かな雰囲気からも浮かないように）。
+   「ひと目で何か分かる」ことは、形（シルエット）と、色を塗った1〜2か所で伝える
+   1. 絵は線で描く。塗りは、後ろの線を隠すための紙の色（.scene-paper）だけ
+   2. 強調したい所を1〜2か所だけ、その物の色でべた塗りする（下の .food-*）。陰を付けるなら、べた1段まで
+   3. グラデーション・質感の点・細かいしわや筋・たくさんの線の束は使わない
+      （湯気が上で薄くなるのは、線の濃さの変化なので、この決まりの外。今までどおり）
+   4. 中の線は、1つの物に 5〜6 本まで
+   5. 線の太さは、9枚でそろえる：輪郭は .scene-line、中の線は .scene-fine だけを使う
+      （viewBox を切り出した絵は --scene-z で、400 の幅の絵と同じ太さに見せる）
+   9枚の塗る所：
+   ・しゅうまい … 口から見えるあん（.food-meat）
+   ・鉄鍋餃子 … 餃子の焼き目（.food-yaki）
+   ・からあげ … からあげ（.food-yaki）
+   ・豚の角煮 … 角煮の肉（.food-brown。厚みの陰は .food-brown-shade）と、味玉の黄身（.food-yolk）
+   ・串の盛り合わせ … まん中の串のつくね（たれ。.food-tare）
+   ・肉みそ冷奴 … 肉みそ（.food-brown）と、ねぎ（.food-negi-ring・.food-negi）
+   ・生ビール … ビール（.food-beer）
+   ・焼酎・日本酒 … お猪口の中のお酒（.food-sake）
+   ・ソフトドリンク … グラスの中の飲み物（.food-tea） */
+
 
 /* ─── トップの線画の場面と、ディナーメニューの名物の欄（スクロールで動く線画） ─────────────
    場面の部品は Scene.tsx、名物の欄は Specialties.tsx、絵の囲みは ScenePlayOnView.tsx、絵は *Illustration.tsx。
@@ -70,104 +81,30 @@
 /* 差し色（accent）。各場面に1か所だけ */
 .scene-accent { stroke: var(--accent); }
 .scene-accent-fill { fill: var(--accent); }
-/* 肉みそ冷奴（HiyayakkoIllustration.tsx）。本物の写真に合わせ、色と明暗の差をはっきり付ける。
-   この絵だけの決まりとして、肉みそと豆腐の陰に foreground の色を混ぜ、ねぎに落ち着いた緑を1色だけ使う
-   ・豆腐：面は白。手前の側面と右の側面に foreground の色をうすく重ねた陰（右を濃く）。お皿の上の落ち影も foreground をうすく
-   ・肉みそ：こげ茶（accent に foreground を混ぜる）。下の山といくつかのかたまりは濃く（accent 30%）、
-     ほかのかたまりは少し明るく（accent 52%）。てかりは白い小さな点
-   ・ねぎ：--hiyayakko-negi（くすんだ若草色 #7E9A4C）。輪の線はこの色、中は白と混ぜてうすく
-   ・たれ：accent の面。お皿の上はうすめ（不透明度 0.42）、たまりは少し濃く（0.4 を重ねる）、豆腐の上の面はうすく（0.3） */
-.hiyayakko-negi { --hiyayakko-negi: #7E9A4C; }
-.hiyayakko-tofu-face { fill: #fff; }
-.hiyayakko-tofu-shade-front { fill: currentColor; fill-opacity: 0.07; }
-.hiyayakko-tofu-shade-right { fill: currentColor; fill-opacity: 0.17; }
-.hiyayakko-shadow { fill: currentColor; fill-opacity: 0.14; }
-.hiyayakko-miso-dark { fill: color-mix(in srgb, var(--accent) 30%, currentColor); }
-.hiyayakko-miso-crumb { fill: color-mix(in srgb, var(--accent) 52%, currentColor); }
-.hiyayakko-miso-shine { fill: #fff; fill-opacity: 0.8; }
-.hiyayakko-negi-ring {
-  stroke: var(--hiyayakko-negi);
-  stroke-width: calc(1.5px * var(--scene-k) * var(--scene-z, 1));
-}
-.hiyayakko-negi-in { fill: color-mix(in srgb, var(--hiyayakko-negi) 30%, #fff); }
-.hiyayakko-tare-pool { fill: var(--accent); fill-opacity: 0.42; }
-.hiyayakko-tare-deep { fill: var(--accent); fill-opacity: 0.4; }
-.hiyayakko-tare-top { fill: var(--accent); fill-opacity: 0.3; }
-/* 豚の角煮（KakuniIllustration.tsx）。本物の写真に合わせ、色と明暗の差をはっきり付ける。
-   この絵だけの決まりとして、たれのこげ茶・赤身の茶色・陰に foreground の色を混ぜ、お皿・白身・つやに白を使い、
-   千切りキャベツにごく淡い黄緑を使う
-   ・お皿：面は白。ふちの厚みと落ち影は foreground の色をうすく。内側の底はごくうすい陰
-   ・角煮（寝かせた薄切り）：切り口の皮はこげ茶（accent 48%）、赤身は茶色（accent 70%）、脂はクリーム色（白に accent 24%）。
-     厚みのふちは、たれのこげ茶より濃い陰の色（accent 36%）。しまの境目と輪郭は細い線。つやは白い細い筋
-   ・千切りキャベツ：--kakuni-cabbage（面。白に近い黄緑 #E6EDC8）と --kakuni-cabbage-line（線。少し濃い黄緑 #C9D79A）。
-     奥は少し暗い黄緑（#B9C985 を不透明度 0.5）、手前は白を重ねて明るく。角煮の下は線の色をうすく重ねる。
-     千切りの線は細く（300px の絵で約 0.9px）。4本に1本は白い線にして、ふわっとした明るさを出す
-   ・味玉：白身は白、ふちに細く茶色（白に accent 44%）。黄身は accent（中心は少し濃く、ふちは明るく）。つやは白い点。
-     卵の下のふくらみは、foreground の色のごくうすい陰だけ */
-.kakuni-dish-face { fill: #fff; }
-.kakuni-dish-side { fill: currentColor; fill-opacity: 0.13; }
-.kakuni-dish-well { fill: currentColor; fill-opacity: 0.035; }
-.kakuni-shadow { fill: currentColor; fill-opacity: 0.14; }
-.kakuni-sauce { fill: color-mix(in srgb, var(--accent) 48%, currentColor); }
-.kakuni-meat { fill: color-mix(in srgb, var(--accent) 70%, currentColor); }
-.kakuni-fat { fill: color-mix(in srgb, var(--accent) 24%, #fff); }
-.kakuni-edge { fill: color-mix(in srgb, var(--accent) 36%, currentColor); }
-.kakuni-outline { stroke-width: calc(1.8px * var(--scene-k) * var(--scene-z, 1)); }
-.kakuni-band-line {
-  stroke-width: calc(1.1px * var(--scene-k) * var(--scene-z, 1));
-  stroke-opacity: 0.45;
-}
-.kakuni-gloss {
-  stroke: #fff;
-  stroke-opacity: 0.85;
-  stroke-width: calc(1.6px * var(--scene-k) * var(--scene-z, 1));
-}
-.kakuni-cabbage { --kakuni-cabbage: #E6EDC8; --kakuni-cabbage-line: #C9D79A; }
-.kakuni-cabbage-face { fill: var(--kakuni-cabbage); }
-.kakuni-cabbage-back { stop-color: #B9C985; stop-opacity: 0.5; }
-.kakuni-cabbage-mid { stop-color: #fff; stop-opacity: 0; }
-.kakuni-cabbage-front { stop-color: #fff; stop-opacity: 0.4; }
-.kakuni-cabbage-under { fill: var(--kakuni-cabbage-line); fill-opacity: 0.55; }
-.kakuni-cabbage-strand {
-  stroke: var(--kakuni-cabbage-line);
-  stroke-width: calc(0.95px * var(--scene-k) * var(--scene-z, 1));
-}
-.kakuni-cabbage-hi {
-  stroke: #fff;
-  stroke-opacity: 0.85;
-  stroke-width: calc(0.95px * var(--scene-k) * var(--scene-z, 1));
-}
-.kakuni-egg-rim { fill: color-mix(in srgb, var(--accent) 44%, #fff); }
-.kakuni-egg-under { fill: currentColor; fill-opacity: 0.1; }
-.kakuni-egg-white { fill: #fff; }
-.kakuni-yolk-in { stop-color: color-mix(in srgb, var(--accent) 86%, currentColor); }
-.kakuni-yolk-mid { stop-color: var(--accent); }
-.kakuni-yolk-out { stop-color: color-mix(in srgb, var(--accent) 72%, #fff); }
-.kakuni-yolk-line {
-  stroke: color-mix(in srgb, var(--accent) 70%, currentColor);
-  stroke-width: calc(1.1px * var(--scene-k) * var(--scene-z, 1));
-}
-.kakuni-shine { fill: #fff; fill-opacity: 0.9; }
-/* 鉄鍋餃子の焼き色（TeppanIllustration.tsx）。本物の写真に合わせ、まだら（明るい所と濃いこげ茶の所が入り交じる）。
-   ・上の面の明るいきつね色（.teppan-kitsune。紙の色の上に accent 38%）
-   ・まだらの焼き色の面（radialGradient の stop に .teppan-yaki-stop。数個ずつ重なった所ほど濃く、いちばん濃い所で accent 約 77%）
-   ・こげ茶：まだらの面と同じ形に、foreground の色をうすく重ねる（TeppanIllustration.tsx の teppan-char。いちばん濃い所で不透明度 0.23 くらい）
-   まだらの濃い所と明るい所の差は、いちばん強かった時（de823c9）の約 87%（09a3abe で 25% 小さくした分の半分を戻した）
-   ・黒に近いこげの点（.teppan-spot。accent 55% に foreground の色 45% を混ぜる）
-   この絵だけの決まりとして、焼き目の濃い所にかぎり foreground の色を混ぜる */
-.teppan-yaki-stop { stop-color: var(--accent); }
-.teppan-kitsune { fill: color-mix(in srgb, var(--accent) 38%, var(--scene-paper)); }
-.teppan-spot { fill: color-mix(in srgb, var(--accent) 55%, currentColor); }
-/* 鉄鍋餃子の光と陰（光は左上から）は TeppanIllustration.tsx の linearGradient。光の面は白、陰・落ち影・側面の陰は
-   foreground の色を不透明度で重ねる（この絵だけの決まり）。
-   餃子の輪郭の線は、ほかの線より少し細く（300px の絵で約 1.7px、124px で約 1.7px） */
-.teppan-outline { stroke-width: calc(1.8px * var(--scene-k) * var(--scene-z, 1)); }
-.teppan-outline-fine { stroke-width: calc(1.5px * var(--scene-k) * var(--scene-z, 1)); }
-/* 鉄鍋餃子の、ごつごつした質感の短い線と、ひだの白い皮の帯のふち（細め） */
-.teppan-crust { stroke-width: calc(1.4px * var(--scene-k) * var(--scene-z, 1)); }
-/* 鉄鍋餃子のジュッという音の印（細め。動き終わりは少し薄くなって残る） */
-.teppan-sizzle-line { stroke-width: calc(1.8px * var(--scene-k) * var(--scene-z, 1)); }
+/* 料理の色（このファイルの先頭の「料理の絵の決まり」の 2.）。どれもべた塗り。今まで使っていた色（accent・foreground・白・ねぎの緑）を混ぜて作る。
+   しゅうまいのあんだけは、小豆あんに見えないよう、少し赤み寄りの肉の色（#C98A74。新しく足した色）
+   ・.food-yaki … 焼き目・揚げ色（きつね色。白に accent 62%）
+   ・.food-brown … 煮た肉・肉みそ（こげ茶。accent 55% に foreground）。.food-brown-shade はその陰の1段（accent 36% に foreground）
+   ・.food-tare … 串のたれ（accent 70% に foreground）
+   ・.food-yolk … 味玉の黄身（accent）
+   ・.food-negi・.food-negi-ring … ねぎ（落ち着いた緑 #7E9A4C の輪、中は白と混ぜてうすく）
+   ・.food-beer … ビール（琥珀色。白に accent 72%）
+   ・.food-sake … お酒（淡い色。白に accent 36%）
+   ・.food-tea … ウーロン茶（淡い茶色。白に accent 46%） */
+.food-meat { fill: #C98A74; }
+.food-yaki { fill: color-mix(in srgb, var(--accent) 62%, #fff); }
+.food-brown { fill: color-mix(in srgb, var(--accent) 55%, currentColor); }
+.food-brown-shade { fill: color-mix(in srgb, var(--accent) 36%, currentColor); }
+.food-tare { fill: color-mix(in srgb, var(--accent) 70%, currentColor); }
+.food-yolk { fill: var(--accent); }
+.food-negi { fill: color-mix(in srgb, #7E9A4C 30%, #fff); }
+.food-negi-ring { stroke: #7E9A4C; }
+.food-beer { fill: color-mix(in srgb, var(--accent) 72%, #fff); }
+.food-sake { fill: color-mix(in srgb, var(--accent) 36%, #fff); }
+.food-tea { fill: color-mix(in srgb, var(--accent) 46%, #fff); }
+/* 鉄鍋餃子のジュッという音の印（動き終わりは少し薄くなって残る） */
 .teppan-sizzle-mark { opacity: 0.7; }
+
 
 /* 線を描き進める部品（pathLength="1" と一緒に使う） */
 .scene-stroke-draw {
@@ -185,33 +122,7 @@
   transform-origin: 50% 100%;
 }
 
-/* せいろ（SeiroIllustration.tsx）。料理の絵の決まり（このファイルの先頭）で、上からのぞいたせいろに、しゅうまいを4つ。
-   この絵だけの決まりとして、あん・陰に foreground の色を混ぜ、皮と敷き紙に白を使う
-   ・竹：上のふちの輪は白に accent 30%。陰の1段（外の側面・内側の奥の壁・ふたの側面）は白に accent 42%
-   ・敷き紙：白に accent 6%。穴は foreground の色をうすく（不透明度 0.2）
-   ・皮：白に accent 14%。陰の1段（胴の右下）は、皮の色に foreground を 12% 混ぜる
-   ・あん：茶色のべた塗り（accent 66% に foreground を混ぜた色を、白と 55% で混ぜる）。点は3つ（accent 45% に foreground）
-   ・落ち影：foreground の色を不透明度 0.12 のべた
-   ・閉じたふた：動き終わりは見えない（opacity 0）。動きの途中で、しゅうまいの上にかぶさってから持ち上がって消える */
-.seiro-bamboo { fill: color-mix(in srgb, var(--accent) 30%, #fff); }
-.seiro-bamboo-shade { fill: color-mix(in srgb, var(--accent) 42%, #fff); }
-.seiro-paper-face { fill: color-mix(in srgb, var(--accent) 6%, #fff); }
-.seiro-hole { fill: currentColor; fill-opacity: 0.2; }
-.seiro-shadow { fill: currentColor; fill-opacity: 0.12; }
-.seiro-skin { fill: color-mix(in srgb, var(--accent) 14%, #fff); }
-.seiro-skin-shade { fill: color-mix(in srgb, color-mix(in srgb, var(--accent) 14%, #fff) 88%, currentColor); }
-.seiro-mince { fill: color-mix(in srgb, color-mix(in srgb, var(--accent) 66%, currentColor) 55%, #fff); }
-.seiro-mince-dot { fill: color-mix(in srgb, var(--accent) 45%, currentColor); }
-.seiro-crease {
-  stroke-opacity: 0.5;
-  stroke-width: calc(1.3px * var(--scene-k) * var(--scene-z, 1));
-}
-.seiro-lip-line {
-  stroke-opacity: 0.7;
-  stroke-width: calc(1.4px * var(--scene-k) * var(--scene-z, 1));
-}
-.seiro-outline { stroke-width: calc(1.8px * var(--scene-k) * var(--scene-z, 1)); }
-.seiro-in { stroke-opacity: 0.55; }
+/* せいろの閉じたふた：動き終わりは見えない（opacity 0）。動きの途中で、しゅうまいの上にかぶさってから持ち上がって消える */
 .seiro-lid-closed { opacity: 0; }
 
 /* 店主紹介のページの手元の絵（幅は 画面の幅の 70%、広い画面では 390px まで）。
@@ -250,11 +161,6 @@
 @keyframes scene-swell {
   from { opacity: 0; transform: scale(0.9, 0.15); }
   60%  { opacity: 1; transform: scale(1.02, 1.08); }
-  to   { opacity: 1; transform: none; }
-}
-/* 肉みそ冷奴のたれ：まん中から、じわっと広がって出る */
-@keyframes hiyayakko-spread {
-  from { opacity: 0; transform: scale(0.8); }
   to   { opacity: 1; transform: none; }
 }
 /* 乾杯の絵（ToastIllustration.tsx）：まっすぐ立った形から、少し内側へ傾く（底のまん中を支点に） */

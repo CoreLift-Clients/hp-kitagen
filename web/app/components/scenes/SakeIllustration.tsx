@@ -2,7 +2,8 @@
 // ディナーメニューの「きたげんの名物」の欄の、お飲みものの弐（焼酎・日本酒）のカードで使う飾りの絵（aria-hidden。意味はカードの品名で伝える）。
 // ・線は1色（currentColor ＝ 呼び出し側の text-foreground）。端と角は丸く
 //   （瓶とお猪口にだけ、後ろの線を隠すための塗り --scene-paper を付ける）
-// ・差し色は accent を1か所だけ（瓶のラベルの四角）
+// ・色を塗るのは、お猪口の中のお酒だけ（淡い色のべた。scenes.css の .food-sake。料理の絵の決まりは scenes.css の先頭）。
+//   お酒の面は、注がれる線のあと、お猪口の中の波と一緒にじわっと出る。瓶のラベルは線だけ
 // ・部品ごとに g でまとめる：お猪口（sake-choko）・一升瓶（sake-bottle）・注がれる線（sake-pour）・お猪口の中の波（sake-ripple）
 // ・瓶はまっすぐ立った形で描き、左下の角を支点に 30 度傾けて置く（動き終わりの形）
 // ・動きの順番：瓶とお猪口が現れる → 瓶が少し傾く（まっすぐ立った形から）→ お猪口へ注がれる線（上から下へ描く）→
@@ -44,7 +45,7 @@ const BOTTLE_FINE = [
   line([276, 74], [293, 74], 9720, 0.3, 1), // 口の下の帯
   line([253, 204], [253, 330], 9730, 0.6, 2), // ガラスの光（左の縦の筋）
 ];
-// ラベル（差し色の四角）と、ラベルの中の字のような短い縦の筋（foreground）
+// ラベル（四角）と、ラベルの中の字のような短い縦の筋
 const LABEL = smooth([
   [262, 212],
   [286, 211],
@@ -87,6 +88,13 @@ const POUR = smooth([
   [120, 236],
   [120, 298],
 ]);
+// お猪口の中のお酒の面（口の輪の内側）
+const SAKE_FILL = polygon(
+  Array.from({ length: 32 }, (_, i) => {
+    const t = (PI * 2 * i) / 32;
+    return [CHOKO_CX + 40 * Math.cos(t), CHOKO_TOP + 1.5 + 10 * Math.sin(t)] as const;
+  }),
+);
 // お猪口の中の小さな波（2本）
 const RIPPLE = [arc(120, 302, 22, 4.6, PI * 0.1, PI * 0.9, 8, 0.2, 9900), arc(120, 301, 11, 2.6, PI * 1.1, PI * 1.9, 6, 0.2, 9910)];
 
@@ -114,8 +122,7 @@ export default function SakeIllustration({ className = "" }: { className?: strin
             {BOTTLE_FINE.map((d, i) => (
               <path key={i} d={d} className="scene-fine" />
             ))}
-            {/* 差し色（accent）はここだけ：瓶のラベル */}
-            <path d={LABEL} className="scene-line scene-accent" />
+            <path d={LABEL} className="scene-fine" />
             {LABEL_FINE.map((d, i) => (
               <path key={i} d={d} className="scene-fine" />
             ))}
@@ -136,6 +143,12 @@ export default function SakeIllustration({ className = "" }: { className?: strin
         ))}
       </g>
 
+      <path
+        d={SAKE_FILL}
+        className="sake-liquid food-sake scene-anim"
+        stroke="none"
+        style={anim("scene-fade-up", 38, 46, { "--dy": "0px" })}
+      />
       <g className="sake-ripple">
         {RIPPLE.map((d, i) => (
           <path

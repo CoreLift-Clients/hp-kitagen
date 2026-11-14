@@ -2,7 +2,9 @@
 // トップの「名物」の欄の3品目（生ビール）で使う飾りの絵（aria-hidden。意味は横の文で伝える）。
 // ・線は1色（currentColor ＝ 呼び出し側の text-foreground）。端と角は丸く。塗りは基本なし
 //   （ジョッキと泡にだけ、後ろの線を隠すための塗り --scene-paper を付ける）
-// ・差し色は accent を1か所だけ（泡の上に上がる小さな粒）
+// ・色を塗るのは、ジョッキの中のビールだけ（琥珀色のべた。scenes.css の .food-beer。泡は紙の色のまま。
+//   料理の絵の決まりは scenes.css の先頭）。ビールの面は、ビールの線と一緒に下から上がる（ジョッキの中の形で切り取る）
+// ・泡の上に上がる小さな粒は、ほかの線と同じ foreground の色
 // ・部品ごとに g でまとめる：注ぎ口（beer-tap）・注がれるビールの線（beer-pour）・ジョッキ（beer-mug）・
 //   ビールの線（beer-level）・泡（beer-foam）・泡の粒（beer-bubbles）
 // ・動きの順番：注ぎ口からビールが注がれる線（上から下へ描く）→ ジョッキの中のビールの線が下から上がる →
@@ -80,6 +82,15 @@ const MUG_FINE = [
 
 // ビールの線（ジョッキの中の水面。動き終わりは泡のすぐ下で、泡とビールの境になる）
 const LEVEL = line([132, 196], [281, 196], 5200, 1.2, 4);
+// ビールの面（水面から下へ。ジョッキの中の形 beer-inside で切り取るので、下は長めにしてよい）
+const BEER_FILL = polygon([
+  [120, 196],
+  [290, 196],
+  [290, 520],
+  [120, 520],
+]);
+// ジョッキの中（底の厚みの線まで）
+const MUG_INSIDE = polygon([...MUG_OUTLINE.slice(0, 2), [133, 346], [279, 346], ...MUG_OUTLINE.slice(7)]);
 
 // ── 泡（ふちの上にもこもこと盛り上がる。ふちより少し外へはみ出す） ──
 const FOAM_TOP: readonly P[] = [
@@ -131,6 +142,11 @@ export default function BeerIllustration({ className = "" }: { className?: strin
       strokeLinecap="round"
       strokeLinejoin="round"
     >
+      <defs>
+        <clipPath id="beer-inside">
+          <path d={MUG_INSIDE} />
+        </clipPath>
+      </defs>
       {/* 注がれるビールの線は、ジョッキと泡の後ろ（泡の中へ入っていくように見せる） */}
       <path
         d={POUR}
@@ -141,13 +157,19 @@ export default function BeerIllustration({ className = "" }: { className?: strin
 
       <g className="beer-mug">
         <path d={MUG_FILL} className="scene-paper" stroke="none" />
+      </g>
+
+      <g className="beer-level" clipPath="url(#beer-inside)">
+        <g className="scene-anim" style={anim("scene-fade-up", 12, 28, { "--dy": "136px" })}>
+          <path d={BEER_FILL} className="food-beer" stroke="none" />
+          <path d={LEVEL} className="scene-fine" />
+        </g>
+      </g>
+      {/* ガラスの面の縦の筋は、ビールの上に */}
+      <g className="beer-mug">
         {MUG_FINE.map((d, i) => (
           <path key={i} d={d} className="scene-fine" />
         ))}
-      </g>
-
-      <g className="beer-level scene-anim" style={anim("scene-fade-up", 12, 28, { "--dy": "136px" })}>
-        <path d={LEVEL} className="scene-fine" />
       </g>
 
       <g className="beer-mug">
@@ -175,7 +197,7 @@ export default function BeerIllustration({ className = "" }: { className?: strin
         ))}
       </g>
 
-      {/* 差し色（accent）はここだけ：泡の粒 */}
+      {/* 泡の粒 */}
       <g className="beer-bubbles">
         {BUBBLES.map(([x, y, r], i) => (
           <g
@@ -183,7 +205,7 @@ export default function BeerIllustration({ className = "" }: { className?: strin
             className="scene-anim"
             style={anim("scene-fade-up", 34 + (i % 3) * 2, 44 + (i % 3) * 2, { "--dy": "16px" })}
           >
-            <circle cx={x} cy={y} r={r} className="scene-fine scene-accent" />
+            <circle cx={x} cy={y} r={r} className="scene-fine" />
           </g>
         ))}
       </g>

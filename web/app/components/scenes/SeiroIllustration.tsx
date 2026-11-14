@@ -3,13 +3,13 @@
 // 本物の盛り付け（代表者から届いた写真）をもとに、料理の絵の決まり（scenes.css の先頭）で抽象化する：
 // 明るい竹のせいろを上からのぞき込み、穴のあいた敷き紙の上に、まるっとしたしゅうまいを4つ（2つずつ2列）並べる。
 // ・形で伝える：上からのぞいた丸いせいろと、上の口が開いた丸いしゅうまい4つ
-// ・特徴は2つだけ：しゅうまいの口から見える茶色のあん、口のまわりのひだ（6本）
-// ・線は currentColor（＝ 呼び出し側の text-foreground）。端と角は丸く
-// ・色はべた塗り＋陰1段（グラデーションは使わない）。この絵だけの決まりとして、あん・陰に foreground の色を混ぜ、
-//   皮と敷き紙に白を使う（scenes.css の .seiro-*）
-// ・せいろ：上のふちの竹の輪（明るい竹の色）。陰の1段は、外の側面と内側の奥の壁。中の線は、内のふち・竹の帯・奥の壁と底の境目の3本
-// ・敷き紙：白に近い淡い面に、小さな丸い穴を5つ
-// ・しゅうまい：皮は淡いクリーム色、右下にべたの陰1段。あんは茶色のべた塗りに点を3つ。敷き紙の上に、うすいべたの落ち影
+// ・特徴は2つだけ：しゅうまいの口から見えるあん、口のまわりのひだ（5本）
+// ・線は currentColor（＝ 呼び出し側の text-foreground）。端と角は丸く。輪郭は scene-line、中の線は scene-fine
+// ・色を塗るのは、口から見えるあんだけ（少し赤み寄りの肉の色のべた。scenes.css の .food-meat。料理の絵の決まりは scenes.css の先頭）。
+//   ほかの面（せいろ・敷き紙・皮・ふた）は、後ろの線を隠すための紙の色（--scene-paper）
+// ・せいろ：中の線は、内のふち・竹の帯・奥の壁と底の境目の3本
+// ・敷き紙：ふちの線1本だけ
+// ・しゅうまい：中の線は、口のふち1本とひだ5本
 // ・ふた：動き終わりは、せいろの奥（上）へ持ち上げて少し傾けた形（しゅうまいを隠さない。せいろの後ろに描く）。
 //   閉じたふた（しゅうまいの上に描く）は、現れてから持ち上がって消え、入れ替わりに奥のふたが下から上がってくる
 // ・湯気（時間で揺れる）は、奥の列のしゅうまいの上から立ちのぼる
@@ -23,7 +23,7 @@
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
 import type { CSSProperties } from "react";
-import { PI, anim, arc, blobPts, jitter, polygon, r1, smooth, steam, sway, type P } from "./draw";
+import { PI, anim, arc, blobPts, jitter, polygon, smooth, steam, sway, type P } from "./draw";
 
 // ── 見る角度（床の面の点 u・v と高さ z を、絵の座標にする） ──
 const CX = 200;
@@ -63,15 +63,8 @@ const BODY_IN = [
   arc(CX, FY, RI, RI * SQ, PI * 1.04, PI * 1.96, 24, 0.4, 220),
 ];
 
-// ── 敷き紙（底いっぱい。穴は、しゅうまいの間と外まわりに5つだけ） ──
-const PAPER = ell(RI - 4, 0.5);
-const HOLES: P[] = [
-  [0, 0],
-  [0, -112],
-  [-124, 2],
-  [124, -2],
-  [0, 114],
-].map(([u, v]) => pr(u, v, 0.5));
+// ── 敷き紙（底いっぱい。ふちの線1本） ──
+const PAPER = arc(CX, FY - 0.5, RI - 8, (RI - 8) * SQ, PI * 0.96, PI * 3.02, 40, 0.5, 300);
 
 // ── しゅうまい ──
 // しゅうまいの置き場所（床の面の u・v）。奥の列から
@@ -108,15 +101,11 @@ function hull(pts: P[]): P[] {
 }
 
 type Shumai = {
-  shadow: string;
   body: string;
-  lit: string;
   outline: string;
-  lip: string;
   lipLine: string;
   creases: string[];
   meat: string;
-  dots: P[];
 };
 const SHUMAI: Shumai[] = SHUMAI_AT.map(([u0, v0], i) => {
   const s = 1000 + i * 200;
@@ -129,32 +118,22 @@ const SHUMAI: Shumai[] = SHUMAI_AT.map(([u0, v0], i) => {
   const outer = hull(Array.from({ length: 13 }, (_, k) => ringAt(radiusAt((Z_TOP * k) / 12), (Z_TOP * k) / 12)).flat());
   // 口のふち（ゆるく波打つ輪）
   const lipPts = blobPts(...pr(u0, v0, Z_TOP), R_TOP, R_TOP * SQ, s + 400, 8, 0.03, 48);
-  // 口のひだ（あんのふちから外へ向かう短い線を6本。左右と手前に）
-  const creases = [0.12, 0.42, 0.68, 0.95, 1.25, 1.75].map((f, k) => {
+  // 口のひだ（あんのふちから外へ向かう短い線を5本。左右と手前に）
+  const creases = [0.12, 0.5, 0.88, 1.25, 1.75].map((f, k) => {
     const t = PI * f + jitter(s + 500 + k) * 0.05;
     const a = pr(u0 + (R_MEAT + 1) * Math.cos(t), v0 + (R_MEAT + 1) * Math.sin(t), Z_MEAT - 1.5);
     const b = pr(u0 + (R_TOP - 3) * Math.cos(t + 0.06), v0 + (R_TOP - 3) * Math.sin(t + 0.06), Z_TOP + 0.5);
     return smooth([a, b]);
   });
-  // あん（口から見える面）と、点を3つ
+  // あん（口から見える面）
   const [mx, my] = pr(u0, v0, Z_MEAT);
   const meatPts = blobPts(mx, my, R_MEAT, R_MEAT * SQ + 2, s + 600, 7, 0.04, 40);
-  const dots: P[] = [
-    [mx - 12, my - 4],
-    [mx + 9, my - 7],
-    [mx + 2, my + 7],
-  ];
   return {
-    shadow: polygon(circ(u0 + 9, v0 + 9, R_MID + 2, 0.6, 40).slice(0, 40)),
     body: polygon(outer),
-    // 明るい面（胴を左上へずらした形）。胴の形で切り取り、右下に陰の1段を残す
-    lit: polygon(outer.map(([x, y]) => [x - 9, y - 7] as const)),
     outline: smooth([...outer, outer[0], outer[1]]),
-    lip: `${smooth(lipPts)} Z`,
     lipLine: smooth(lipPts),
     creases,
     meat: `${smooth(meatPts)} Z`,
-    dots,
   };
 });
 
@@ -237,81 +216,66 @@ export default function SeiroIllustration({ className = "" }: { className?: stri
           <stop offset="0.55" stopColor="currentColor" stopOpacity="0.75" />
           <stop offset="1" stopColor="currentColor" stopOpacity="0" />
         </linearGradient>
-        {/* しゅうまいの胴の形（明るい面をこの形で切り取る） */}
-        {SHUMAI.map((p, i) => (
-          <clipPath key={i} id={`seiro-shumai-${i}`}>
-            <path d={p.body} />
-          </clipPath>
-        ))}
       </defs>
 
       {/* 1. 持ち上げたふた（せいろの奥。動き終わりの形。下から持ち上がってくる） */}
       <g className="seiro-lid scene-anim" style={anim("seiro-lid-up", 38, 50, { "--o": "50% 100%" })}>
         <g transform={`rotate(${LO_ROT} ${LO_X} ${LO_Y})`}>
-          <path d={LID_OPEN_SIDE} className="seiro-bamboo-shade" stroke="none" />
-          <path d={LID_OPEN_TOP} className="seiro-bamboo" stroke="none" />
+          <path d={LID_OPEN_SIDE} className="scene-paper" stroke="none" />
+          <path d={LID_OPEN_TOP} className="scene-paper" stroke="none" />
           {LID_OPEN_IN.map((d, i) => (
-            <path key={i} d={d} className="scene-fine seiro-in" />
+            <path key={i} d={d} className="scene-fine" />
           ))}
           {LID_OPEN_LINE.map((d, i) => (
-            <path key={i} d={d} className="seiro-outline" />
+            <path key={i} d={d} className="scene-line" />
           ))}
         </g>
       </g>
 
-      {/* 2. せいろ（陰の面：外の側面・内側の奥の壁 → 竹の輪 → 線） */}
+      {/* 2. せいろ（後ろを隠す紙の色の面 → 線） */}
       <g className="seiro-body scene-anim" style={anim("scene-fade-up", 4, 10, { "--dy": "8px" })}>
-        <path d={OUTER_SIDE} className="seiro-bamboo-shade" stroke="none" />
-        <path d={INNER_WALL} className="seiro-bamboo-shade" stroke="none" />
-        <path d={FLOOR} className="seiro-bamboo-shade" stroke="none" />
-        <path d={RIM_FACE} className="seiro-bamboo" fillRule="evenodd" stroke="none" />
+        <path d={OUTER_SIDE} className="scene-paper" stroke="none" />
+        <path d={INNER_WALL} className="scene-paper" stroke="none" />
+        <path d={FLOOR} className="scene-paper" stroke="none" />
+        <path d={RIM_FACE} className="scene-paper" fillRule="evenodd" stroke="none" />
         {BODY_IN.map((d, i) => (
-          <path key={`i${i}`} d={d} className="scene-fine seiro-in" />
+          <path key={`i${i}`} d={d} className="scene-fine" />
         ))}
         {BODY_LINE.map((d, i) => (
-          <path key={i} d={d} className="seiro-outline" />
+          <path key={i} d={d} className="scene-line" />
         ))}
       </g>
 
-      {/* 3. 敷き紙（淡い面に、小さな丸い穴を5つ） */}
+      {/* 3. 敷き紙（ふちの線） */}
       <g className="seiro-paper scene-anim" style={anim("scene-fade-up", 10, 14, { "--dy": "0px" })}>
-        <path d={PAPER} className="seiro-paper-face" stroke="none" />
-        {HOLES.map(([x, y], i) => (
-          <ellipse key={i} cx={r1(x)} cy={r1(y)} rx={3} ry={2} className="seiro-hole" stroke="none" />
-        ))}
+        <path d={PAPER} className="scene-fine" />
       </g>
 
       {/* 4. しゅうまい（奥の列から1つずつ、上から置かれる） */}
       <g className="seiro-shumai">
         {SHUMAI.map((p, i) => (
           <g key={i} className="scene-anim" style={anim("scene-fade-up", 14 + i * 5, 20 + i * 5, { "--dy": "-18px" })}>
-            <path d={p.shadow} className="seiro-shadow" stroke="none" />
-            {/* 皮：陰の色で胴を塗り、左上へずらした明るい面を重ねて、右下に陰の1段を残す */}
-            <path d={p.body} className="seiro-skin-shade" stroke="none" />
-            <path d={p.lit} className="seiro-skin" stroke="none" clipPath={`url(#seiro-shumai-${i})`} />
-            <path d={p.lip} className="seiro-skin" stroke="none" />
+            {/* 皮（紙の色）→ ひだ → あん（ここだけ色）→ 口のふち → 輪郭 */}
+            <path d={p.body} className="scene-paper" stroke="none" />
             {p.creases.map((d, k) => (
-              <path key={`c${k}`} d={d} className="seiro-crease" />
+              <path key={`c${k}`} d={d} className="scene-fine" />
             ))}
-            <path d={p.meat} className="seiro-mince" stroke="none" />
-            {p.dots.map(([x, y], k) => (
-              <circle key={`d${k}`} cx={r1(x)} cy={r1(y)} r={1.8} className="seiro-mince-dot" stroke="none" />
-            ))}
-            <path d={p.lipLine} className="seiro-lip-line" />
-            <path d={p.outline} className="seiro-outline" />
+            <path d={p.meat} className="food-meat" stroke="none" />
+            <path d={p.lipLine} className="scene-fine" />
+            <path d={p.outline} className="scene-line" />
           </g>
         ))}
       </g>
 
       {/* 5. 閉じたふた（しゅうまいの上にかぶさってから、持ち上がって消える。動き終わりは見えない） */}
       <g className="seiro-lid-closed scene-anim" style={anim("seiro-lid-lift", 32, 44)}>
-        <path d={LID_CLOSED_SIDE} className="seiro-bamboo-shade" stroke="none" />
-        <path d={LID_CLOSED_TOP} className="seiro-bamboo" stroke="none" />
+        <path d={LID_CLOSED_SIDE} className="scene-paper" stroke="none" />
+        <path d={LID_CLOSED_TOP} className="scene-paper" stroke="none" />
         {LID_CLOSED_IN.map((d, i) => (
-          <path key={i} d={d} className="scene-fine seiro-in" />
+          <path key={i} d={d} className="scene-fine" />
         ))}
         {LID_CLOSED_LINE.map((d, i) => (
-          <path key={i} d={d} className="seiro-outline" />
+          <path key={i} d={d} className="scene-line" />
         ))}
       </g>
 

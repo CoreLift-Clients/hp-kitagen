@@ -2,10 +2,10 @@
 // ディナーメニューの「きたげんの名物」の欄の、料理の伍（串の盛り合わせ）のカードで使う飾りの絵（aria-hidden。意味はカードの品名で伝える）。
 // ・線は1色（currentColor ＝ 呼び出し側の text-foreground）。端と角は丸く
 //   （お皿と串の具にだけ、後ろの線を隠すための塗り --scene-paper を付ける）
-// ・差し色は accent を1か所だけ（まん中の串（つくね）の、たれの線）
+// ・色を塗るのは、たれのかかったまん中の串のつくねだけ（たれの色のべた。scenes.css の .food-tare。料理の絵の決まりは scenes.css の先頭）
 // ・部品ごとに g でまとめる：お皿（kushi-plate）・串3本（kushi-skewers。1本ずつ g）
 // ・串は横長のお皿に、少し斜めに3本。具は1本に4個ずつで、丸（つくね）や四角（ねぎま）の形
-// ・動きの順番：お皿が現れる → 串が1本ずつ（奥から手前へ）上から置かれていく。たれの線は、まん中の串と一緒に置かれる
+// ・動きの順番：お皿が現れる → 串が1本ずつ（奥から手前へ）上から置かれていく
 //   （動きの名前と範囲は anim(...)、@keyframes は scenes.css）
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
@@ -114,19 +114,6 @@ function skewer({ from, to, items }: Skewer, i: number) {
 }
 const SKEWER_PARTS = SKEWERS.map(skewer);
 
-// たれの線（差し色。まん中の串のつくねの上を、波のようにつなぐ）
-const TARE = (() => {
-  const { from, to } = SKEWERS[1];
-  const pts: P[] = [];
-  const n = 4;
-  for (let k = 0; k < n; k++) {
-    const t = ITEM_T0 + ((ITEM_T1 - ITEM_T0) * k) / (n - 1);
-    const x = from[0] + (to[0] - from[0]) * t;
-    const y = from[1] + (to[1] - from[1]) * t;
-    pts.push([x - 10, y - 4], [x, y - 9], [x + 10, y - 4]);
-  }
-  return smooth(pts);
-})();
 
 export default function KushiIllustration({ className = "" }: { className?: string }) {
   return (
@@ -158,12 +145,11 @@ export default function KushiIllustration({ className = "" }: { className?: stri
             ))}
             {sk.shapes.map((sh, k) => (
               <g key={k}>
-                <path d={sh.fill} className="scene-paper" stroke="none" />
+                {/* まん中の串（つくね）だけ、たれの色 */}
+                <path d={sh.fill} className={i === 1 ? "food-tare" : "scene-paper"} stroke="none" />
                 <path d={sh.d} className="scene-line" />
               </g>
             ))}
-            {/* 差し色（accent）はここだけ：まん中の串のたれの線 */}
-            {i === 1 && <path d={TARE} className="scene-fine scene-accent" />}
           </g>
         ))}
       </g>

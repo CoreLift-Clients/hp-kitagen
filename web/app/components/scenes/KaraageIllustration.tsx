@@ -1,8 +1,9 @@
 // ─── からあげの線画 ───
 // ディナーメニューの「きたげんの名物」の欄の、料理の参（からあげ）のカードで使う飾りの絵（aria-hidden。意味はカードの品名で伝える）。
 // ・線は1色（currentColor ＝ 呼び出し側の text-foreground）。端と角は丸く
-//   （からあげにだけ、重なった後ろの線を隠すための塗り --scene-paper を付ける）
-// ・差し色は accent を1か所だけ（油のパチパチの短い線）
+//   （お皿にだけ、後ろの線を隠すための塗り --scene-paper を付ける）
+// ・色を塗るのは、からあげだけ（きつね色のべた。scenes.css の .food-yaki。料理の絵の決まりは scenes.css の先頭）
+// ・油のパチパチの短い線は、ほかの線と同じ foreground の色
 // ・部品ごとに g でまとめる：お皿（karaage-plate）・からあげ5個（karaage-pieces）・油の線（karaage-oil）
 // ・動きの順番：お皿が現れる → からあげが1つずつ上から落ちてくる（奥から手前へ）→
 //   油の短い線がパチパチと出て消える（動き終わりは消えた形。動かないときは見えたまま）
@@ -104,7 +105,7 @@ export default function KaraageIllustration({ className = "" }: { className?: st
       <g className="karaage-pieces">
         {PIECES.map((p, i) => (
           <g key={i} className="scene-anim" style={anim("scene-fade-up", 14 + i * 5, 22 + i * 5, { "--dy": "-48px" })}>
-            <path d={p.fill} className="scene-paper" stroke="none" />
+            <path d={p.fill} className="food-yaki" stroke="none" />
             <path d={p.outline} className="scene-line" />
             {p.cracks.map((d, k) => (
               <path key={k} d={d} className="scene-fine" />
@@ -113,11 +114,11 @@ export default function KaraageIllustration({ className = "" }: { className?: st
         ))}
       </g>
 
-      {/* 差し色（accent）はここだけ：油のパチパチ */}
+      {/* 油のパチパチ */}
       <g className="karaage-oil">
         {OIL_LINES.map((d, i) => (
           <g key={i} className="scene-anim" style={anim("scene-flicker", 42 + (i % 3) * 3, 52 + (i % 3) * 3)}>
-            <path d={d} className="scene-fine scene-accent" />
+            <path d={d} className="scene-fine" />
           </g>
         ))}
       </g>

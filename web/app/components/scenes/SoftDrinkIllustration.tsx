@@ -2,9 +2,10 @@
 // ディナーメニューの「きたげんの名物」の欄の、お飲みものの参（ソフトドリンク）のカードで使う飾りの絵（aria-hidden。意味はカードの品名で伝える）。
 // ・線は1色（currentColor ＝ 呼び出し側の text-foreground）。端と角は丸く
 //   （氷にだけ、後ろの線（ストロー）を隠すための塗り --scene-paper を付ける）
-// ・差し色は accent を1か所だけ（ストローの線）
+// ・色を塗るのは、グラスの中の飲み物だけ（ウーロン茶の淡い茶色のべた。scenes.css の .food-tea。
+//   料理の絵の決まりは scenes.css の先頭）。ストローは線だけ
 // ・部品ごとに g でまとめる：グラス（soft-glass。氷3個と飲みものの線も一緒）・ストロー（soft-straw）・泡の粒（soft-bubbles）
-//   重なりの順：ストロー → 氷（ストローの一部を隠す）→ グラスの線 → 泡の粒
+//   重なりの順：飲み物の面 → ストロー → 氷（ストローの一部を隠す）→ グラスの線 → 泡の粒
 // ・動きの順番：グラスが現れる → ストローが上から入る → 泡の粒が下から上がる（1つずつ）
 //   （動きの名前と範囲は anim(...)、@keyframes は scenes.css）
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
@@ -24,6 +25,16 @@ const GLASS_FINE = [
   line([200, 128], [258 - 14, 128], 10060, 0.6, 2), // 飲みものの線（右半分。左はストローと氷の後ろ）
   line([146, 128], [184, 128], 10070, 0.6, 2), // 飲みものの線（左）
 ];
+
+// ── 飲み物の面（飲みものの線 y = 128 から底の厚みの線まで。グラスの内側） ──
+const glassX = (y: number, side: number) => (side < 0 ? 142 + ((156 - 142) * (y - 99)) / 245 : 258 - ((258 - 244) * (y - 99)) / 245);
+const DRINK_FILL = polygon([
+  [glassX(128, -1) + 1.5, 128],
+  [glassX(128, 1) - 1.5, 128],
+  [glassX(328, 1) - 1.5, 332],
+  [200, 338],
+  [glassX(328, -1) + 1.5, 332],
+]);
 
 // ── 氷（3個。角の丸い四角を少し傾けて） ──
 function ice([cx, cy]: P, half: number, rot: number, seed: number) {
@@ -95,10 +106,12 @@ export default function SoftDrinkIllustration({ className = "" }: { className?: 
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      {/* 差し色（accent）はここだけ：ストロー（上から入る） */}
+      {/* 飲み物の面（グラスと一緒に現れる） */}
+      <path d={DRINK_FILL} className="soft-drink food-tea scene-anim" stroke="none" style={anim("scene-fade-up", 4, 14, { "--dy": "10px" })} />
+      {/* ストロー（上から入る） */}
       <g className="soft-straw scene-anim" style={anim("scene-fade-up", 18, 30, { "--dy": "-90px" })}>
         {STRAW.map((d, i) => (
-          <path key={i} d={d} className={`${i < 2 ? "scene-line" : "scene-fine"} scene-accent`} />
+          <path key={i} d={d} className={i < 2 ? "scene-line" : "scene-fine"} />
         ))}
       </g>
 
