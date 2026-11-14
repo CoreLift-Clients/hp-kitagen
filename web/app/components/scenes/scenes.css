@@ -59,8 +59,29 @@
 /* 差し色（accent）。各場面に1か所だけ */
 .scene-accent { stroke: var(--accent); }
 .scene-accent-fill { fill: var(--accent); }
-/* 差し色の面をうすく塗る（肉みそ冷奴の肉みそ。後ろの線も隠したいので、紙の色の上にうすい accent を重ねる） */
-.scene-accent-wash { fill: color-mix(in srgb, var(--accent) 24%, var(--scene-paper)); }
+/* 肉みそ冷奴（HiyayakkoIllustration.tsx）。本物の写真に合わせ、色と明暗の差をはっきり付ける。
+   この絵だけの決まりとして、肉みそと豆腐の陰に foreground の色を混ぜ、ねぎに落ち着いた緑を1色だけ使う
+   ・豆腐：面は白。手前の側面と右の側面に foreground の色をうすく重ねた陰（右を濃く）。お皿の上の落ち影も foreground をうすく
+   ・肉みそ：こげ茶（accent に foreground を混ぜる）。下の山といくつかのかたまりは濃く（accent 30%）、
+     ほかのかたまりは少し明るく（accent 52%）。てかりは白い小さな点
+   ・ねぎ：--hiyayakko-negi（くすんだ若草色 #7E9A4C）。輪の線はこの色、中は白と混ぜてうすく
+   ・たれ：accent の面。お皿の上はうすめ（不透明度 0.42）、たまりは少し濃く（0.4 を重ねる）、豆腐の上の面はうすく（0.3） */
+.hiyayakko-negi { --hiyayakko-negi: #7E9A4C; }
+.hiyayakko-tofu-face { fill: #fff; }
+.hiyayakko-tofu-shade-front { fill: currentColor; fill-opacity: 0.07; }
+.hiyayakko-tofu-shade-right { fill: currentColor; fill-opacity: 0.17; }
+.hiyayakko-shadow { fill: currentColor; fill-opacity: 0.14; }
+.hiyayakko-miso-dark { fill: color-mix(in srgb, var(--accent) 30%, currentColor); }
+.hiyayakko-miso-crumb { fill: color-mix(in srgb, var(--accent) 52%, currentColor); }
+.hiyayakko-miso-shine { fill: #fff; fill-opacity: 0.8; }
+.hiyayakko-negi-ring {
+  stroke: var(--hiyayakko-negi);
+  stroke-width: calc(1.5px * var(--scene-k) * var(--scene-z, 1));
+}
+.hiyayakko-negi-in { fill: color-mix(in srgb, var(--hiyayakko-negi) 30%, #fff); }
+.hiyayakko-tare-pool { fill: var(--accent); fill-opacity: 0.42; }
+.hiyayakko-tare-deep { fill: var(--accent); fill-opacity: 0.4; }
+.hiyayakko-tare-top { fill: var(--accent); fill-opacity: 0.3; }
 /* 鉄鍋餃子の焼き色（TeppanIllustration.tsx）。本物の写真に合わせ、まだら（明るい所と濃いこげ茶の所が入り交じる）。
    ・上の面の明るいきつね色（.teppan-kitsune。紙の色の上に accent 38%）
    ・まだらの焼き色の面（radialGradient の stop に .teppan-yaki-stop。数個ずつ重なった所ほど濃く、いちばん濃い所で accent 約 77%）
@@ -140,6 +161,11 @@
 @keyframes scene-swell {
   from { opacity: 0; transform: scale(0.9, 0.15); }
   60%  { opacity: 1; transform: scale(1.02, 1.08); }
+  to   { opacity: 1; transform: none; }
+}
+/* 肉みそ冷奴のたれ：まん中から、じわっと広がって出る */
+@keyframes hiyayakko-spread {
+  from { opacity: 0; transform: scale(0.8); }
   to   { opacity: 1; transform: none; }
 }
 /* 乾杯の絵（ToastIllustration.tsx）：まっすぐ立った形から、少し内側へ傾く（底のまん中を支点に） */
