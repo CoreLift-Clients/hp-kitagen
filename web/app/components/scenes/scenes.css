@@ -1,3 +1,14 @@
+/* ─── 料理の絵の決まり（「いい塩梅」の抽象化。名物の欄の料理の絵と、トップの場面の料理の絵に当てはめる） ───
+   写真に寄せすぎず、ほかの素朴な線画（ビール・焼酎と日本酒・ソフトドリンク・からあげ）とトップの静かな雰囲気に揃える。
+   「ひと目で何の料理か分かる」ことは保つ。小さい大きさ（124px くらい）では、細かい線がかえってごちゃごちゃするため
+   1. 形（シルエット）で伝える：輪郭だけで何か分かる形にする
+   2. 特徴は1〜2個だけ描く。それ以外の細かい描き込みはしない
+   3. 中の線は少なく：1つの物に、中の線は 5〜6 本まで
+   4. 色は、べた塗り＋陰1段。質感の点・つぶつぶ・細かいしわ・グラデーションは使わない
+      （どうしても要る所だけ、点を2〜3個まで。湯気が上で薄くなるのは線の濃さの変化なので、この決まりの外）
+   5. 色の差・明暗の差は残す（小さい大きさで効くため）
+   当てはめた絵：せいろ（SeiroIllustration.tsx） */
+
 /* ─── トップの線画の場面と、ディナーメニューの名物の欄（スクロールで動く線画） ─────────────
    場面の部品は Scene.tsx、名物の欄は Specialties.tsx、絵の囲みは ScenePlayOnView.tsx、絵は *Illustration.tsx。
    ・何も動かさないときの形が「動き終わった絵」。
@@ -174,58 +185,33 @@
   transform-origin: 50% 100%;
 }
 
-/* せいろ（SeiroIllustration.tsx）。本物の写真に合わせ、上からのぞき込んだ明るい竹のせいろに、しゅうまいを4つ。
+/* せいろ（SeiroIllustration.tsx）。料理の絵の決まり（このファイルの先頭）で、上からのぞいたせいろに、しゅうまいを4つ。
    この絵だけの決まりとして、あん・陰に foreground の色を混ぜ、皮と敷き紙に白を使う
-   ・竹：上のふちの輪は白に accent 30%、外の側面は 36%、内側の壁と底は 40%。陰は foreground の色をうすく（グラデーション）
+   ・竹：上のふちの輪は白に accent 30%。陰の1段（外の側面・内側の奥の壁・ふたの側面）は白に accent 42%
    ・敷き紙：白に accent 6%。穴は foreground の色をうすく（不透明度 0.2）
-   ・皮：白に accent 16%（胴。少し透けた淡いクリーム色）、口のふちは白に accent 9%。しわは foreground の色を細くうすく
-   ・あん：ピンクがかった茶色（accent 64% に foreground を混ぜた色を、白と 60% で混ぜる）。つぶつぶは濃い点と明るい点。
-     口のふちの影（右下）は foreground の色をうすく
-   ・落ち影：foreground の色を不透明度 0.12
+   ・皮：白に accent 14%。陰の1段（胴の右下）は、皮の色に foreground を 12% 混ぜる
+   ・あん：茶色のべた塗り（accent 66% に foreground を混ぜた色を、白と 55% で混ぜる）。点は3つ（accent 45% に foreground）
+   ・落ち影：foreground の色を不透明度 0.12 のべた
    ・閉じたふた：動き終わりは見えない（opacity 0）。動きの途中で、しゅうまいの上にかぶさってから持ち上がって消える */
 .seiro-bamboo { fill: color-mix(in srgb, var(--accent) 30%, #fff); }
-.seiro-bamboo-side { fill: color-mix(in srgb, var(--accent) 36%, #fff); }
-.seiro-bamboo-in { fill: color-mix(in srgb, var(--accent) 40%, #fff); }
+.seiro-bamboo-shade { fill: color-mix(in srgb, var(--accent) 42%, #fff); }
 .seiro-paper-face { fill: color-mix(in srgb, var(--accent) 6%, #fff); }
 .seiro-hole { fill: currentColor; fill-opacity: 0.2; }
-.seiro-paper-fold {
-  stroke-opacity: 0.18;
-  stroke-width: calc(1px * var(--scene-k) * var(--scene-z, 1));
-}
 .seiro-shadow { fill: currentColor; fill-opacity: 0.12; }
-.seiro-skin { fill: color-mix(in srgb, var(--accent) 18%, #fff); }
-.seiro-skin-top { fill: color-mix(in srgb, var(--accent) 9%, #fff); }
-.seiro-mince { fill: color-mix(in srgb, color-mix(in srgb, var(--accent) 66%, currentColor) 50%, #fff); }
-.seiro-mince-shade { fill: currentColor; fill-opacity: 0.16; }
-.seiro-crumb { fill: color-mix(in srgb, var(--accent) 55%, currentColor); fill-opacity: 0.45; }
-.seiro-crumb-hi { fill: #fff; fill-opacity: 0.45; }
-.seiro-grain {
-  stroke: color-mix(in srgb, var(--accent) 45%, currentColor);
-  stroke-opacity: 0.7;
-  stroke-width: calc(1.1px * var(--scene-k) * var(--scene-z, 1));
-}
-.seiro-pleat {
-  stroke-opacity: 0.4;
-  stroke-width: calc(1px * var(--scene-k) * var(--scene-z, 1));
-}
+.seiro-skin { fill: color-mix(in srgb, var(--accent) 14%, #fff); }
+.seiro-skin-shade { fill: color-mix(in srgb, color-mix(in srgb, var(--accent) 14%, #fff) 88%, currentColor); }
+.seiro-mince { fill: color-mix(in srgb, color-mix(in srgb, var(--accent) 66%, currentColor) 55%, #fff); }
+.seiro-mince-dot { fill: color-mix(in srgb, var(--accent) 45%, currentColor); }
 .seiro-crease {
-  stroke-opacity: 0.38;
-  stroke-width: calc(0.9px * var(--scene-k) * var(--scene-z, 1));
-}
-.seiro-meat-line {
-  stroke: color-mix(in srgb, var(--accent) 40%, currentColor);
-  stroke-width: calc(1.1px * var(--scene-k) * var(--scene-z, 1));
+  stroke-opacity: 0.5;
+  stroke-width: calc(1.3px * var(--scene-k) * var(--scene-z, 1));
 }
 .seiro-lip-line {
-  stroke-opacity: 0.6;
-  stroke-width: calc(1.2px * var(--scene-k) * var(--scene-z, 1));
+  stroke-opacity: 0.7;
+  stroke-width: calc(1.4px * var(--scene-k) * var(--scene-z, 1));
 }
 .seiro-outline { stroke-width: calc(1.8px * var(--scene-k) * var(--scene-z, 1)); }
-.seiro-hair { stroke-opacity: 0.5; }
-.seiro-hair-line {
-  stroke-opacity: 0.3;
-  stroke-width: calc(1px * var(--scene-k) * var(--scene-z, 1));
-}
+.seiro-in { stroke-opacity: 0.55; }
 .seiro-lid-closed { opacity: 0; }
 
 /* 店主紹介のページの手元の絵（幅は 画面の幅の 70%、広い画面では 390px まで）。
