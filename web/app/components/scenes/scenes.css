@@ -85,10 +85,11 @@
 /* 豚の角煮（KakuniIllustration.tsx）。本物の写真に合わせ、色と明暗の差をはっきり付ける。
    この絵だけの決まりとして、たれのこげ茶・赤身の茶色・陰に foreground の色を混ぜ、お皿・白身・つやに白を使う
    ・お皿：面は白。ふちの厚みと落ち影は foreground の色をうすく。内側の底はごくうすい陰
-   ・角煮：上の面とたれの皮はこげ茶（accent 48%）、赤身は茶色（accent 70%）、脂はクリーム色（白に accent 24%）。
-     右の側面は foreground の色をうすく重ねた陰。しまの境目と輪郭は細い線。つやは白い細い筋
+   ・角煮（寝かせた薄切り）：切り口の皮はこげ茶（accent 48%）、赤身は茶色（accent 70%）、脂はクリーム色（白に accent 24%）。
+     厚みのふちは、たれのこげ茶より濃い陰の色（accent 36%）。しまの境目と輪郭は細い線。つやは白い細い筋
    ・細切りの野菜：紙の色の面と、細い線（foreground をうすく）
-   ・味玉：白身は白、切り口のふちは少し茶色（白に accent 34%）。黄身は accent（中心は少し濃く、ふちは明るく）。つやは白い点 */
+   ・味玉：白身は白、ふちに細く茶色（白に accent 44%）。黄身は accent（中心は少し濃く、ふちは明るく）。つやは白い点。
+     卵の下のふくらみは、foreground の色のごくうすい陰だけ */
 .kakuni-dish-face { fill: #fff; }
 .kakuni-dish-side { fill: currentColor; fill-opacity: 0.13; }
 .kakuni-dish-well { fill: currentColor; fill-opacity: 0.035; }
@@ -96,7 +97,7 @@
 .kakuni-sauce { fill: color-mix(in srgb, var(--accent) 48%, currentColor); }
 .kakuni-meat { fill: color-mix(in srgb, var(--accent) 70%, currentColor); }
 .kakuni-fat { fill: color-mix(in srgb, var(--accent) 24%, #fff); }
-.kakuni-side-shade { fill: currentColor; fill-opacity: 0.26; }
+.kakuni-edge { fill: color-mix(in srgb, var(--accent) 36%, currentColor); }
 .kakuni-outline { stroke-width: calc(1.8px * var(--scene-k) * var(--scene-z, 1)); }
 .kakuni-band-line {
   stroke-width: calc(1.1px * var(--scene-k) * var(--scene-z, 1));
@@ -111,9 +112,8 @@
   stroke-width: calc(1.1px * var(--scene-k) * var(--scene-z, 1));
   stroke-opacity: 0.5;
 }
-.kakuni-egg-body { fill: color-mix(in srgb, var(--accent) 14%, #fff); }
 .kakuni-egg-rim { fill: color-mix(in srgb, var(--accent) 44%, #fff); }
-.kakuni-egg-body-shade { fill: color-mix(in srgb, var(--accent) 30%, #fff); fill-opacity: 0.7; }
+.kakuni-egg-under { fill: currentColor; fill-opacity: 0.1; }
 .kakuni-egg-white { fill: #fff; }
 .kakuni-yolk-in { stop-color: color-mix(in srgb, var(--accent) 86%, currentColor); }
 .kakuni-yolk-mid { stop-color: var(--accent); }
