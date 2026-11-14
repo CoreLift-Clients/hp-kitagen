@@ -1,6 +1,6 @@
 // ─── 豚の角煮の線画 ───
 // ディナーメニューの「きたげんの名物」の欄の、料理の肆（豚の角煮）のカードで使う飾りの絵（aria-hidden。意味はカードの品名で伝える）。
-// 本物の盛り付け（代表者から届いた写真）に合わせる：白い四角いお皿（角が丸く、ふちが少し立つ）に、細切りの野菜を敷き、
+// 本物の盛り付け（代表者から届いた写真）に合わせる：白い四角いお皿（角が丸く、ふちが少し立つ）に、千切りキャベツをこんもり敷き、
 // 豚バラ肉の厚めの薄切りを4枚、切り口を上にして寝かせ、瓦のように少しずつずらして重ねる。
 // そばに、半分に切った味玉を1つ（写真では2つ。代表者の決めで1つ）。
 // 小さいカードでも何の料理か分かるように、色と明暗の差をはっきり付ける：
@@ -9,15 +9,17 @@
 // ・角煮：この絵だけの決まりとして、たれのこげ茶・赤身の茶色に foreground の色を混ぜる（scenes.css の .kakuni-*）。
 //   薄切りの上の面（切り口）いっぱいに、奥のふちから 皮のこげ茶 → 脂（クリーム色）→ 赤身 → 脂 → 赤身 の横じま。
 //   境目は少し波打たせる。つやは白い細い筋。厚みは、上の面と同じ形を下にずらして重ね、ふちに細く見せる（たれのこげ茶より濃い陰の色）。
-//   上の薄切りは、下の薄切りとお皿にうすい影を落とす
-// ・細切りの野菜：角煮の下から少しのぞく、紙の色の面と、細い線の束
+//   上の薄切りは、下の薄切りとキャベツにうすい影を落とす
+// ・千切りキャベツ：この絵だけの決まりとして、ごく淡い黄緑（面）と少し濃い黄緑（線）を使う（scenes.css の .kakuni-cabbage-*）。
+//   角煮より一回り大きいドームの山。面を塗り、奥を少し暗く・手前を少し明るくしてふくらみを出し、角煮の下も少し暗くする。
+//   その上に、少し曲げた細い線をたくさん重ねる（向きは少しずつばらつかせる）。角煮は山の上にのせ、山にうすい影を落とす
 // ・味玉：たて長の楕円（半分に切った卵の形）を少し斜めに。白身は白、ふちに味がしみた茶色を細く。
 //   黄身は卵の幅の約 6 割で、とろっとしたオレンジ（accent。中心を少し濃く、ふちを明るく）。表面に小さなつやの白い点。
 //   卵の下のふくらみは、ごくうすい陰だけで表す
-// ・部品ごとに g でまとめる：お皿（kakuni-dish）・細切りの野菜（kakuni-shred）・角煮4枚（kakuni-pieces）・
+// ・部品ごとに g でまとめる：お皿（kakuni-dish）・千切りキャベツ（kakuni-cabbage）・角煮4枚（kakuni-pieces）・
 //   味玉（kakuni-egg）・湯気（kakuni-steam）
 // ・見る角度は斜め上から。お皿と角煮は、床の面の上で少し回してから縦につぶして描く（pr()）
-// ・動きの順番：お皿が現れる → 細切りの野菜 → 角煮が奥の列から1枚ずつ置かれる → 味玉が置かれる → つやが光り、湯気が2本立つ
+// ・動きの順番：お皿が現れる → キャベツの山（千切りの線がふわっと描かれる）→ 角煮が奥の列から1枚ずつ置かれる → 味玉が置かれる → つやが光り、湯気が2本立つ
 //   （動きの名前と範囲は anim(...)、@keyframes は scenes.css）。何も動かさないときの形が、動き終わった形
 // ・絵は viewBox を 332 の幅に切り出して大きく見せる（線の太さは --scene-z で 400 の幅の絵とそろえる。scenes.css）
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
@@ -85,7 +87,7 @@ const DISH_BOTTOM = smooth(roundRectPts(DHL, DHW, DR, 0, 10220, 0.6, false).slic
 const SL = 38; // 半分の長さ
 const SW = 26; // 半分の幅
 const ST = 8; // 厚み（手前の側面に細く見える）
-const BASE_Z = 5; // 敷いた野菜の分だけ浮かせる
+const BASE_Z = 22; // 千切りキャベツの山の上にのせる高さ
 // 切り口のしま（奥のふちから：皮のこげ茶・脂・赤身・脂・赤身）。外側は形で切り取る（clipPath）ので、はみ出してよい
 const BANDS = [-0.4, 0.13, 0.3, 0.55, 0.69, 1.4];
 const BAND_CLASS = ["kakuni-sauce", "kakuni-fat", "kakuni-meat", "kakuni-fat", "kakuni-meat"];
@@ -174,45 +176,94 @@ const SLICES: Slice[] = SLICE_AT.map(([u, v, yaw, zBack], i) => {
       smooth([g(-SL + 9, 0, ST), g(-8, -2, ST), g(10, -1, ST)]),
       smooth([g(4, SW * 0.55, ST), g(SL - 10, SW * 0.5, ST)]),
     ],
-    // 落ち影（右下へずらした下の面の形。下の薄切りとお皿の上にうすく落ちる）
+    // 落ち影（右下へずらした下の面の形。下の薄切りとキャベツの上にうすく落ちる）
     shadow: polygon(ring(0).map(sh)),
   };
 });
 
-// ── 細切りの野菜（角煮の下から少しのぞく。紙の色の面と、細い線を3本ずつの束） ──
-const SHRED_AREA = polygon(
-  Array.from({ length: 26 }, (_, k) => {
-    const t = (PI * 2 * k) / 26;
-    const w = 1 + 0.1 * Math.sin(7 * t) + jitter(10600 + k) * 0.06;
-    return pr(40 + 88 * w * Math.cos(t), -14 + 52 * w * Math.sin(t), 2);
+// ── 千切りキャベツの山（角煮4枚の下に、こんもり。角煮より一回り大きく、奥と左右からふわっとはみ出す） ──
+// 床の面のだ円（中心 CB_U・CB_V、半径 CB_RU・CB_RV）の上の、まん中が高いドームの形
+const CB_U = 36;
+const CB_V = -16;
+const CB_RU = 92;
+const CB_RV = 68;
+const CB_H = 30; // まん中の高さ
+const cabbageZ = (u: number, v: number) => {
+  const r2 = ((u - CB_U) / CB_RU) ** 2 + ((v - CB_V) / CB_RV) ** 2;
+  return r2 >= 1 ? 0 : CB_H * (1 - r2) ** 0.6;
+};
+// 山の外まわり（細かいでこぼこ。奥の半分は、ドームの頂上の線まで持ち上げる）
+const EDGE_N = 72;
+const CABBAGE_EDGE: P[] = Array.from({ length: EDGE_N }, (_, k) => {
+  const t = (PI * 2 * k) / EDGE_N;
+  const w = 1 + 0.035 * Math.sin(13 * t + 0.4) + 0.025 * Math.sin(29 * t + 1.3) + jitter(11000 + k) * 0.02;
+  const lift = Math.sin(t) < 0 ? CB_H * (-Math.sin(t)) ** 0.7 * 0.95 : 0;
+  return pr(CB_U + CB_RU * w * Math.cos(t), CB_V + CB_RV * w * Math.sin(t), lift);
+});
+const CABBAGE = polygon(CABBAGE_EDGE);
+// ふくらみの明暗（奥を少し暗く、手前を少し明るく）を付けるグラデーションの上と下（絵の座標の y）
+const CB_Y0 = Math.min(...CABBAGE_EDGE.map(([, y]) => y));
+const CB_Y1 = Math.max(...CABBAGE_EDGE.map(([, y]) => y));
+// 角煮の下の、少し暗い所（角煮の並びと同じくらいの大きさのだ円を、山の面にのせる）
+const CABBAGE_UNDER = polygon(
+  Array.from({ length: 36 }, (_, k) => {
+    const t = (PI * 2 * k) / 36;
+    const u = 40 + 72 * Math.cos(t);
+    const v = -12 + 46 * Math.sin(t);
+    return pr(u, v, cabbageZ(u, v));
   }),
 );
-// 束の置き場所（u・v）と向き。のぞく所：左・手前・右・奥
-const SHRED_AT: readonly (readonly [number, number, number])[] = [
-  [-46, -20, 1.25],
-  [-38, 14, 0.7],
-  [-16, 38, 0.15],
-  [46, 40, -0.2],
-  [64, 44, 0.3],
-  [124, 16, 1.4],
-  [116, -26, 1.0],
-  [28, -70, 0.15],
-];
-const SHRED = SHRED_AT.flatMap(([u, v, a], k) =>
-  [-1, 0, 1].map((m) => {
-    const s = 10700 + k * 11 + m * 5;
-    const len = 13 + jitter(s + 3) * 2;
-    const ou = m * 3 * Math.sin(a);
-    const ov = -m * 3 * Math.cos(a);
-    const du = (len / 2) * Math.cos(a);
-    const dv = (len / 2) * Math.sin(a);
-    return smooth([
-      pr(u + ou - du, v + ov - dv, 3),
-      pr(u + ou + jitter(s) * 1.5, v + ov + jitter(s + 1) * 1.5, 3),
-      pr(u + ou + du, v + ov + dv, 3),
-    ]);
-  }),
-);
+// 千切りの線：少し曲げた短い線。白い線（hi）を4本に1本まぜる
+type Strand = { d: string; y: number; hi: boolean };
+function strand(pts: P[], k: number): Strand {
+  return { d: smooth(pts), y: pts[1][1] + pts[2][1], hi: k % 4 === 1 };
+}
+// 山の面の線（ひまわりの種のように山全体に散らす。向きは少しずつばらつかせる。高さはドームの面に合わせる）
+const STRAND_N = 240;
+const FACE_STRANDS: Strand[] = Array.from({ length: STRAND_N }, (_, k) => {
+  const s = 11100 + k * 7;
+  const rr = 0.98 * Math.sqrt((k + 0.5) / STRAND_N);
+  const at = k * 2.39996;
+  const u0 = CB_U + CB_RU * rr * Math.cos(at);
+  const v0 = CB_V + CB_RV * rr * Math.sin(at);
+  const a = 0.6 * Math.sin(k * 1.7) + 0.7 * Math.sin(k * 0.61 + 1) + jitter(s + 9) * 0.4;
+  const len = 13 + jitter(s) * 3;
+  const bend = 1.5 * Math.sin(k * 1.3 + 0.5) + jitter(s + 1) * 0.7;
+  const pts: P[] = [-1, -0.33, 0.33, 1].map((t, n) => {
+    const u = u0 + (len / 2) * t * Math.cos(a) - bend * (1 - t * t) * Math.sin(a) + jitter(s + 2 + n) * 0.5;
+    const v = v0 + (len / 2) * t * Math.sin(a) + bend * (1 - t * t) * Math.cos(a) + jitter(s + 6 + n) * 0.5;
+    return pr(u, v, cabbageZ(u, v) + 0.8);
+  });
+  return strand(pts, k);
+});
+// ふちの線（山の外まわりに沿って、少し外へはみ出す。ふわっとした輪郭になる）
+const EDGE_STRANDS: Strand[] = CABBAGE_EDGE.flatMap(([x, y], k) => {
+  const s = 11900 + k * 5;
+  const [px, py] = CABBAGE_EDGE[(k + EDGE_N - 1) % EDGE_N];
+  const [nx, ny] = CABBAGE_EDGE[(k + 1) % EDGE_N];
+  const tx = nx - px;
+  const ty = ny - py;
+  const tl = Math.hypot(tx, ty) || 1;
+  const ux = tx / tl;
+  const uy = ty / tl;
+  // 外向き（線の進む向きに対して右）
+  const ox = uy;
+  const oy = -ux;
+  const tilt = jitter(s) * 0.6;
+  const dx = ux * Math.cos(tilt) - uy * Math.sin(tilt);
+  const dy = ux * Math.sin(tilt) + uy * Math.cos(tilt);
+  const len = 10 + jitter(s + 1) * 2.5;
+  const out = 1.2 + jitter(s + 2) * 1.6;
+  const bend = 1.3 * Math.sin(k * 1.9);
+  const cx = x + ox * out;
+  const cy = y + oy * out;
+  const pts: P[] = [-1, -0.33, 0.33, 1].map((t) => [
+    cx + (len / 2) * t * dx + bend * (1 - t * t) * ox,
+    cy + (len / 2) * t * dy + bend * (1 - t * t) * oy,
+  ]);
+  return [strand(pts, k + 2)];
+});
+const CABBAGE_STRANDS: Strand[] = [...FACE_STRANDS, ...EDGE_STRANDS].sort((p, q) => p.y - q.y);
 
 // ── 味玉（半分に切ったもの1つ。切り口を上に、角煮のそばに少し斜めに置く） ──
 const [EX, EY] = pr(-80, 20, 5);
@@ -221,13 +272,13 @@ const ER = 38; // 長い向きの半径（たて長の楕円）
 const EH = 24; // 短い向きの半径
 
 // ── 湯気（2本。角煮の上から） ──
-const STEAM = [steam(198, 236, 132, 0.8, 10, 10900), steam(262, 240, 146, 3.2, 11, 10920)];
+const STEAM = [steam(198, 218, 118, 0.8, 10, 10900), steam(262, 222, 130, 3.2, 11, 10920)];
 const STEAM_SWAY = [sway(5.1, -0.4), sway(5.8, -2.0)];
 
 export default function KakuniIllustration({ className = "" }: { className?: string }) {
   return (
     <svg
-      viewBox="34 78 332 332"
+      viewBox="34 72 332 332"
       aria-hidden="true"
       focusable="false"
       className={`scene-svg ${className}`}
@@ -239,7 +290,7 @@ export default function KakuniIllustration({ className = "" }: { className?: str
     >
       <defs>
         {/* 湯気は上のほうで薄くなる（線の色は同じ foreground のまま、濃さだけ変える） */}
-        <linearGradient id="kakuni-steam-fade" gradientUnits="userSpaceOnUse" x1="0" y1="240" x2="0" y2="132">
+        <linearGradient id="kakuni-steam-fade" gradientUnits="userSpaceOnUse" x1="0" y1="222" x2="0" y2="118">
           <stop offset="0" stopColor="currentColor" stopOpacity="0.95" />
           <stop offset="0.55" stopColor="currentColor" stopOpacity="0.8" />
           <stop offset="1" stopColor="currentColor" stopOpacity="0" />
@@ -250,6 +301,12 @@ export default function KakuniIllustration({ className = "" }: { className?: str
           <stop offset="0.55" className="kakuni-yolk-mid" />
           <stop offset="1" className="kakuni-yolk-out" />
         </radialGradient>
+        {/* キャベツの山のふくらみ：奥を少し暗く、手前を少し明るく */}
+        <linearGradient id="kakuni-cabbage-shade" gradientUnits="userSpaceOnUse" x1="0" y1={CB_Y0} x2="0" y2={CB_Y1}>
+          <stop offset="0" className="kakuni-cabbage-back" />
+          <stop offset="0.45" className="kakuni-cabbage-mid" />
+          <stop offset="1" className="kakuni-cabbage-front" />
+        </linearGradient>
         {/* 角煮の薄切りの上の面の形（しま模様をこの形で切り取る） */}
         {SLICES.map((p, i) => (
           <clipPath key={i} id={`kakuni-top-${i}`}>
@@ -270,11 +327,21 @@ export default function KakuniIllustration({ className = "" }: { className?: str
         <path d={DISH_RIM} className="scene-line" />
       </g>
 
-      {/* 2. 細切りの野菜（角煮の下に敷く） */}
-      <g className="kakuni-shred scene-anim" style={anim("scene-fade-up", 12, 18, { "--dy": "-6px" })}>
-        <path d={SHRED_AREA} className="scene-paper" stroke="none" />
-        {SHRED.map((d, k) => (
-          <path key={k} d={d} className="kakuni-strand" />
+      {/* 2. 千切りキャベツの山（面が出て、千切りの線がふわっと描かれる） */}
+      <g className="kakuni-cabbage">
+        <g className="scene-anim" style={anim("scene-fade-up", 12, 16, { "--dy": "-6px" })}>
+          <path d={CABBAGE} className="kakuni-cabbage-face" stroke="none" />
+          <path d={CABBAGE} fill="url(#kakuni-cabbage-shade)" stroke="none" />
+          <path d={CABBAGE_UNDER} className="kakuni-cabbage-under" stroke="none" />
+        </g>
+        {CABBAGE_STRANDS.map((st, k) => (
+          <path
+            key={k}
+            d={st.d}
+            pathLength={1}
+            className={`${st.hi ? "kakuni-cabbage-hi" : "kakuni-cabbage-strand"} scene-stroke-draw scene-anim`}
+            style={anim("scene-draw", 13 + (k % 12) * 0.35, 17 + (k % 12) * 0.35)}
+          />
         ))}
       </g>
 

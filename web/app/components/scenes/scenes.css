@@ -83,11 +83,14 @@
 .hiyayakko-tare-deep { fill: var(--accent); fill-opacity: 0.4; }
 .hiyayakko-tare-top { fill: var(--accent); fill-opacity: 0.3; }
 /* 豚の角煮（KakuniIllustration.tsx）。本物の写真に合わせ、色と明暗の差をはっきり付ける。
-   この絵だけの決まりとして、たれのこげ茶・赤身の茶色・陰に foreground の色を混ぜ、お皿・白身・つやに白を使う
+   この絵だけの決まりとして、たれのこげ茶・赤身の茶色・陰に foreground の色を混ぜ、お皿・白身・つやに白を使い、
+   千切りキャベツにごく淡い黄緑を使う
    ・お皿：面は白。ふちの厚みと落ち影は foreground の色をうすく。内側の底はごくうすい陰
    ・角煮（寝かせた薄切り）：切り口の皮はこげ茶（accent 48%）、赤身は茶色（accent 70%）、脂はクリーム色（白に accent 24%）。
      厚みのふちは、たれのこげ茶より濃い陰の色（accent 36%）。しまの境目と輪郭は細い線。つやは白い細い筋
-   ・細切りの野菜：紙の色の面と、細い線（foreground をうすく）
+   ・千切りキャベツ：--kakuni-cabbage（面。白に近い黄緑 #E6EDC8）と --kakuni-cabbage-line（線。少し濃い黄緑 #C9D79A）。
+     奥は少し暗い黄緑（#B9C985 を不透明度 0.5）、手前は白を重ねて明るく。角煮の下は線の色をうすく重ねる。
+     千切りの線は細め（300px の絵で約 1.3px）。4本に1本は白い線にして、ふわっとした明るさを出す
    ・味玉：白身は白、ふちに細く茶色（白に accent 44%）。黄身は accent（中心は少し濃く、ふちは明るく）。つやは白い点。
      卵の下のふくらみは、foreground の色のごくうすい陰だけ */
 .kakuni-dish-face { fill: #fff; }
@@ -108,9 +111,20 @@
   stroke-opacity: 0.85;
   stroke-width: calc(1.6px * var(--scene-k) * var(--scene-z, 1));
 }
-.kakuni-strand {
-  stroke-width: calc(1.1px * var(--scene-k) * var(--scene-z, 1));
-  stroke-opacity: 0.5;
+.kakuni-cabbage { --kakuni-cabbage: #E6EDC8; --kakuni-cabbage-line: #C9D79A; }
+.kakuni-cabbage-face { fill: var(--kakuni-cabbage); }
+.kakuni-cabbage-back { stop-color: #B9C985; stop-opacity: 0.5; }
+.kakuni-cabbage-mid { stop-color: #fff; stop-opacity: 0; }
+.kakuni-cabbage-front { stop-color: #fff; stop-opacity: 0.4; }
+.kakuni-cabbage-under { fill: var(--kakuni-cabbage-line); fill-opacity: 0.55; }
+.kakuni-cabbage-strand {
+  stroke: var(--kakuni-cabbage-line);
+  stroke-width: calc(1.4px * var(--scene-k) * var(--scene-z, 1));
+}
+.kakuni-cabbage-hi {
+  stroke: #fff;
+  stroke-opacity: 0.85;
+  stroke-width: calc(1.4px * var(--scene-k) * var(--scene-z, 1));
 }
 .kakuni-egg-rim { fill: color-mix(in srgb, var(--accent) 44%, #fff); }
 .kakuni-egg-under { fill: currentColor; fill-opacity: 0.1; }
