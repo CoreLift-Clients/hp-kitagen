@@ -87,7 +87,7 @@ const DISH_BOTTOM = smooth(roundRectPts(DHL, DHW, DR, 0, 10220, 0.6, false).slic
 const SL = 38; // 半分の長さ
 const SW = 26; // 半分の幅
 const ST = 8; // 厚み（手前の側面に細く見える）
-const BASE_Z = 22; // 千切りキャベツの山の上にのせる高さ
+const BASE_Z = 16; // 千切りキャベツの山の上にのせる高さ
 // 切り口のしま（奥のふちから：皮のこげ茶・脂・赤身・脂・赤身）。外側は形で切り取る（clipPath）ので、はみ出してよい
 const BANDS = [-0.4, 0.13, 0.3, 0.55, 0.69, 1.4];
 const BAND_CLASS = ["kakuni-sauce", "kakuni-fat", "kakuni-meat", "kakuni-fat", "kakuni-meat"];
@@ -181,19 +181,19 @@ const SLICES: Slice[] = SLICE_AT.map(([u, v, yaw, zBack], i) => {
   };
 });
 
-// ── 千切りキャベツの山（角煮4枚の下に、こんもり。角煮より一回り大きく、奥と左右からふわっとはみ出す） ──
+// ── 千切りキャベツの山（角煮4枚の下に。角煮のまわりから少しのぞく程度の大きさで、奥と左右に少しはみ出す） ──
 // 床の面のだ円（中心 CB_U・CB_V、半径 CB_RU・CB_RV）の上の、まん中が高いドームの形
-const CB_U = 36;
-const CB_V = -16;
-const CB_RU = 92;
-const CB_RV = 68;
-const CB_H = 30; // まん中の高さ
+const CB_U = 40;
+const CB_V = -14;
+const CB_RU = 93;
+const CB_RV = 64;
+const CB_H = 22; // まん中の高さ
 const cabbageZ = (u: number, v: number) => {
   const r2 = ((u - CB_U) / CB_RU) ** 2 + ((v - CB_V) / CB_RV) ** 2;
   return r2 >= 1 ? 0 : CB_H * (1 - r2) ** 0.6;
 };
 // 山の外まわり（細かいでこぼこ。奥の半分は、ドームの頂上の線まで持ち上げる）
-const EDGE_N = 72;
+const EDGE_N = 100;
 const CABBAGE_EDGE: P[] = Array.from({ length: EDGE_N }, (_, k) => {
   const t = (PI * 2 * k) / EDGE_N;
   const w = 1 + 0.035 * Math.sin(13 * t + 0.4) + 0.025 * Math.sin(29 * t + 1.3) + jitter(11000 + k) * 0.02;
@@ -219,7 +219,7 @@ function strand(pts: P[], k: number): Strand {
   return { d: smooth(pts), y: pts[1][1] + pts[2][1], hi: k % 4 === 1 };
 }
 // 山の面の線（ひまわりの種のように山全体に散らす。向きは少しずつばらつかせる。高さはドームの面に合わせる）
-const STRAND_N = 240;
+const STRAND_N = 340;
 const FACE_STRANDS: Strand[] = Array.from({ length: STRAND_N }, (_, k) => {
   const s = 11100 + k * 7;
   const rr = 0.98 * Math.sqrt((k + 0.5) / STRAND_N);
@@ -227,8 +227,8 @@ const FACE_STRANDS: Strand[] = Array.from({ length: STRAND_N }, (_, k) => {
   const u0 = CB_U + CB_RU * rr * Math.cos(at);
   const v0 = CB_V + CB_RV * rr * Math.sin(at);
   const a = 0.6 * Math.sin(k * 1.7) + 0.7 * Math.sin(k * 0.61 + 1) + jitter(s + 9) * 0.4;
-  const len = 13 + jitter(s) * 3;
-  const bend = 1.5 * Math.sin(k * 1.3 + 0.5) + jitter(s + 1) * 0.7;
+  const len = 7.5 + jitter(s) * 1.8;
+  const bend = 0.9 * Math.sin(k * 1.3 + 0.5) + jitter(s + 1) * 0.4;
   const pts: P[] = [-1, -0.33, 0.33, 1].map((t, n) => {
     const u = u0 + (len / 2) * t * Math.cos(a) - bend * (1 - t * t) * Math.sin(a) + jitter(s + 2 + n) * 0.5;
     const v = v0 + (len / 2) * t * Math.sin(a) + bend * (1 - t * t) * Math.cos(a) + jitter(s + 6 + n) * 0.5;
@@ -252,9 +252,9 @@ const EDGE_STRANDS: Strand[] = CABBAGE_EDGE.flatMap(([x, y], k) => {
   const tilt = jitter(s) * 0.6;
   const dx = ux * Math.cos(tilt) - uy * Math.sin(tilt);
   const dy = ux * Math.sin(tilt) + uy * Math.cos(tilt);
-  const len = 10 + jitter(s + 1) * 2.5;
-  const out = 1.2 + jitter(s + 2) * 1.6;
-  const bend = 1.3 * Math.sin(k * 1.9);
+  const len = 5.5 + jitter(s + 1) * 1.4;
+  const out = 0.8 + jitter(s + 2) * 1;
+  const bend = 0.75 * Math.sin(k * 1.9);
   const cx = x + ox * out;
   const cy = y + oy * out;
   const pts: P[] = [-1, -0.33, 0.33, 1].map((t) => [
@@ -272,13 +272,13 @@ const ER = 38; // 長い向きの半径（たて長の楕円）
 const EH = 24; // 短い向きの半径
 
 // ── 湯気（2本。角煮の上から） ──
-const STEAM = [steam(198, 218, 118, 0.8, 10, 10900), steam(262, 222, 130, 3.2, 11, 10920)];
+const STEAM = [steam(198, 225, 124, 0.8, 10, 10900), steam(262, 229, 136, 3.2, 11, 10920)];
 const STEAM_SWAY = [sway(5.1, -0.4), sway(5.8, -2.0)];
 
 export default function KakuniIllustration({ className = "" }: { className?: string }) {
   return (
     <svg
-      viewBox="34 72 332 332"
+      viewBox="34 76 332 332"
       aria-hidden="true"
       focusable="false"
       className={`scene-svg ${className}`}
@@ -290,7 +290,7 @@ export default function KakuniIllustration({ className = "" }: { className?: str
     >
       <defs>
         {/* 湯気は上のほうで薄くなる（線の色は同じ foreground のまま、濃さだけ変える） */}
-        <linearGradient id="kakuni-steam-fade" gradientUnits="userSpaceOnUse" x1="0" y1="222" x2="0" y2="118">
+        <linearGradient id="kakuni-steam-fade" gradientUnits="userSpaceOnUse" x1="0" y1="229" x2="0" y2="124">
           <stop offset="0" stopColor="currentColor" stopOpacity="0.95" />
           <stop offset="0.55" stopColor="currentColor" stopOpacity="0.8" />
           <stop offset="1" stopColor="currentColor" stopOpacity="0" />
