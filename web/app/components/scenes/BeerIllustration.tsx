@@ -2,8 +2,10 @@
 // トップの「名物」の欄の3品目（生ビール）で使う飾りの絵（aria-hidden。意味は横の文で伝える）。
 // ・線は1色（currentColor ＝ 呼び出し側の text-foreground）。端と角は丸く。塗りは基本なし
 //   （ジョッキと泡にだけ、後ろの線を隠すための塗り --scene-paper を付ける）
-// ・色を塗るのは、ジョッキの中のビールだけ（琥珀色のべた。scenes.css の .food-beer。泡は紙の色のまま。
-//   料理の絵の決まりは scenes.css の先頭）。ビールの面は、ビールの線と一緒に下から上がる（ジョッキの中の形で切り取る）
+// ・色を塗るのは食材だけ：ビール（淡い琥珀色 .food-wash-beer）と泡（ほぼ紙の色、ふちだけうすいクリーム .food-wash-foam）。
+//   料理の絵の決まり（scenes.css の先頭）の「水彩の塗り方」で、線画にうすく絵の具で塗ったように付ける
+//   （部品は Wash.tsx。にじみのフィルタは beer-wash の1つを使い回す）。ジョッキは線だけ。
+//   水彩の塗りは、泡が盛り上がったあと、最後にじわっと出る
 // ・泡の上に上がる小さな粒は、ほかの線と同じ foreground の色
 // ・部品ごとに g でまとめる：注ぎ口（beer-tap）・注がれるビールの線（beer-pour）・ジョッキ（beer-mug）・
 //   ビールの線（beer-level）・泡（beer-foam）・泡の粒（beer-bubbles）
@@ -13,6 +15,7 @@
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
 import { anim, jitter, line, polygon, ring, smooth, type P } from "./draw";
+import { Wash, WashFilter } from "./Wash";
 
 // ── 注ぎ口（サーバーの口。右から伸びる管と、下向きの口、上のレバー） ──
 const TAP = [
@@ -82,15 +85,15 @@ const MUG_FINE = [
 
 // ビールの線（ジョッキの中の水面。動き終わりは泡のすぐ下で、泡とビールの境になる）
 const LEVEL = line([132, 196], [281, 196], 5200, 1.2, 4);
-// ビールの面（水面から下へ。ジョッキの中の形 beer-inside で切り取るので、下は長めにしてよい）
-const BEER_FILL = polygon([
-  [120, 196],
-  [290, 196],
-  [290, 520],
-  [120, 520],
+// ビールの面（水面から底の厚みの線まで。ジョッキの内側の形。水彩で塗る）
+const BEER_WASH = polygon([
+  [129, 196],
+  [283, 196],
+  [281, 270],
+  [279.5, 346],
+  [133, 346],
+  [131, 270],
 ]);
-// ジョッキの中（底の厚みの線まで）
-const MUG_INSIDE = polygon([...MUG_OUTLINE.slice(0, 2), [133, 346], [279, 346], ...MUG_OUTLINE.slice(7)]);
 
 // ── 泡（ふちの上にもこもこと盛り上がる。ふちより少し外へはみ出す） ──
 const FOAM_TOP: readonly P[] = [
@@ -143,9 +146,8 @@ export default function BeerIllustration({ className = "" }: { className?: strin
       strokeLinejoin="round"
     >
       <defs>
-        <clipPath id="beer-inside">
-          <path d={MUG_INSIDE} />
-        </clipPath>
+        {/* 水彩のにじみ（塗りにだけ。絵の中で使い回す） */}
+        <WashFilter id="beer-wash" seed={3} />
       </defs>
       {/* 注がれるビールの線は、ジョッキと泡の後ろ（泡の中へ入っていくように見せる） */}
       <path
@@ -159,11 +161,12 @@ export default function BeerIllustration({ className = "" }: { className?: strin
         <path d={MUG_FILL} className="scene-paper" stroke="none" />
       </g>
 
-      <g className="beer-level" clipPath="url(#beer-inside)">
-        <g className="scene-anim" style={anim("scene-fade-up", 12, 28, { "--dy": "136px" })}>
-          <path d={BEER_FILL} className="food-beer" stroke="none" />
-          <path d={LEVEL} className="scene-fine" />
-        </g>
+      {/* ビールの水彩（最後にじわっと出る） */}
+      <g className="beer-liquid scene-anim" filter="url(#beer-wash)" style={anim("scene-fade-up", 40, 50, { "--dy": "0px" })}>
+        <Wash d={BEER_WASH} tone="food-wash-beer" id="beer-w-beer" shift={[3, 2]} holes={[[150, 300, 4, 14], [262, 226, 3.5, 8]]} />
+      </g>
+      <g className="beer-level scene-anim" style={anim("scene-fade-up", 12, 28, { "--dy": "136px" })}>
+        <path d={LEVEL} className="scene-fine" />
       </g>
       {/* ガラスの面の縦の筋は、ビールの上に */}
       <g className="beer-mug">
@@ -180,6 +183,10 @@ export default function BeerIllustration({ className = "" }: { className?: strin
 
       <g className="beer-foam scene-anim" style={anim("scene-swell", 26, 38, { "--o": "50% 100%" })}>
         <path d={FOAM_FILL} className="scene-paper" stroke="none" />
+        {/* 泡の水彩（ほぼ紙の色。ふちだけうすいクリーム。最後にじわっと出る） */}
+        <g className="scene-anim" filter="url(#beer-wash)" style={anim("scene-fade-up", 42, 50, { "--dy": "0px" })}>
+          <Wash d={FOAM_FILL} tone="food-wash-foam" id="beer-w-foam" shift={[2, 2]} holes={[[180, 160, 9, 4]]} />
+        </g>
         {FOAM.map((d, i) => (
           <path key={i} d={d} className="scene-line" />
         ))}

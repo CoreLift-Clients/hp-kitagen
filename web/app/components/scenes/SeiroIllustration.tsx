@@ -5,8 +5,10 @@
 // ・形で伝える：上からのぞいた丸いせいろと、上の口が開いた丸いしゅうまい4つ
 // ・特徴は2つだけ：しゅうまいの口から見えるあん、口のまわりのひだ（5本）
 // ・線は currentColor（＝ 呼び出し側の text-foreground）。端と角は丸く。輪郭は scene-line、中の線は scene-fine
-// ・色を塗るのは、口から見えるあんだけ（少し赤み寄りの肉の色のべた。scenes.css の .food-meat。料理の絵の決まりは scenes.css の先頭）。
-//   ほかの面（せいろ・敷き紙・皮・ふた）は、後ろの線を隠すための紙の色（--scene-paper）
+// ・色を塗るのは食材だけ：しゅうまいの皮（淡いクリーム .food-wash-skin）と、口から見えるあん（淡い肉の色 .food-wash-meat）。
+//   料理の絵の決まり（scenes.css の先頭）の「水彩の塗り方」で、線画にうすく絵の具で塗ったように付ける
+//   （部品は Wash.tsx。にじみのフィルタは seiro-wash の1つを使い回す）。
+//   せいろ・敷き紙・ふたは線だけ（面は、後ろの線を隠すための紙の色 --scene-paper）
 // ・せいろ：中の線は、内のふち・竹の帯・奥の壁と底の境目の3本
 // ・敷き紙：ふちの線1本だけ
 // ・しゅうまい：中の線は、口のふち1本とひだ5本
@@ -23,7 +25,8 @@
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
 import type { CSSProperties } from "react";
-import { PI, anim, arc, blobPts, jitter, polygon, smooth, steam, sway, type P } from "./draw";
+import { PI, anim, arc, blobPts, jitter, polygon, r1, smooth, steam, sway, type P } from "./draw";
+import { Wash, WashFilter, type Hole } from "./Wash";
 
 // ── 見る角度（床の面の点 u・v と高さ z を、絵の座標にする） ──
 const CX = 200;
@@ -106,6 +109,8 @@ type Shumai = {
   lipLine: string;
   creases: string[];
   meat: string;
+  skinHole: Hole;
+  meatHole: Hole;
 };
 const SHUMAI: Shumai[] = SHUMAI_AT.map(([u0, v0], i) => {
   const s = 1000 + i * 200;
@@ -134,6 +139,9 @@ const SHUMAI: Shumai[] = SHUMAI_AT.map(([u0, v0], i) => {
     lipLine: smooth(lipPts),
     creases,
     meat: `${smooth(meatPts)} Z`,
+    // 紙の色の抜け（胴の左の、光が当たる所と、あんの左上）
+    skinHole: [r1(pr(u0 - 36, v0 + 18, 14)[0]), r1(pr(u0 - 36, v0 + 18, 14)[1]), 4.5, 7],
+    meatHole: [r1(mx - 11), r1(my - 5), 4.5, 2.4],
   };
 });
 
@@ -216,6 +224,8 @@ export default function SeiroIllustration({ className = "" }: { className?: stri
           <stop offset="0.55" stopColor="currentColor" stopOpacity="0.75" />
           <stop offset="1" stopColor="currentColor" stopOpacity="0" />
         </linearGradient>
+        {/* 水彩のにじみ（塗りにだけ。絵の中で使い回す） */}
+        <WashFilter id="seiro-wash" seed={11} />
       </defs>
 
       {/* 1. 持ち上げたふた（せいろの奥。動き終わりの形。下から持ち上がってくる） */}
@@ -255,12 +265,15 @@ export default function SeiroIllustration({ className = "" }: { className?: stri
       <g className="seiro-shumai">
         {SHUMAI.map((p, i) => (
           <g key={i} className="scene-anim" style={anim("scene-fade-up", 14 + i * 5, 20 + i * 5, { "--dy": "-18px" })}>
-            {/* 皮（紙の色）→ ひだ → あん（ここだけ色）→ 口のふち → 輪郭 */}
+            {/* 後ろの線を隠す紙の色 → 皮とあんの水彩 → ひだ → 口のふち → 輪郭 */}
             <path d={p.body} className="scene-paper" stroke="none" />
+            <g filter="url(#seiro-wash)">
+              <Wash d={p.body} tone="food-wash-skin" id={`seiro-w-skin-${i}`} shift={[2.2, 1.8]} holes={[p.skinHole]} />
+              <Wash d={p.meat} tone="food-wash-meat" id={`seiro-w-meat-${i}`} shift={[1.8, 1.5]} holes={[p.meatHole]} />
+            </g>
             {p.creases.map((d, k) => (
               <path key={`c${k}`} d={d} className="scene-fine" />
             ))}
-            <path d={p.meat} className="food-meat" stroke="none" />
             <path d={p.lipLine} className="scene-fine" />
             <path d={p.outline} className="scene-line" />
           </g>

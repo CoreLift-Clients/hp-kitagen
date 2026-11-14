@@ -9,15 +9,30 @@
    5. 線の太さは、9枚でそろえる：輪郭は .scene-line、中の線は .scene-fine だけを使う
       （viewBox を切り出した絵は --scene-z で、400 の幅の絵と同じ太さに見せる）
    9枚の塗る所：
-   ・しゅうまい … 口から見えるあん（.food-meat）
+   ・しゅうまい … 皮とあん（水彩。.food-wash-skin・.food-wash-meat）
    ・鉄鍋餃子 … 餃子の焼き目（.food-yaki）
    ・からあげ … からあげ（.food-yaki）
-   ・豚の角煮 … 角煮の肉（.food-brown。厚みの陰は .food-brown-shade）と、味玉の黄身（.food-yolk）
+   ・豚の角煮 … 角煮の肉・脂の層・味玉・千切りキャベツ（水彩。.food-wash-*）。形は千切りキャベツを敷いた形（43575ec）
    ・串の盛り合わせ … まん中の串のつくね（たれ。.food-tare）
    ・肉みそ冷奴 … 肉みそ（.food-brown）と、ねぎ（.food-negi-ring・.food-negi）
-   ・生ビール … ビール（.food-beer）
+   ・生ビール … ビールと泡（水彩。.food-wash-beer・.food-wash-foam）
    ・焼酎・日本酒 … お猪口の中のお酒（.food-sake）
-   ・ソフトドリンク … グラスの中の飲み物（.food-tea） */
+   ・ソフトドリンク … グラスの中の飲み物（.food-tea）
+
+   水彩の塗り方（まず、しゅうまい・豚の角煮・生ビールの3枚。部品は Wash.tsx）：
+   線画に、うすく絵の具で塗ったように見せる。上の 1.〜5. のうち、塗りについては、この決まりを優先する
+   ・塗るのは食材だけ。お皿・せいろ・鍋・グラス・ジョッキなどの入れ物は線だけ（塗りは後ろを隠す紙の色だけ）
+   ・色：その食材の色を、うすく薄めた淡い色（くすんだ、やさしい色）。不透明度 0.35〜0.55 くらい（--wash-a）
+   ・線から少しずれる：塗りの形を、線の形から右下へ 1.5〜3 ずらす（少しはみ出す所と、内側に寄って紙の色が残る所ができる）。
+     形のわずかなゆがみは、下のにじみのフィルタで出す（乱数なし。seed を決めておく）
+   ・ふちが少し濃い：塗りのふちの内側に沿って、同じ色を細く重ねる（.wash-edge。太さ 4 の線を形で切り取り、内側の 2 だけ見せる。
+     不透明度 --wash-edge 0.25 くらい ＝ 重なった所で、塗りより約 0.12 濃い）
+   ・白く抜ける所：塗りの中に、紙の色がのぞく小さなだ円を1〜2か所（.wash-hole。ハイライトの代わり）
+   ・にじみ：feTurbulence（fractalNoise、baseFrequency 0.035、numOctaves 2）と feDisplacementMap（scale 4 ＝ ずれは最大 ±2）で、
+     塗りのふちだけをわずかに揺らす。線にはかけない。フィルタは絵ごとに1つを defs に置き、塗りをまとめた g で使い回す
+   ・グラデーションは使わない（水彩のにじみのためだけなら、ごく弱く使ってよい）
+   ・陰は、同じ色の塗りを1段重ねる程度まで
+   ・水彩の塗りは、各絵の最後の段階でじわっと出る */
 
 
 /* ─── トップの線画の場面と、ディナーメニューの名物の欄（スクロールで動く線画） ─────────────
@@ -82,26 +97,69 @@
 .scene-accent { stroke: var(--accent); }
 .scene-accent-fill { fill: var(--accent); }
 /* 料理の色（このファイルの先頭の「料理の絵の決まり」の 2.）。どれもべた塗り。今まで使っていた色（accent・foreground・白・ねぎの緑）を混ぜて作る。
-   しゅうまいのあんだけは、小豆あんに見えないよう、少し赤み寄りの肉の色（#C98A74。新しく足した色）
+   水彩の塗り（.food-wash-*）は、色 --wash と、塗りの不透明度 --wash-a、ふちの濃さ --wash-edge を決める。
+   しゅうまいのあんだけは、小豆あんに見えないよう、少し赤み寄りの肉の色（#C98A74）
    ・.food-yaki … 焼き目・揚げ色（きつね色。白に accent 62%）
-   ・.food-brown … 煮た肉・肉みそ（こげ茶。accent 55% に foreground）。.food-brown-shade はその陰の1段（accent 36% に foreground）
+   ・.food-brown … 肉みそ（こげ茶。accent 55% に foreground）
    ・.food-tare … 串のたれ（accent 70% に foreground）
-   ・.food-yolk … 味玉の黄身（accent）
    ・.food-negi・.food-negi-ring … ねぎ（落ち着いた緑 #7E9A4C の輪、中は白と混ぜてうすく）
-   ・.food-beer … ビール（琥珀色。白に accent 72%）
    ・.food-sake … お酒（淡い色。白に accent 36%）
    ・.food-tea … ウーロン茶（淡い茶色。白に accent 46%） */
-.food-meat { fill: #C98A74; }
 .food-yaki { fill: color-mix(in srgb, var(--accent) 62%, #fff); }
 .food-brown { fill: color-mix(in srgb, var(--accent) 55%, currentColor); }
-.food-brown-shade { fill: color-mix(in srgb, var(--accent) 36%, currentColor); }
 .food-tare { fill: color-mix(in srgb, var(--accent) 70%, currentColor); }
-.food-yolk { fill: var(--accent); }
 .food-negi { fill: color-mix(in srgb, #7E9A4C 30%, #fff); }
 .food-negi-ring { stroke: #7E9A4C; }
-.food-beer { fill: color-mix(in srgb, var(--accent) 72%, #fff); }
 .food-sake { fill: color-mix(in srgb, var(--accent) 36%, #fff); }
 .food-tea { fill: color-mix(in srgb, var(--accent) 46%, #fff); }
+/* 水彩の塗り（Wash.tsx）。塗り・ふちの濃い所・紙の色の抜け */
+.wash { fill: var(--wash); fill-opacity: var(--wash-a, 0.45); }
+.wash-edge { fill: none; stroke: var(--wash); stroke-opacity: var(--wash-edge, 0.25); stroke-width: 4px; }
+.wash-hole { fill: var(--scene-paper); fill-opacity: 0.9; }
+/* 水彩の色（淡く、くすんだ、やさしい色）
+   ・.food-wash-meat … しゅうまいのあん（赤み寄りの肉の色 #C98A74）
+   ・.food-wash-skin … しゅうまいの皮・角煮の脂の層（淡いクリーム。白に accent 30%）
+   ・.food-wash-kakuni … 角煮の肉（こげ茶。accent 60% に foreground）。.food-wash-kakuni-dark は皮と厚みのふち（同じ色を濃く）
+   ・.food-wash-cabbage … 千切りキャベツ（淡い黄緑 #B9C985。43575ec の色）
+   ・.food-wash-white … 味玉の白身（ほぼ紙の色。白に accent 18% をごくうすく）
+   ・.food-wash-yolk … 味玉の黄身（淡いオレンジ。accent）
+   ・.food-wash-beer … ビール（淡い琥珀色。白に accent 82%）
+   ・.food-wash-foam … ビールの泡（ほぼ紙の色。ふちだけうすいクリーム。白に accent 34%） */
+.food-wash-meat { --wash: #C98A74; --wash-a: 0.55; --wash-edge: 0.28; }
+.food-wash-skin { --wash: color-mix(in srgb, var(--accent) 30%, #fff); --wash-a: 0.5; --wash-edge: 0.3; }
+.food-wash-kakuni { --wash: color-mix(in srgb, var(--accent) 60%, currentColor); --wash-a: 0.5; --wash-edge: 0.25; }
+.food-wash-kakuni-dark { --wash: color-mix(in srgb, var(--accent) 60%, currentColor); --wash-a: 0.42; --wash-edge: 0.2; }
+.food-wash-cabbage { --wash: #B9C985; --wash-a: 0.42; --wash-edge: 0.26; }
+.food-wash-white { --wash: color-mix(in srgb, var(--accent) 18%, #fff); --wash-a: 0.35; --wash-edge: 0.3; }
+.food-wash-yolk { --wash: var(--accent); --wash-a: 0.5; --wash-edge: 0.25; }
+.food-wash-beer { --wash: color-mix(in srgb, var(--accent) 82%, #fff); --wash-a: 0.48; --wash-edge: 0.32; }
+.food-wash-foam { --wash: color-mix(in srgb, var(--accent) 34%, #fff); --wash-a: 0.14; --wash-edge: 0.45; }
+/* 豚の角煮（KakuniIllustration.tsx。43575ec の形）の線。塗りは上の水彩 */
+.kakuni-outline { stroke-width: calc(1.8px * var(--scene-k) * var(--scene-z, 1)); }
+.kakuni-band-line {
+  stroke-width: calc(1.1px * var(--scene-k) * var(--scene-z, 1));
+  stroke-opacity: 0.45;
+}
+.kakuni-gloss {
+  stroke: #fff;
+  stroke-opacity: 0.85;
+  stroke-width: calc(1.6px * var(--scene-k) * var(--scene-z, 1));
+}
+.kakuni-cabbage { --kakuni-cabbage-line: #C9D79A; }
+.kakuni-cabbage-strand {
+  stroke: var(--kakuni-cabbage-line);
+  stroke-width: calc(0.95px * var(--scene-k) * var(--scene-z, 1));
+}
+.kakuni-cabbage-hi {
+  stroke: #fff;
+  stroke-opacity: 0.85;
+  stroke-width: calc(0.95px * var(--scene-k) * var(--scene-z, 1));
+}
+.kakuni-yolk-line {
+  stroke: color-mix(in srgb, var(--accent) 70%, currentColor);
+  stroke-width: calc(1.1px * var(--scene-k) * var(--scene-z, 1));
+}
+.kakuni-shine { fill: #fff; fill-opacity: 0.9; }
 /* 鉄鍋餃子のジュッという音の印（動き終わりは少し薄くなって残る） */
 .teppan-sizzle-mark { opacity: 0.7; }
 
