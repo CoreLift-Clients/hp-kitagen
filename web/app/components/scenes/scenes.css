@@ -8,7 +8,7 @@
    ・動かす部品には class の scene-anim と、style の --a（動きの名前）・--r0・--r1（どこからどこまで）を付ける
      （draw.ts の anim()）。--r0・--r1 は 4〜60 くらいの数で、動きの順番と長さの割合を決める。
      スクロールで進めるときは、この 4〜60 を「絵が画面の中に全部入ったところ」〜「絵の真ん中が画面の真ん中に来たところ」
-     に割り当てる（下の 1)）。画面に入る前の絵は、動く前の形（せいろはふたが閉じている など）で見える
+     に割り当てる（下の 1)）。画面に入る前の絵は、動く前の形（せいろはまだ何も出ていない など）で見える
    ・動かすのは transform・opacity・stroke-dashoffset だけ
    ・時間で揺れ続ける動き（scene-sway）は、場面が画面の外にあるあいだ止める（data-inview="false"）
    ・--scene-paper … 後ろの線を隠す塗り。場面の背景（section-*）と同じ色（下で背景ごとに決める） */
@@ -174,11 +174,59 @@
   transform-origin: 50% 100%;
 }
 
-/* せいろのふた（動き終わりは開いた形。右下を支点に、持ち上げて左を上げる） */
-.seiro-lid {
-  --seiro-lid-open: translateY(-44px) rotate(8deg);
-  transform: var(--seiro-lid-open);
+/* せいろ（SeiroIllustration.tsx）。本物の写真に合わせ、上からのぞき込んだ明るい竹のせいろに、しゅうまいを4つ。
+   この絵だけの決まりとして、あん・陰に foreground の色を混ぜ、皮と敷き紙に白を使う
+   ・竹：上のふちの輪は白に accent 30%、外の側面は 36%、内側の壁と底は 40%。陰は foreground の色をうすく（グラデーション）
+   ・敷き紙：白に accent 6%。穴は foreground の色をうすく（不透明度 0.2）
+   ・皮：白に accent 16%（胴。少し透けた淡いクリーム色）、口のふちは白に accent 9%。しわは foreground の色を細くうすく
+   ・あん：ピンクがかった茶色（accent 64% に foreground を混ぜた色を、白と 60% で混ぜる）。つぶつぶは濃い点と明るい点。
+     口のふちの影（右下）は foreground の色をうすく
+   ・落ち影：foreground の色を不透明度 0.12
+   ・閉じたふた：動き終わりは見えない（opacity 0）。動きの途中で、しゅうまいの上にかぶさってから持ち上がって消える */
+.seiro-bamboo { fill: color-mix(in srgb, var(--accent) 30%, #fff); }
+.seiro-bamboo-side { fill: color-mix(in srgb, var(--accent) 36%, #fff); }
+.seiro-bamboo-in { fill: color-mix(in srgb, var(--accent) 40%, #fff); }
+.seiro-paper-face { fill: color-mix(in srgb, var(--accent) 6%, #fff); }
+.seiro-hole { fill: currentColor; fill-opacity: 0.2; }
+.seiro-paper-fold {
+  stroke-opacity: 0.18;
+  stroke-width: calc(1px * var(--scene-k) * var(--scene-z, 1));
 }
+.seiro-shadow { fill: currentColor; fill-opacity: 0.12; }
+.seiro-skin { fill: color-mix(in srgb, var(--accent) 18%, #fff); }
+.seiro-skin-top { fill: color-mix(in srgb, var(--accent) 9%, #fff); }
+.seiro-mince { fill: color-mix(in srgb, color-mix(in srgb, var(--accent) 66%, currentColor) 50%, #fff); }
+.seiro-mince-shade { fill: currentColor; fill-opacity: 0.16; }
+.seiro-crumb { fill: color-mix(in srgb, var(--accent) 55%, currentColor); fill-opacity: 0.45; }
+.seiro-crumb-hi { fill: #fff; fill-opacity: 0.45; }
+.seiro-grain {
+  stroke: color-mix(in srgb, var(--accent) 45%, currentColor);
+  stroke-opacity: 0.7;
+  stroke-width: calc(1.1px * var(--scene-k) * var(--scene-z, 1));
+}
+.seiro-pleat {
+  stroke-opacity: 0.4;
+  stroke-width: calc(1px * var(--scene-k) * var(--scene-z, 1));
+}
+.seiro-crease {
+  stroke-opacity: 0.38;
+  stroke-width: calc(0.9px * var(--scene-k) * var(--scene-z, 1));
+}
+.seiro-meat-line {
+  stroke: color-mix(in srgb, var(--accent) 40%, currentColor);
+  stroke-width: calc(1.1px * var(--scene-k) * var(--scene-z, 1));
+}
+.seiro-lip-line {
+  stroke-opacity: 0.6;
+  stroke-width: calc(1.2px * var(--scene-k) * var(--scene-z, 1));
+}
+.seiro-outline { stroke-width: calc(1.8px * var(--scene-k) * var(--scene-z, 1)); }
+.seiro-hair { stroke-opacity: 0.5; }
+.seiro-hair-line {
+  stroke-opacity: 0.3;
+  stroke-width: calc(1px * var(--scene-k) * var(--scene-z, 1));
+}
+.seiro-lid-closed { opacity: 0; }
 
 /* 店主紹介のページの手元の絵（幅は 画面の幅の 70%、広い画面では 390px まで）。
    絵の幅に合わせて太さを3段に分け、線を 2〜3px に保つ（320px の画面で約 2.1px、390px の絵で約 2.5px） */
@@ -234,9 +282,18 @@
   45%  { transform: scale(1.04, 1.14); }
   to   { transform: none; }
 }
-@keyframes seiro-lid-open {
-  from { transform: none; }
-  to   { transform: var(--seiro-lid-open); }
+/* せいろの閉じたふた：現れてかぶさり（〜25%）、持ち上がりながら消える */
+@keyframes seiro-lid-lift {
+  from { opacity: 0; transform: translateY(-10px); }
+  25%  { opacity: 1; transform: none; }
+  50%  { opacity: 1; transform: translateY(-16px); }
+  to   { opacity: 0; transform: translateY(-60px) scaleY(0.6); }
+}
+/* せいろの持ち上げたふた（奥）：せいろのふちのあたりから、上へ持ち上がって止まる */
+@keyframes seiro-lid-up {
+  from, 30% { opacity: 0; transform: translateY(70px) scaleY(1.8); }
+  60%       { opacity: 1; }
+  to        { opacity: 1; transform: none; }
 }
 /* しゅうまいの皮が、ひだを寄せるようにすぼまる（下を支点に、広く平たい形から。OwnerHandsIllustration.tsx） */
 @keyframes owner-gather {
