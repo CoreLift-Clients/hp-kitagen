@@ -70,21 +70,28 @@ const BODY_IN = [
 const PAPER = arc(CX, FY - 0.5, RI - 8, (RI - 8) * SQ, PI * 0.96, PI * 3.02, 40, 0.5, 300);
 
 // ── しゅうまい ──
+// 本物の写真のように、しゅうまいどうしの間と、せいろの内のふちとの間に敷き紙が見えるよう、
+// しゅうまいは小さめ（形は K 倍に縮めるだけで、比率・ひだの本数・塗りは同じ）にして、せいろの内側の真ん中に寄せる。
+// 左右の間は床の面で約 16。前後は、上から見ると縦につぶれて手前の列が奥の列にかぶるので、
+// 床の面では左右より広く空け（v を ±60 くらい）、絵の上で列の間に敷き紙が見えるようにする。
+// 敷き紙のふちの線（半径 137）までは、どのしゅうまいからも 20 以上空く
+const K = 0.7; // しゅうまいの大きさ（もとの形に対する倍率）
 // しゅうまいの置き場所（床の面の u・v）。奥の列から
 const SHUMAI_AT: readonly P[] = [
-  [-57, -55],
-  [57, -57],
-  [-58, 56],
-  [56, 55],
+  [-46, -59],
+  [46, -60],
+  [-47, 60],
+  [45, 59],
 ];
-const R_BASE = 49; // 底の半径
-const R_MID = 54; // いちばんふくらんだ所の半径
-const R_TOP = 48; // 上の口のふちの半径
-const Z_TOP = 34;
-const R_MEAT = 35; // 口から見えるあんの半径
-const Z_MEAT = 38;
+const R_BASE = 49 * K; // 底の半径
+const R_MID = 54 * K; // いちばんふくらんだ所の半径
+const R_TOP = 48 * K; // 上の口のふちの半径
+const Z_TOP = 34 * K;
+const R_MEAT = 35 * K; // 口から見えるあんの半径
+const Z_MEAT = 38 * K;
 // 胴の太さ（高さ z の所の半径）：底 → まん中でふくらみ → 口へすぼまる
-const radiusAt = (z: number) => R_BASE - 2 + (R_MID - R_BASE + 3) * Math.sin((PI * z) / (Z_TOP * 1.3)) - 2.5 * (z / Z_TOP) ** 3;
+const radiusAt = (z: number) =>
+  R_BASE - 2 * K + (R_MID - R_BASE + 3 * K) * Math.sin((PI * z) / (Z_TOP * 1.3)) - 2.5 * K * (z / Z_TOP) ** 3;
 
 // 凸包（胴のまわりの形を、高さごとの輪の点から作る）
 function hull(pts: P[]): P[] {
@@ -126,13 +133,13 @@ const SHUMAI: Shumai[] = SHUMAI_AT.map(([u0, v0], i) => {
   // 口のひだ（あんのふちから外へ向かう短い線を5本。左右と手前に）
   const creases = [0.12, 0.5, 0.88, 1.25, 1.75].map((f, k) => {
     const t = PI * f + jitter(s + 500 + k) * 0.05;
-    const a = pr(u0 + (R_MEAT + 1) * Math.cos(t), v0 + (R_MEAT + 1) * Math.sin(t), Z_MEAT - 1.5);
-    const b = pr(u0 + (R_TOP - 3) * Math.cos(t + 0.06), v0 + (R_TOP - 3) * Math.sin(t + 0.06), Z_TOP + 0.5);
+    const a = pr(u0 + (R_MEAT + K) * Math.cos(t), v0 + (R_MEAT + K) * Math.sin(t), Z_MEAT - 1.5 * K);
+    const b = pr(u0 + (R_TOP - 3 * K) * Math.cos(t + 0.06), v0 + (R_TOP - 3 * K) * Math.sin(t + 0.06), Z_TOP + 0.5 * K);
     return smooth([a, b]);
   });
   // あん（口から見える面）
   const [mx, my] = pr(u0, v0, Z_MEAT);
-  const meatPts = blobPts(mx, my, R_MEAT, R_MEAT * SQ + 2, s + 600, 7, 0.04, 40);
+  const meatPts = blobPts(mx, my, R_MEAT, R_MEAT * SQ + 2 * K, s + 600, 7, 0.04, 40);
   return {
     body: polygon(outer),
     outline: smooth([...outer, outer[0], outer[1]]),
@@ -140,8 +147,8 @@ const SHUMAI: Shumai[] = SHUMAI_AT.map(([u0, v0], i) => {
     creases,
     meat: `${smooth(meatPts)} Z`,
     // 紙の色の抜け（胴の左の、光が当たる所と、あんの左上）
-    skinHole: [r1(pr(u0 - 36, v0 + 18, 14)[0]), r1(pr(u0 - 36, v0 + 18, 14)[1]), 3.4, 5.2],
-    meatHole: [r1(mx - 11), r1(my - 5), 3.4, 1.8],
+    skinHole: [r1(pr(u0 - 36 * K, v0 + 18 * K, 14 * K)[0]), r1(pr(u0 - 36 * K, v0 + 18 * K, 14 * K)[1]), 3.4 * K, 5.2 * K],
+    meatHole: [r1(mx - 11 * K), r1(my - 5 * K), 3.4 * K, 1.8 * K],
   };
 });
 
@@ -195,12 +202,13 @@ const LID_OPEN_IN = [
   }),
 ];
 
-// ── 湯気（4本。奥の列のしゅうまいの上から。下から上へ描くので、点は下から並べる） ──
+// ── 湯気（4本。奥の列のしゅうまいの口の上から。下から上へ描くので、点は下から並べる） ──
+// 奥の列の口のまん中は、左が (154, 191)・右が (246, 190) あたり
 const STEAM = [
-  steam(132, 176, 58, 0.2, 8, 2500),
-  steam(168, 170, 42, 2.1, 10, 2520),
-  steam(236, 168, 46, 4.0, 9, 2540),
-  steam(270, 174, 62, 1.0, 8, 2560),
+  steam(146, 186, 58, 0.2, 8, 2500),
+  steam(171, 181, 42, 2.1, 10, 2520),
+  steam(231, 180, 46, 4.0, 9, 2540),
+  steam(255, 185, 62, 1.0, 8, 2560),
 ];
 const STEAM_SWAY = [sway(4.8, 0), sway(5.6, -1.8), sway(4.2, -3.1), sway(6.1, -0.9)];
 
