@@ -14,12 +14,12 @@
    ・からあげ … からあげ（.food-yaki）
    ・豚の角煮 … 角煮の肉・脂の層・味玉・千切りキャベツ（水彩。.food-wash-*）。形は千切りキャベツを敷いた形（43575ec）
    ・串の盛り合わせ … まん中の串のつくね（たれ。.food-tare）
-   ・肉みそ冷奴 … 肉みそ（.food-brown）と、ねぎ（.food-negi-ring・.food-negi）
+   ・肉みそ冷奴 … 豆腐・肉みそ・ねぎ・たれ（水彩。.food-wash-*）。形は写真を見て描いた形（ab2dae6）
    ・生ビール … ビールと泡（水彩。.food-wash-beer・.food-wash-foam）
    ・焼酎・日本酒 … お猪口の中のお酒（.food-sake）
    ・ソフトドリンク … グラスの中の飲み物（.food-tea）
 
-   水彩の塗り方（まず、しゅうまい・豚の角煮・生ビールの3枚。部品は Wash.tsx）：
+   水彩の塗り方（しゅうまい・豚の角煮・生ビール・肉みそ冷奴の4枚。部品は Wash.tsx）：
    線画に、うすく絵の具で塗ったように見せる。上の 1.〜5. のうち、塗りについては、この決まりを優先する
    ・塗るのは食材だけ。お皿・せいろ・鍋・グラス・ジョッキなどの入れ物は線だけ（塗りは後ろを隠す紙の色だけ）
    ・色：その食材の色を、水で薄めた色（くすみすぎない、やさしい色）。不透明度 0.6〜0.75 くらい（--wash-a。泡だけ 0.25）
@@ -100,16 +100,11 @@
    水彩の塗り（.food-wash-*）は、色 --wash と、塗りの不透明度 --wash-a、ふちの濃さ --wash-edge を決める。
    しゅうまいのあんだけは、小豆あんに見えないよう、少し赤み寄りの肉の色（#C98A74）
    ・.food-yaki … 焼き目・揚げ色（きつね色。白に accent 62%）
-   ・.food-brown … 肉みそ（こげ茶。accent 55% に foreground）
    ・.food-tare … 串のたれ（accent 70% に foreground）
-   ・.food-negi・.food-negi-ring … ねぎ（落ち着いた緑 #7E9A4C の輪、中は白と混ぜてうすく）
    ・.food-sake … お酒（淡い色。白に accent 36%）
    ・.food-tea … ウーロン茶（淡い茶色。白に accent 46%） */
 .food-yaki { fill: color-mix(in srgb, var(--accent) 62%, #fff); }
-.food-brown { fill: color-mix(in srgb, var(--accent) 55%, currentColor); }
 .food-tare { fill: color-mix(in srgb, var(--accent) 70%, currentColor); }
-.food-negi { fill: color-mix(in srgb, #7E9A4C 30%, #fff); }
-.food-negi-ring { stroke: #7E9A4C; }
 .food-sake { fill: color-mix(in srgb, var(--accent) 36%, #fff); }
 .food-tea { fill: color-mix(in srgb, var(--accent) 46%, #fff); }
 /* 水彩の塗り（Wash.tsx）。塗り・ふちの濃い所・紙の色の抜け */
@@ -125,7 +120,12 @@
    ・.food-wash-white … 味玉の白身（ほぼ紙の色。白に accent 18% をごくうすく）
    ・.food-wash-yolk … 味玉の黄身（淡いオレンジ。accent）
    ・.food-wash-beer … ビール（淡い琥珀色。白に accent 82%）
-   ・.food-wash-foam … ビールの泡（ほぼ紙の色。ふちだけうすいクリーム。白に accent 34%） */
+   ・.food-wash-foam … ビールの泡（ほぼ紙の色。ふちだけうすいクリーム。白に accent 34%）
+   ・.food-wash-tofu … 冷奴の豆腐（ごく淡いクリーム。ほとんど白。白に accent 14%。側面は同じ色をもう1段重ねる）
+   ・.food-wash-miso-crumb … 冷奴の肉みその、ひき肉のかたまり（角煮の肉と同じ色をうすく重ねる。山は .food-wash-kakuni）
+   ・.food-wash-negi … 冷奴のねぎの中（落ち着いた緑 #7E9A4C）
+   ・.food-wash-tare … 冷奴のお皿の上のたれ（オレンジ茶色。accent 85% に foreground）。
+     .food-wash-tare-pale は、たまり（もう1段重ねる）と豆腐の上の面（うすく） */
 .food-wash-meat { --wash: #C98A74; --wash-a: 0.75; --wash-edge: 0.44; }
 .food-wash-skin { --wash: color-mix(in srgb, var(--accent) 30%, #fff); --wash-a: 0.62; --wash-edge: 0.4; }
 .food-wash-kakuni { --wash: color-mix(in srgb, var(--accent) 72%, currentColor); --wash-a: 0.75; --wash-edge: 0.42; }
@@ -135,6 +135,19 @@
 .food-wash-yolk { --wash: var(--accent); --wash-a: 0.72; --wash-edge: 0.42; }
 .food-wash-beer { --wash: color-mix(in srgb, var(--accent) 82%, #fff); --wash-a: 0.7; --wash-edge: 0.42; }
 .food-wash-foam { --wash: color-mix(in srgb, var(--accent) 34%, #fff); --wash-a: 0.25; --wash-edge: 0.5; }
+.food-wash-tofu { --wash: color-mix(in srgb, var(--accent) 14%, #fff); --wash-a: 0.5; --wash-edge: 0.4; }
+.food-wash-miso-crumb { --wash: color-mix(in srgb, var(--accent) 72%, currentColor); --wash-a: 0.42; }
+.food-wash-miso-crumb .wash-crumb-dark { fill-opacity: 0.6; }
+.food-wash-negi { --wash: #7E9A4C; --wash-a: 0.72; --wash-edge: 0.3; }
+.food-wash-tare { --wash: color-mix(in srgb, var(--accent) 85%, currentColor); --wash-a: 0.62; --wash-edge: 0.42; }
+.food-wash-tare-pale { --wash: color-mix(in srgb, var(--accent) 85%, currentColor); --wash-a: 0.4; --wash-edge: 0.34; }
+/* 肉みそ冷奴の線の色（HiyayakkoIllustration.tsx。ab2dae6 の決まり）：ねぎの輪の線は落ち着いた緑、てかりは白い小さな点 */
+.hiyayakko-negi { --hiyayakko-negi: #7E9A4C; }
+.hiyayakko-negi-ring {
+  stroke: var(--hiyayakko-negi);
+  stroke-width: calc(1.5px * var(--scene-k) * var(--scene-z, 1));
+}
+.hiyayakko-miso-shine { fill: #fff; fill-opacity: 0.8; }
 /* 豚の角煮（KakuniIllustration.tsx。43575ec の形）の線。塗りは上の水彩 */
 .kakuni-outline { stroke-width: calc(1.8px * var(--scene-k) * var(--scene-z, 1)); }
 .kakuni-band-line {
@@ -214,6 +227,11 @@
 @keyframes scene-slide-in {
   from { opacity: 0; transform: translateX(var(--dx, -56px)) rotate(var(--rot, -6deg)); }
   50%  { opacity: 1; }
+  to   { opacity: 1; transform: none; }
+}
+/* 肉みそ冷奴のたれ：じわっと広がって出る（水彩の塗り。いちばん最後） */
+@keyframes hiyayakko-spread {
+  from { opacity: 0; transform: scale(0.8); }
   to   { opacity: 1; transform: none; }
 }
 /* ふわっと盛り上がる（下を支点に、低く平たい形から。泡） */

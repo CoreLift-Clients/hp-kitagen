@@ -42,14 +42,16 @@ export function Wash({
 // にじみのフィルタ。scale はゆれの大きさ（ずれは最大でその半分。6 なら ±3）。
 // 1) ふちのにじみ：低い周波数の模様（feTurbulence）で、塗りの形をわずかに揺らす（feDisplacementMap）
 // 2) 絵の具のムラ：少し細かい模様で、塗りの濃さを 0.65〜0.95 倍くらいの間でやわらかく変える
-//    （feColorMatrix で模様の赤の明るさを濃さに変え、feComposite の in で塗りに掛ける）
-export function WashFilter({ id, seed, scale = 6 }: { id: string; seed: number; scale?: number }) {
+//    （feColorMatrix で模様の赤の明るさを濃さに変え、feComposite の in で塗りに掛ける）。
+//    wide のときは、ムラの幅を少し広く 0.55〜0.95 倍くらいに（色を濃くしても水彩に見えるように。肉みそ冷奴）
+export function WashFilter({ id, seed, scale = 6, wide = false }: { id: string; seed: number; scale?: number; wide?: boolean }) {
+  const mura = wide ? "-1 0 0 0 1.25" : "-0.75 0 0 0 1.2";
   return (
     <filter id={id} x="-6%" y="-6%" width="112%" height="112%">
       <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves={2} seed={seed} result="n" />
       <feDisplacementMap in="SourceGraphic" in2="n" scale={scale} xChannelSelector="R" yChannelSelector="G" result="d" />
       <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves={2} seed={seed + 1} result="m" />
-      <feColorMatrix in="m" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -0.75 0 0 0 1.2" result="ma" />
+      <feColorMatrix in="m" type="matrix" values={`0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  ${mura}`} result="ma" />
       <feComposite in="d" in2="ma" operator="in" />
     </filter>
   );
