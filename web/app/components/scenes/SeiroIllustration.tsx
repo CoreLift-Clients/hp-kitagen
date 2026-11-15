@@ -8,8 +8,10 @@
 // ・色を塗るのは食材だけ：しゅうまいの皮（淡いクリーム .food-wash-skin）と、口から見えるあん（淡い肉の色 .food-wash-meat）。
 //   料理の絵の決まり（scenes.css の先頭）の「水彩の塗り方」で、線画にうすく絵の具で塗ったように付ける
 //   （部品は Wash.tsx。にじみのフィルタは seiro-wash の1つを使い回す）。
-//   せいろ・敷き紙・ふたは線だけ（面は、後ろの線を隠すための紙の色 --scene-paper）
-// ・せいろ：中の線は、内のふち・竹の帯・奥の壁と底の境目の3本
+//   敷き紙・ふたは線だけ（面は、後ろの線を隠すための紙の色 --scene-paper）。
+//   せいろだけは例外（scenes.css の「料理の絵の決まり」）：深さが分かるよう、ごく淡い水彩の陰を1段だけ付ける
+//   （内側の奥の壁と、外側の胴の右側。.seiro-wash-shade ＝ foreground をうすく）
+// ・せいろ：高さのある竹の胴。中の線は、内のふち・竹の帯3本（上のふちの輪の下・胴の中ほど・下の帯）・奥の壁と底の境目の5本
 // ・敷き紙：ふちの線1本だけ
 // ・しゅうまい：中の線は、口のふち1本とひだ5本
 // ・ふた：動き終わりは、せいろの奥（上）へ持ち上げて少し傾けた形（しゅうまいを隠さない。せいろの後ろに描く）。
@@ -19,7 +21,7 @@
 //   閉じたふた（seiro-lid-closed）・湯気（seiro-steam）。重なりの順もこのとおり
 // ・動きの順番：せいろ → 敷き紙 → しゅうまいが1つずつ → ふたがかぶさってから持ち上がる → 湯気
 //   （動きの名前と範囲は anim(...)、@keyframes は scenes.css）。何も動かさないときの形が、動き終わった形
-// ・見る角度は上から（床の面を縦に SQ だけつぶす。pr()）
+// ・見る角度はななめ上から（床の面を縦に SQ だけつぶす。pr()）。胴の側面と、内側の奥の壁が帯として見える角度
 // ・絵は viewBox を 356 の幅に切り出して大きく見せる（線の太さは --scene-z で 400 の幅の絵とそろえる。scenes.css）
 //
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
@@ -30,8 +32,8 @@ import { Wash, WashFilter, type Hole } from "./Wash";
 
 // ── 見る角度（床の面の点 u・v と高さ z を、絵の座標にする） ──
 const CX = 200;
-const FY = 252; // せいろの底（敷き紙の面）のまん中の y
-const SQ = 0.64; // 縦のつぶし（上からのぞき込む）
+const FY = 236; // せいろの底（敷き紙の面）のまん中の y
+const SQ = 0.55; // 縦のつぶし（ななめ上からのぞき込む。0.64 より少し横から見て、胴の側面がよく見える）
 const pr = (u: number, v: number, z = 0): P => [CX + u, FY + v * SQ - z];
 // 床の面の円（半径 r、高さ z）のまわりの点
 const circ = (u0: number, v0: number, r: number, z: number, n: number, t0 = 0, t1 = PI * 2): P[] =>
@@ -45,8 +47,8 @@ const ell = (r: number, z: number, u0 = 0, v0 = 0) => polygon(circ(u0, v0, r, z,
 // ── せいろ ──
 const RO = 160; // 上のふちの外の半径
 const RI = 145; // 上のふちの内の半径（竹の輪の帯の幅 15）
-const RIM_Z = 26; // 底から上のふちまでの深さ
-const SIDE = 40; // 外の側面の高さ（上のふちから下）
+const RIM_Z = 28; // 底から上のふちまでの深さ（＝ 奥の内側の壁の帯の高さ）
+const SIDE = 80; // 外の側面（竹の胴）の高さ（上のふちから下）
 const RIM_FACE = `${ell(RO, RIM_Z)} ${ell(RI, RIM_Z)}`; // 竹の輪（evenodd で中を抜く）
 const INNER_WALL = polygon([...circ(0, 0, RI, RIM_Z, 24, PI, PI * 2), ...circ(0, 0, RI, 0, 24, PI * 2, PI)]);
 const FLOOR = ell(RI, 0);
@@ -59,12 +61,20 @@ const BODY_LINE = [
   smooth([pr(RO, 0, RIM_Z), pr(RO - 0.6, 0, RIM_Z - SIDE * 0.5), pr(RO - 1.2, 0, RIM_Z - SIDE)]), // 右の側面
   arc(CX, FY - RIM_Z + SIDE, RO - 1.2, (RO - 1.2) * SQ, PI * -0.005, PI * 1.005, 28, 0.7, 130), // 下のふち（手前）
 ];
-// 中の線（3本）：上のふちの内・外の側面の竹の帯・内側の奥の壁と底の境目
+// 中の線（5本）：上のふちの内・外の側面の竹の帯3本（上のふちの輪の下 18 は今までどおり。胴の中ほどと、下の帯）・
+// 内側の奥の壁と底の境目
 const BODY_IN = [
   arc(CX, FY - RIM_Z, RI, RI * SQ, PI * 0.96, PI * 3.02, 40, 0.5, 80),
   arc(CX, FY - RIM_Z + 18, RO - 0.5, (RO - 0.5) * SQ, PI * 0.02, PI * 0.98, 24, 0.6, 160),
+  arc(CX, FY - RIM_Z + 42, RO - 0.8, (RO - 0.8) * SQ, PI * 0.02, PI * 0.98, 24, 0.6, 180),
+  arc(CX, FY - RIM_Z + 64, RO - 1, (RO - 1) * SQ, PI * 0.02, PI * 0.98, 24, 0.6, 200),
   arc(CX, FY, RI, RI * SQ, PI * 1.04, PI * 1.96, 24, 0.4, 220),
 ];
+// 陰（ごく淡い水彩。せいろだけの例外）：光は左上から
+// ・内側の奥の壁（上のふちの内と、底の境目の間の帯）
+// ・外側の胴の右側（右の端から手前へ。陰の左のふちは、上が 0.22 周・下が 0.32 周のななめにして、四角い板に見えないようにする）
+const SHADE_WALL = INNER_WALL;
+const SHADE_SIDE = polygon([...circ(0, 0, RO, RIM_Z, 16, 0, PI * 0.22), ...circ(0, 0, RO, RIM_Z - SIDE, 16, PI * 0.32, 0)]);
 
 // ── 敷き紙（底いっぱい。ふちの線1本） ──
 const PAPER = arc(CX, FY - 0.5, RI - 8, (RI - 8) * SQ, PI * 0.96, PI * 3.02, 40, 0.5, 300);
@@ -72,23 +82,25 @@ const PAPER = arc(CX, FY - 0.5, RI - 8, (RI - 8) * SQ, PI * 0.96, PI * 3.02, 40,
 // ── しゅうまい ──
 // 本物の写真のように、しゅうまいどうしの間と、せいろの内のふちとの間に敷き紙が見えるよう、
 // しゅうまいは小さめ（形は K 倍に縮めるだけで、比率・ひだの本数・塗りは同じ）にして、せいろの内側の真ん中に寄せる。
-// 左右の間は床の面で約 16。前後は、上から見ると縦につぶれて手前の列が奥の列にかぶるので、
-// 床の面では左右より広く空け（v を ±60 くらい）、絵の上で列の間に敷き紙が見えるようにする。
+// 左右の間は床の面で約 16。前後は、ななめ上から見ると手前の列が奥の列にかぶるので、
+// 床の面では左右より広く空け、絵の上で列の間に敷き紙が見えるようにする。
+// 手前の列は、せいろの手前の内のふちにかからない所まで（そのぶん、2列のかたまりは床の面で少し奥に寄る）。
 // 敷き紙のふちの線（半径 137）までは、どのしゅうまいからも 20 以上空く
 const K = 0.7; // しゅうまいの大きさ（もとの形に対する倍率）
+const H = 1.18; // しゅうまいの背（胴の高さだけの倍率。横幅は K のまま）
 // しゅうまいの置き場所（床の面の u・v）。奥の列から
 const SHUMAI_AT: readonly P[] = [
-  [-46, -59],
-  [46, -60],
+  [-46, -67],
+  [46, -68],
   [-47, 60],
   [45, 59],
 ];
 const R_BASE = 49 * K; // 底の半径
 const R_MID = 54 * K; // いちばんふくらんだ所の半径
 const R_TOP = 48 * K; // 上の口のふちの半径
-const Z_TOP = 34 * K;
+const Z_TOP = 34 * K * H;
 const R_MEAT = 35 * K; // 口から見えるあんの半径
-const Z_MEAT = 38 * K;
+const Z_MEAT = 38 * K * H;
 // 胴の太さ（高さ z の所の半径）：底 → まん中でふくらみ → 口へすぼまる
 const radiusAt = (z: number) =>
   R_BASE - 2 * K + (R_MID - R_BASE + 3 * K) * Math.sin((PI * z) / (Z_TOP * 1.3)) - 2.5 * K * (z / Z_TOP) ** 3;
@@ -133,8 +145,8 @@ const SHUMAI: Shumai[] = SHUMAI_AT.map(([u0, v0], i) => {
   // 口のひだ（あんのふちから外へ向かう短い線を5本。左右と手前に）
   const creases = [0.12, 0.5, 0.88, 1.25, 1.75].map((f, k) => {
     const t = PI * f + jitter(s + 500 + k) * 0.05;
-    const a = pr(u0 + (R_MEAT + K) * Math.cos(t), v0 + (R_MEAT + K) * Math.sin(t), Z_MEAT - 1.5 * K);
-    const b = pr(u0 + (R_TOP - 3 * K) * Math.cos(t + 0.06), v0 + (R_TOP - 3 * K) * Math.sin(t + 0.06), Z_TOP + 0.5 * K);
+    const a = pr(u0 + (R_MEAT + K) * Math.cos(t), v0 + (R_MEAT + K) * Math.sin(t), Z_MEAT - 1.5 * K * H);
+    const b = pr(u0 + (R_TOP - 3 * K) * Math.cos(t + 0.06), v0 + (R_TOP - 3 * K) * Math.sin(t + 0.06), Z_TOP + 0.5 * K * H);
     return smooth([a, b]);
   });
   // あん（口から見える面）
@@ -147,7 +159,7 @@ const SHUMAI: Shumai[] = SHUMAI_AT.map(([u0, v0], i) => {
     creases,
     meat: `${smooth(meatPts)} Z`,
     // 紙の色の抜け（胴の左の、光が当たる所と、あんの左上）
-    skinHole: [r1(pr(u0 - 36 * K, v0 + 18 * K, 14 * K)[0]), r1(pr(u0 - 36 * K, v0 + 18 * K, 14 * K)[1]), 3.4 * K, 5.2 * K],
+    skinHole: [r1(pr(u0 - 36 * K, v0 + 18 * K, 14 * K * H)[0]), r1(pr(u0 - 36 * K, v0 + 18 * K, 14 * K * H)[1]), 3.4 * K, 5.2 * K],
     meatHole: [r1(mx - 11 * K), r1(my - 5 * K), 3.4 * K, 1.8 * K],
   };
 });
@@ -174,9 +186,9 @@ const LID_CLOSED_IN = [
 
 // 持ち上げたふた（奥。少し傾けて、せいろの奥のふちに立てかけたように見せる）
 const LO_X = 200;
-const LO_Y = 92; // 上の面のまん中
+const LO_Y = 85; // 上の面のまん中
 const LO_RX = 150;
-const LO_RY = 36; // 奥へ倒れているので、上の面は細いだ円に見える
+const LO_RY = 41; // 奥へ倒れているので、上の面は細いだ円に見える（ななめ上からの角度に合わせて、少し太め）
 const LO_T = 13; // ふたのふちの厚み
 const LO_ROT = -5; // 傾き（度）
 const lidPts = (cy: number, t0: number, t1: number, n = 24): P[] =>
@@ -203,12 +215,12 @@ const LID_OPEN_IN = [
 ];
 
 // ── 湯気（4本。奥の列のしゅうまいの口の上から。下から上へ描くので、点は下から並べる） ──
-// 奥の列の口のまん中は、左が (154, 191)・右が (246, 190) あたり
+// 奥の列の口のまん中は、左が (154, 171)・右が (246, 170) あたり
 const STEAM = [
-  steam(146, 186, 58, 0.2, 8, 2500),
-  steam(171, 181, 42, 2.1, 10, 2520),
-  steam(231, 180, 46, 4.0, 9, 2540),
-  steam(255, 185, 62, 1.0, 8, 2560),
+  steam(146, 166, 58, 0.2, 8, 2500),
+  steam(171, 161, 42, 2.1, 10, 2520),
+  steam(231, 160, 46, 4.0, 9, 2540),
+  steam(255, 165, 62, 1.0, 8, 2560),
 ];
 const STEAM_SWAY = [sway(4.8, 0), sway(5.6, -1.8), sway(4.2, -3.1), sway(6.1, -0.9)];
 
@@ -256,6 +268,11 @@ export default function SeiroIllustration({ className = "" }: { className?: stri
         <path d={INNER_WALL} className="scene-paper" stroke="none" />
         <path d={FLOOR} className="scene-paper" stroke="none" />
         <path d={RIM_FACE} className="scene-paper" fillRule="evenodd" stroke="none" />
+        {/* ごく淡い水彩の陰（せいろだけの例外）：内側の奥の壁と、外側の胴の右側 */}
+        <g filter="url(#seiro-wash)">
+          <Wash d={SHADE_WALL} tone="seiro-wash-shade" id="seiro-w-wall" shift={[2, 1.5]} />
+          <Wash d={SHADE_SIDE} tone="seiro-wash-shade" id="seiro-w-side" shift={[2, 1.5]} />
+        </g>
         {BODY_IN.map((d, i) => (
           <path key={`i${i}`} d={d} className="scene-fine" />
         ))}

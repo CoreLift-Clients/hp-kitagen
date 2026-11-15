@@ -23,6 +23,9 @@
    水彩の塗り方（しゅうまい・からあげ・豚の角煮・串焼き・生ビール・肉みそ冷奴の6枚。部品は Wash.tsx）：
    線画に、うすく絵の具で塗ったように見せる。上の 1.〜5. のうち、塗りについては、この決まりを優先する
    ・塗るのは食材だけ。お皿・せいろ・鍋・グラス・ジョッキなどの入れ物は線だけ（塗りは後ろを隠す紙の色だけ）
+     例外：せいろだけは、高さと深さが分かるよう、ごく淡い水彩の陰を1段だけ付けてよい（.seiro-wash-shade）。
+     付ける所は、内側の奥の壁と、外側の胴の右側の2か所（光は左上から）。色は foreground をうすく（不透明度 0.12〜0.2）。
+     塗り方（ずれ・ふちの濃さ・にじみ）は、ほかの水彩と同じ
    ・色：その食材の色を、水で薄めた色（くすみすぎない、やさしい色）。不透明度 0.6〜0.75 くらい（--wash-a。泡だけ 0.25）
    ・線から少しずれる：塗りの形を、線の形から右下へ 1.5〜3 ずらす（少しはみ出す所と、内側に寄って紙の色が残る所ができる）。
      形のわずかなゆがみは、下のにじみのフィルタで出す（乱数なし。seed を決めておく）
@@ -131,7 +134,8 @@
      .food-wash-karaage-dark は右下の陰（同じ色をもう1段重ねる）。串焼きのぼんじりも .food-wash-karaage
    ・.food-wash-harami … 串焼きの鶏ハラミ（赤みのある濃い茶色。accent 62% に こげ茶 #5E2414）
    ・.food-wash-kawa … 串焼きの鶏皮（淡いきつね色。白に accent 74%。カリッと焼けたふちを濃く ＝ --wash-edge を高め）
-   ・.food-wash-koge … 串焼きの焼き目（濃い茶色。accent 45% に foreground。小さな塗りを具の上に重ねる） */
+   ・.food-wash-koge … 串焼きの焼き目（濃い茶色。accent 45% に foreground。小さな塗りを具の上に重ねる）
+   ・.seiro-wash-shade … せいろの陰（入れ物の例外。foreground をうすく 0.16。ふちはさらにうすく） */
 .food-wash-meat { --wash: #C98A74; --wash-a: 0.75; --wash-edge: 0.44; }
 .food-wash-skin { --wash: color-mix(in srgb, var(--accent) 30%, #fff); --wash-a: 0.62; --wash-edge: 0.4; }
 .food-wash-kakuni { --wash: color-mix(in srgb, var(--accent) 72%, currentColor); --wash-a: 0.75; --wash-edge: 0.42; }
@@ -152,6 +156,7 @@
 .food-wash-harami { --wash: color-mix(in srgb, var(--accent) 62%, #5E2414); --wash-a: 0.72; --wash-edge: 0.44; }
 .food-wash-kawa { --wash: color-mix(in srgb, var(--accent) 74%, #fff); --wash-a: 0.7; --wash-edge: 0.7; }
 .food-wash-koge { --wash: color-mix(in srgb, var(--accent) 45%, currentColor); --wash-a: 0.62; --wash-edge: 0.42; }
+.seiro-wash-shade { --wash: currentColor; --wash-a: 0.16; --wash-edge: 0.1; }
 /* からあげの鉢の模様の、花びらのあいだの小さな点（線と同じ色） */
 .karaage-dot { fill: currentColor; fill-opacity: 0.7; }
 /* 肉みそ冷奴の線の色（HiyayakkoIllustration.tsx。ab2dae6 の決まり）：ねぎの輪の線は落ち着いた緑、てかりは白い小さな点 */
