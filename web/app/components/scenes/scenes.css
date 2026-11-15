@@ -11,7 +11,7 @@
    9枚の塗る所：
    ・しゅうまい … 皮とあん（水彩。.food-wash-skin・.food-wash-meat）
    ・鉄鍋餃子 … 餃子の焼き目（.food-yaki）
-   ・からあげ … からあげ（.food-yaki）
+   ・からあげ … からあげ（水彩。.food-wash-karaage）。形は写真を見て描いた形（花の模様の浅い丸鉢に、6個をこんもり）
    ・豚の角煮 … 角煮の肉・脂の層・味玉・千切りキャベツ（水彩。.food-wash-*）。形は千切りキャベツを敷いた形（43575ec）
    ・串の盛り合わせ … まん中の串のつくね（たれ。.food-tare）
    ・肉みそ冷奴 … 豆腐・肉みそ・ねぎ・たれ（水彩。.food-wash-*）。形は写真を見て描いた形（ab2dae6）
@@ -19,7 +19,7 @@
    ・焼酎・日本酒 … お猪口の中のお酒（.food-sake）
    ・ソフトドリンク … グラスの中の飲み物（.food-tea）
 
-   水彩の塗り方（しゅうまい・豚の角煮・生ビール・肉みそ冷奴の4枚。部品は Wash.tsx）：
+   水彩の塗り方（しゅうまい・からあげ・豚の角煮・生ビール・肉みそ冷奴の5枚。部品は Wash.tsx）：
    線画に、うすく絵の具で塗ったように見せる。上の 1.〜5. のうち、塗りについては、この決まりを優先する
    ・塗るのは食材だけ。お皿・せいろ・鍋・グラス・ジョッキなどの入れ物は線だけ（塗りは後ろを隠す紙の色だけ）
    ・色：その食材の色を、水で薄めた色（くすみすぎない、やさしい色）。不透明度 0.6〜0.75 くらい（--wash-a。泡だけ 0.25）
@@ -125,7 +125,9 @@
    ・.food-wash-miso-crumb … 冷奴の肉みその、ひき肉のかたまり（角煮の肉と同じ色をうすく重ねる。山は .food-wash-kakuni）
    ・.food-wash-negi … 冷奴のねぎの中（落ち着いた緑 #7E9A4C）
    ・.food-wash-tare … 冷奴のお皿の上のたれ（オレンジ茶色。accent 85% に foreground）。
-     .food-wash-tare-pale は、たまり（もう1段重ねる）と豆腐の上の面（うすく） */
+     .food-wash-tare-pale は、たまり（もう1段重ねる）と豆腐の上の面（うすく）
+   ・.food-wash-karaage … からあげ（赤みのあるきつね色。accent 80% に赤茶 #7A2E14）。
+     .food-wash-karaage-dark は右下の陰（同じ色をもう1段重ねる） */
 .food-wash-meat { --wash: #C98A74; --wash-a: 0.75; --wash-edge: 0.44; }
 .food-wash-skin { --wash: color-mix(in srgb, var(--accent) 30%, #fff); --wash-a: 0.62; --wash-edge: 0.4; }
 .food-wash-kakuni { --wash: color-mix(in srgb, var(--accent) 72%, currentColor); --wash-a: 0.75; --wash-edge: 0.42; }
@@ -141,6 +143,10 @@
 .food-wash-negi { --wash: #7E9A4C; --wash-a: 0.72; --wash-edge: 0.3; }
 .food-wash-tare { --wash: color-mix(in srgb, var(--accent) 85%, currentColor); --wash-a: 0.62; --wash-edge: 0.42; }
 .food-wash-tare-pale { --wash: color-mix(in srgb, var(--accent) 85%, currentColor); --wash-a: 0.4; --wash-edge: 0.34; }
+.food-wash-karaage { --wash: color-mix(in srgb, var(--accent) 80%, #7A2E14); --wash-a: 0.72; --wash-edge: 0.44; }
+.food-wash-karaage-dark { --wash: color-mix(in srgb, var(--accent) 80%, #7A2E14); --wash-a: 0.42; --wash-edge: 0.3; }
+/* からあげの鉢の模様の、花びらのあいだの小さな点（線と同じ色） */
+.karaage-dot { fill: currentColor; fill-opacity: 0.7; }
 /* 肉みそ冷奴の線の色（HiyayakkoIllustration.tsx。ab2dae6 の決まり）：ねぎの輪の線は落ち着いた緑、てかりは白い小さな点 */
 .hiyayakko-negi { --hiyayakko-negi: #7E9A4C; }
 .hiyayakko-negi-ring {
