@@ -34,7 +34,7 @@ export type SpecialtyArt =
   | "teppan" // 鉄鍋（鉄鍋餃子）
   | "karaage" // からあげ
   | "kakuni" // 豚の角煮
-  | "kushi" // 串の盛り合わせ
+  | "kushi" // 串焼き（ぼんじり・鶏ハラミ・鶏皮）
   | "hiyayakko" // 肉みそ冷奴
   | "beer" // 生ビール
   | "sake" // 一升瓶とお猪口（焼酎・日本酒）
@@ -59,7 +59,7 @@ export const SPECIALTY_FOOD: SpecialtyItem[] = [
   { name: "鉄鍋餃子", tagline: "底はこんがり、なかはふっくら。", price: undefined, priceFrom: false, art: "teppan" },
   { name: "からあげ", tagline: "カリッと、揚げたて。", price: undefined, priceFrom: false, art: "karaage" },
   { name: "豚の角煮", tagline: "箸でほろりと、やわらか。", price: undefined, priceFrom: false, art: "kakuni" },
-  { name: "串の盛り合わせ", tagline: "いろいろ少しずつ、楽しめる。", price: undefined, priceFrom: false, art: "kushi" },
+  { name: "串焼き", tagline: "ぼんじり・鶏ハラミ・鶏皮。", price: undefined, priceFrom: false, art: "kushi" },
   { name: "肉みそ冷奴", tagline: "冷たい豆腐に、甘辛の肉みそ。", price: undefined, priceFrom: false, art: "hiyayakko" },
 ];
 

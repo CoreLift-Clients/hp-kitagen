@@ -13,13 +13,14 @@
    ・鉄鍋餃子 … 餃子の焼き目（.food-yaki）
    ・からあげ … からあげ（水彩。.food-wash-karaage）。形は写真を見て描いた形（花の模様の浅い丸鉢に、6個をこんもり）
    ・豚の角煮 … 角煮の肉・脂の層・味玉・千切りキャベツ（水彩。.food-wash-*）。形は千切りキャベツを敷いた形（43575ec）
-   ・串の盛り合わせ … まん中の串のつくね（たれ。.food-tare）
+   ・串焼き … ぼんじり・鶏ハラミ・鶏皮の具と焼き目（水彩。.food-wash-karaage・.food-wash-harami・.food-wash-kawa・.food-wash-koge）。
+     形はメニューの写真を見て描いた形（白い楕円のお皿に、持ち手の出た竹串を3本）
    ・肉みそ冷奴 … 豆腐・肉みそ・ねぎ・たれ（水彩。.food-wash-*）。形は写真を見て描いた形（ab2dae6）
    ・生ビール … ビールと泡（水彩。.food-wash-beer・.food-wash-foam）
    ・焼酎・日本酒 … お猪口の中のお酒（.food-sake）
    ・ソフトドリンク … グラスの中の飲み物（.food-tea）
 
-   水彩の塗り方（しゅうまい・からあげ・豚の角煮・生ビール・肉みそ冷奴の5枚。部品は Wash.tsx）：
+   水彩の塗り方（しゅうまい・からあげ・豚の角煮・串焼き・生ビール・肉みそ冷奴の6枚。部品は Wash.tsx）：
    線画に、うすく絵の具で塗ったように見せる。上の 1.〜5. のうち、塗りについては、この決まりを優先する
    ・塗るのは食材だけ。お皿・せいろ・鍋・グラス・ジョッキなどの入れ物は線だけ（塗りは後ろを隠す紙の色だけ）
    ・色：その食材の色を、水で薄めた色（くすみすぎない、やさしい色）。不透明度 0.6〜0.75 くらい（--wash-a。泡だけ 0.25）
@@ -100,7 +101,7 @@
    水彩の塗り（.food-wash-*）は、色 --wash と、塗りの不透明度 --wash-a、ふちの濃さ --wash-edge を決める。
    しゅうまいのあんだけは、小豆あんに見えないよう、少し赤み寄りの肉の色（#C98A74）
    ・.food-yaki … 焼き目・揚げ色（きつね色。白に accent 62%）
-   ・.food-tare … 串のたれ（accent 70% に foreground）
+   ・.food-tare … たれ（accent 70% に foreground。今はどの絵でも使っていない）
    ・.food-sake … お酒（淡い色。白に accent 36%）
    ・.food-tea … ウーロン茶（淡い茶色。白に accent 46%） */
 .food-yaki { fill: color-mix(in srgb, var(--accent) 62%, #fff); }
@@ -127,7 +128,10 @@
    ・.food-wash-tare … 冷奴のお皿の上のたれ（オレンジ茶色。accent 85% に foreground）。
      .food-wash-tare-pale は、たまり（もう1段重ねる）と豆腐の上の面（うすく）
    ・.food-wash-karaage … からあげ（赤みのあるきつね色。accent 80% に赤茶 #7A2E14）。
-     .food-wash-karaage-dark は右下の陰（同じ色をもう1段重ねる） */
+     .food-wash-karaage-dark は右下の陰（同じ色をもう1段重ねる）。串焼きのぼんじりも .food-wash-karaage
+   ・.food-wash-harami … 串焼きの鶏ハラミ（赤みのある濃い茶色。accent 62% に こげ茶 #5E2414）
+   ・.food-wash-kawa … 串焼きの鶏皮（淡いきつね色。白に accent 74%。カリッと焼けたふちを濃く ＝ --wash-edge を高め）
+   ・.food-wash-koge … 串焼きの焼き目（濃い茶色。accent 45% に foreground。小さな塗りを具の上に重ねる） */
 .food-wash-meat { --wash: #C98A74; --wash-a: 0.75; --wash-edge: 0.44; }
 .food-wash-skin { --wash: color-mix(in srgb, var(--accent) 30%, #fff); --wash-a: 0.62; --wash-edge: 0.4; }
 .food-wash-kakuni { --wash: color-mix(in srgb, var(--accent) 72%, currentColor); --wash-a: 0.75; --wash-edge: 0.42; }
@@ -145,6 +149,9 @@
 .food-wash-tare-pale { --wash: color-mix(in srgb, var(--accent) 85%, currentColor); --wash-a: 0.4; --wash-edge: 0.34; }
 .food-wash-karaage { --wash: color-mix(in srgb, var(--accent) 80%, #7A2E14); --wash-a: 0.72; --wash-edge: 0.44; }
 .food-wash-karaage-dark { --wash: color-mix(in srgb, var(--accent) 80%, #7A2E14); --wash-a: 0.42; --wash-edge: 0.3; }
+.food-wash-harami { --wash: color-mix(in srgb, var(--accent) 62%, #5E2414); --wash-a: 0.72; --wash-edge: 0.44; }
+.food-wash-kawa { --wash: color-mix(in srgb, var(--accent) 74%, #fff); --wash-a: 0.7; --wash-edge: 0.7; }
+.food-wash-koge { --wash: color-mix(in srgb, var(--accent) 45%, currentColor); --wash-a: 0.62; --wash-edge: 0.42; }
 /* からあげの鉢の模様の、花びらのあいだの小さな点（線と同じ色） */
 .karaage-dot { fill: currentColor; fill-opacity: 0.7; }
 /* 肉みそ冷奴の線の色（HiyayakkoIllustration.tsx。ab2dae6 の決まり）：ねぎの輪の線は落ち着いた緑、てかりは白い小さな点 */
