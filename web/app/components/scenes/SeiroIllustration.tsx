@@ -140,8 +140,8 @@ const SHUMAI: Shumai[] = SHUMAI_AT.map(([u0, v0], i) => {
     creases,
     meat: `${smooth(meatPts)} Z`,
     // 紙の色の抜け（胴の左の、光が当たる所と、あんの左上）
-    skinHole: [r1(pr(u0 - 36, v0 + 18, 14)[0]), r1(pr(u0 - 36, v0 + 18, 14)[1]), 4.5, 7],
-    meatHole: [r1(mx - 11), r1(my - 5), 4.5, 2.4],
+    skinHole: [r1(pr(u0 - 36, v0 + 18, 14)[0]), r1(pr(u0 - 36, v0 + 18, 14)[1]), 3.4, 5.2],
+    meatHole: [r1(mx - 11), r1(my - 5), 3.4, 1.8],
   };
 });
 

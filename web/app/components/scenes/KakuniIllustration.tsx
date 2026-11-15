@@ -315,7 +315,7 @@ export default function KakuniIllustration({ className = "" }: { className?: str
       <g className="kakuni-cabbage">
         <g className="scene-anim" style={anim("scene-fade-up", 12, 16, { "--dy": "-6px" })}>
           <g filter="url(#kakuni-wash)">
-            <Wash d={CABBAGE} tone="food-wash-cabbage" id="kakuni-w-cab" shift={[2.5, 2]} holes={[[118, 252, 7, 3.5], [292, 244, 6, 3]]} />
+            <Wash d={CABBAGE} tone="food-wash-cabbage" id="kakuni-w-cab" shift={[2.5, 2]} holes={[[118, 252, 5, 2.5], [292, 244, 4.5, 2.2]]} />
             <Wash d={CABBAGE_UNDER} tone="food-wash-cabbage" id="kakuni-w-cab2" shift={[2, 1.5]} />
           </g>
         </g>
@@ -387,7 +387,7 @@ export default function KakuniIllustration({ className = "" }: { className?: str
           <ellipse cx={EX} cy={EY} rx={ER} ry={EH} className="scene-paper" stroke="none" />
           <g filter="url(#kakuni-wash)">
             <Wash d={EGG_D} tone="food-wash-white" id="kakuni-w-white" shift={[2, 1.5]} />
-            <Wash d={YOLK_D} tone="food-wash-yolk" id="kakuni-w-yolk" shift={[1.8, 1.4]} holes={[[EX + 10, EY + 6, 3.2, 2]]} />
+            <Wash d={YOLK_D} tone="food-wash-yolk" id="kakuni-w-yolk" shift={[1.8, 1.4]} holes={[[EX + 10, EY + 6, 2.4, 1.5]]} />
           </g>
           <ellipse cx={EX + 1.5} cy={EY + 0.5} rx={ER * 0.6} ry={EH * 0.62} className="kakuni-yolk-line" />
           <ellipse cx={EX} cy={EY} rx={ER} ry={EH} className="kakuni-outline" />
