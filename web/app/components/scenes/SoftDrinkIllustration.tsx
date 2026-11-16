@@ -16,7 +16,7 @@
 //   （動きの名前と範囲は anim(...)、@keyframes は scenes.css）
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
-import { PI, anim, arc, jitter, line, polygon, ring, smooth, type P } from "./draw";
+import { PI, animAt, arc, cardTiming, jitter, line, polygon, ring, smooth, type P } from "./draw";
 import { Wash, WashFilter } from "./Wash";
 
 // ── グラス（上が少し広い、背の高いタンブラー） ──
@@ -122,6 +122,16 @@ const BUBBLES: readonly [number, number, number][] = [
   [236, 312, 3],
 ];
 
+// ── 動きの段（anim の from・to。4〜60。scenes.css の「名物の欄の決まり」） ──
+// 主役は、ストローが上からグラスへすっと入る所（14〜36 ＝ 全体の約 4 割）。段のあいだに短い間
+const T = {
+  glass: [4, 12], // グラス（面・氷・線）が現れる
+  straw: [14, 36], // （間）ストローが上から入る
+  bubble: [39, 48], // （間）泡の粒が下から上がる（1つずつ 3 ずらす。5つ目は 51〜60。完成）
+} as const;
+// 線のいちばん下は、絵の場所の上から 88.2%。主役が時間で動くとき 22 × 0.05 × 1.3 ≒ 1.4 秒
+const CARD = cardTiming({ ink: 0.89, time: 1.3 });
+
 export default function SoftDrinkIllustration({ className = "" }: { className?: string }) {
   return (
     <svg
@@ -129,6 +139,7 @@ export default function SoftDrinkIllustration({ className = "" }: { className?: 
       aria-hidden="true"
       focusable="false"
       className={`scene-svg ${className}`}
+      style={CARD}
       fill="none"
       stroke="currentColor"
       strokeLinecap="round"
@@ -139,20 +150,20 @@ export default function SoftDrinkIllustration({ className = "" }: { className?: 
         <WashFilter id="soft-wash" seed={23} />
       </defs>
       {/* グラスの面とウーロン茶の水彩（グラスと一緒に現れる） */}
-      <g className="soft-glass-face scene-anim" style={anim("scene-fade-up", 4, 14, { "--dy": "10px" })}>
+      <g className="soft-glass-face scene-anim" style={animAt("scene-fade-up", T.glass, { "--dy": "10px" })}>
         <path d={GLASS_FILL} className="scene-paper" stroke="none" />
         <Wash filter="soft-wash" d={GLASS_FILL} tone="food-wash-glass" id="soft-w-glass" shift={[1, 0.75]} />
         <Wash filter="soft-wash" d={DRINK_FILL} tone="food-wash-tea" id="soft-w-tea" shift={[1, 0.75]} line={2.1} holes={[[232, 300, 2.4, 9]]} />
       </g>
       {/* ストロー（上から入る） */}
-      <g className="soft-straw scene-anim" style={anim("scene-fade-up", 18, 30, { "--dy": "-90px" })}>
+      <g className="soft-straw scene-anim" style={animAt("scene-fade-up", T.straw, { "--dy": "-90px" })}>
         <Wash filter="soft-wash" d={STRAW_FILL} tone="food-wash-straw" id="soft-w-straw" shift={[0.5, 0.4]} />
         {STRAW.map((d, i) => (
           <path key={i} d={d} className={i < 2 ? "scene-line" : "scene-fine"} />
         ))}
       </g>
 
-      <g className="soft-glass scene-anim" style={anim("scene-fade-up", 4, 14, { "--dy": "10px" })}>
+      <g className="soft-glass scene-anim" style={animAt("scene-fade-up", T.glass, { "--dy": "10px" })}>
         {ICES.map((c, i) => (
           <g key={i}>
             <path d={c.fill} className="scene-paper" stroke="none" />
@@ -171,7 +182,7 @@ export default function SoftDrinkIllustration({ className = "" }: { className?: 
 
       <g className="soft-bubbles">
         {BUBBLES.map(([x, y, r], i) => (
-          <g key={i} className="scene-anim" style={anim("scene-fade-up", 32 + i * 4, 42 + i * 4, { "--dy": "40px" })}>
+          <g key={i} className="scene-anim" style={animAt("scene-fade-up", T.bubble, { "--dy": "40px" }, i * 3)}>
             <circle cx={x} cy={y} r={r} className="scene-fine" />
           </g>
         ))}

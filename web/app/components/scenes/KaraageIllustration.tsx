@@ -27,7 +27,7 @@
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
 import type { CSSProperties } from "react";
-import { PI, anim, jitter, polygon, ring, smooth, sway, type P } from "./draw";
+import { PI, anim, animAt, cardTiming, jitter, polygon, ring, smooth, sway, type P } from "./draw";
 import { SteamFades, SteamWisps, mkWisp } from "./Steam";
 import { Wash, WashFilter } from "./Wash";
 
@@ -170,8 +170,24 @@ const STEAM = [
 ];
 const STEAM_SWAY = [sway(5.0, -0.7), sway(5.7, -2.3)];
 
+// ── 動きの段（anim の from・to。4〜60。scenes.css の「名物の欄の決まり」） ──
+// 主役は、からあげが奥から1つずつ上から積まれる所（17〜40 ＝ 全体の約 4 割）。段のあいだに短い間
+const T = {
+  paper: [4, 8], // 鉢の面
+  rimOut: [4, 11], // ふちの外が描かれる
+  rimIn: [6, 13], // ふちの内
+  body: [8, 14], // 胴
+  shade: [9, 15], // ふちの奥の陰
+  piece: [17, 23], // （間）からあげが積まれる（1つ目。1つずつ PIECE_STEP ずらす。6つ目は 34〜40）
+  wash: [42, 48], // （間）水彩がじわっと出る（1つずつ、始まりを 1・終わりを 0.7 ずらす）
+  steam: [[51, 57], [54, 60]], // 湯気が2本立ちのぼる（完成）
+} as const;
+const PIECE_STEP = 3.4;
+// 線のいちばん下は、絵の場所の上から 88.2%。主役が時間で動くとき (17 × 0.045 + 6 × 0.05) × 1.35 ≒ 1.4 秒
+const CARD = cardTiming({ ink: 0.89, time: 1.35 });
+
 // 水彩がじわっと出る動き（からあげごとに少しずつずらす。このあとに湯気が立ちのぼる）
-const washAnim = (i: number) => anim("scene-fade-up", 50 + i, 56 + i * 0.7, { "--dy": "0px" });
+const washAnim = (i: number) => anim("scene-fade-up", T.wash[0] + i, T.wash[1] + i * 0.7, { "--dy": "0px" });
 
 export default function KaraageIllustration({ className = "" }: { className?: string }) {
   return (
@@ -180,7 +196,7 @@ export default function KaraageIllustration({ className = "" }: { className?: st
       aria-hidden="true"
       focusable="false"
       className={`scene-svg ${className}`}
-      style={{ "--scene-z": 380 / 400 } as CSSProperties}
+      style={{ "--scene-z": 380 / 400, ...CARD } as CSSProperties}
       fill="none"
       stroke="currentColor"
       strokeLinecap="round"
@@ -200,23 +216,23 @@ export default function KaraageIllustration({ className = "" }: { className?: st
 
       {/* 1. 鉢（線だけ。ふちの外 → ふちの内 → 胴の順に描かれる。模様は付けない） */}
       <g className="karaage-bowl">
-        <g className="scene-anim" style={anim("scene-fade-up", 4, 8, { "--dy": "0px" })}>
+        <g className="scene-anim" style={animAt("scene-fade-up", T.paper, { "--dy": "0px" })}>
           <path d={BOWL_PAPER} className="scene-paper" stroke="none" />
         </g>
         {/* ふちの帯の奥側の、ごく淡い陰（この器だけの例外。水彩の塗り方で） */}
-        <g className="scene-anim" style={anim("scene-fade-up", 9, 16, { "--dy": "0px" })}>
+        <g className="scene-anim" style={animAt("scene-fade-up", T.shade, { "--dy": "0px" })}>
           <Wash filter="karaage-wash" d={SHADE_BACK} tone="karaage-wash-shade" id="karaage-w-back" shift={[1, 0.75]} line={1.45} />
         </g>
-        <path d={RIM_OUTER} pathLength={1} className="scene-outline scene-stroke-draw scene-anim" style={anim("scene-draw", 4, 12)} />
-        <path d={RIM_INNER} pathLength={1} className="scene-outline-fine scene-stroke-draw scene-anim" style={anim("scene-draw", 7, 14)} />
-        <path d={BODY} pathLength={1} className="scene-outline scene-stroke-draw scene-anim" style={anim("scene-draw", 9, 15)} />
+        <path d={RIM_OUTER} pathLength={1} className="scene-outline scene-stroke-draw scene-anim" style={animAt("scene-draw", T.rimOut)} />
+        <path d={RIM_INNER} pathLength={1} className="scene-outline-fine scene-stroke-draw scene-anim" style={animAt("scene-draw", T.rimIn)} />
+        <path d={BODY} pathLength={1} className="scene-outline scene-stroke-draw scene-anim" style={animAt("scene-draw", T.body)} />
       </g>
 
       {/* 2. からあげ（奥から1つずつ、上から積まれる）。
           1つごとに：後ろを隠す紙の色 → 水彩（いちばん最後にじわっと出る）→ 輪郭と衣の線 */}
       <g className="karaage-pieces">
         {PIECES.map((p, i) => (
-          <g key={i} className="scene-anim" style={anim("scene-fade-up", 21 + i * 4, 28 + i * 4, { "--dy": "-44px" })}>
+          <g key={i} className="scene-anim" style={animAt("scene-fade-up", T.piece, { "--dy": "-44px" }, i * PIECE_STEP)}>
             <path d={p.fill} className="scene-paper" stroke="none" />
             <g className="scene-anim" style={washAnim(i)}>
               <g>
@@ -235,7 +251,7 @@ export default function KaraageIllustration({ className = "" }: { className?: st
       </g>
 
       {/* 3. 湯気（水彩がじわっと出たあと、山のてっぺんから2本立ちのぼる。時間でゆっくり揺れる） */}
-      <SteamWisps className="karaage-steam" id="karaage-steam-fade" wisps={STEAM} sways={STEAM_SWAY} timing={[[54, 59], [56, 60]]} />
+      <SteamWisps className="karaage-steam" id="karaage-steam-fade" wisps={STEAM} sways={STEAM_SWAY} timing={T.steam} />
     </svg>
   );
 }

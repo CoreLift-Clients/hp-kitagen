@@ -24,7 +24,7 @@
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
 import type { CSSProperties } from "react";
-import { PI, anim, jitter, polygon, r1, smooth, type P } from "./draw";
+import { PI, animAt, cardTiming, jitter, polygon, r1, smooth, type P } from "./draw";
 import { Wash, WashFilter } from "./Wash";
 
 // ── 見る角度（床の面の点 u・v を、絵の座標にする） ──
@@ -268,6 +268,21 @@ const ellD = (cx: number, cy: number, rx: number, ry: number) =>
 const EGG_D = ellD(EX, EY, ER, EH);
 const YOLK_D = ellD(EX + 1.5, EY + 0.5, ER * 0.6, EH * 0.62);
 
+// ── 動きの段（anim の from・to。4〜60。scenes.css の「名物の欄の決まり」） ──
+// 主役は、角煮が奥の列から1枚ずつ置かれる所（21〜43 ＝ 全体の約 4 割）。段のあいだに短い間
+const ANIM = {
+  dish: [4, 10], // お皿が現れる
+  cabbage: [11.5, 16], // （間）キャベツの水彩の面
+  strand: [12, 16], // 千切りの線（12 本ごとに 0.35 ずつずらす）
+  slice: [21, 28], // （間）角煮が置かれる（1枚目。1枚ずつ 5 ずらす。4枚目は 36〜43）
+  egg: [45, 51], // （間）味玉が置かれる
+  gloss: [52.5, 55.5], // （間）角煮のつや（1枚ずつ 1.5 ずらす。4枚目は 57〜60）
+  shine: [53, 58], // 味玉のつや
+} as const;
+const SLICE_STEP = 5;
+// 線のいちばん下は、絵の場所の上から 73.1%。主役が時間で動くとき (15 × 0.045 + 7 × 0.05) × 1.4 ≒ 1.4 秒
+const CARD = cardTiming({ ink: 0.74, time: 1.4 });
+
 export default function KakuniIllustration({ className = "" }: { className?: string }) {
   return (
     <svg
@@ -275,7 +290,7 @@ export default function KakuniIllustration({ className = "" }: { className?: str
       aria-hidden="true"
       focusable="false"
       className={`scene-svg ${className}`}
-      style={{ "--scene-z": 332 / 400 } as CSSProperties}
+      style={{ "--scene-z": 332 / 400, ...CARD } as CSSProperties}
       fill="none"
       stroke="currentColor"
       strokeLinecap="round"
@@ -293,7 +308,7 @@ export default function KakuniIllustration({ className = "" }: { className?: str
       </defs>
 
       {/* 1. お皿（線だけ。面は後ろを隠す紙の色） */}
-      <g className="kakuni-dish scene-anim" style={anim("scene-fade-up", 4, 12, { "--dy": "10px" })}>
+      <g className="kakuni-dish scene-anim" style={animAt("scene-fade-up", ANIM.dish, { "--dy": "10px" })}>
         <path d={DISH_SIDE} className="scene-paper" stroke="none" />
         <path d={DISH_TOP} className="scene-paper" stroke="none" />
         <path d={DISH_BOTTOM} className="scene-fine" />
@@ -303,7 +318,7 @@ export default function KakuniIllustration({ className = "" }: { className?: str
 
       {/* 2. 千切りキャベツの山（水彩の面が出て、千切りの線がふわっと描かれる） */}
       <g className="kakuni-cabbage">
-        <g className="scene-anim" style={anim("scene-fade-up", 12, 16, { "--dy": "-6px" })}>
+        <g className="scene-anim" style={animAt("scene-fade-up", ANIM.cabbage, { "--dy": "-6px" })}>
           <g>
             <Wash filter="kakuni-wash" d={CABBAGE} tone="food-wash-cabbage" id="kakuni-w-cab" shift={[1.25, 1]} holes={[[118, 252, 5, 2.5], [292, 244, 4.5, 2.2]]} />
             <Wash filter="kakuni-wash" d={CABBAGE_UNDER} tone="food-wash-cabbage" id="kakuni-w-cab2" shift={[1, 0.75]} />
@@ -315,7 +330,7 @@ export default function KakuniIllustration({ className = "" }: { className?: str
             d={st.d}
             pathLength={1}
             className={`${st.hi ? "kakuni-cabbage-hi" : "kakuni-cabbage-strand"} scene-stroke-draw scene-anim`}
-            style={anim("scene-draw", 13 + (k % 12) * 0.35, 17 + (k % 12) * 0.35)}
+            style={animAt("scene-draw", ANIM.strand, {}, (k % 12) * 0.35)}
           />
         ))}
       </g>
@@ -323,7 +338,7 @@ export default function KakuniIllustration({ className = "" }: { className?: str
       {/* 3. 角煮（奥の列から1枚ずつ、上から置かれる。手前の列ほど後に描くので、奥の薄切りに重なる） */}
       <g className="kakuni-pieces">
         {SLICES.map((p, i) => (
-          <g key={i} className="scene-anim" style={anim("scene-fade-up", 18 + i * 6, 25 + i * 6, { "--dy": "-24px" })}>
+          <g key={i} className="scene-anim" style={animAt("scene-fade-up", ANIM.slice, { "--dy": "-24px" }, i * SLICE_STEP)}>
             {/* 後ろの線を隠す紙の色 → 水彩（厚みのふち・切り口のこげ茶・皮をもう1段・脂の層）→ しまの線 → 輪郭 */}
             <path d={p.body[0]} className="scene-paper" stroke="none" />
             <path d={p.top} className="scene-paper" stroke="none" />
@@ -348,7 +363,7 @@ export default function KakuniIllustration({ className = "" }: { className?: str
             </g>
             <path d={p.top} className="scene-outline" />
             {/* 5. つや（白い細い筋） */}
-            <g className="scene-anim" style={anim("scene-fade-up", 48 + i, 54 + i, { "--dy": "0px" })}>
+            <g className="scene-anim" style={animAt("scene-fade-up", ANIM.gloss, { "--dy": "0px" }, i * 1.5)}>
               {p.gloss.map((d, k) => (
                 <path key={`g${k}`} d={d} className="kakuni-gloss" />
               ))}
@@ -358,7 +373,7 @@ export default function KakuniIllustration({ className = "" }: { className?: str
       </g>
 
       {/* 4. 味玉（半分を1つ。後ろを隠す紙の色 → 白身と黄身の水彩 → 黄身のふちの線 → 輪郭 → つやの点） */}
-      <g className="kakuni-egg scene-anim" style={anim("scene-fade-up", 42, 48, { "--dy": "-20px" })}>
+      <g className="kakuni-egg scene-anim" style={animAt("scene-fade-up", ANIM.egg, { "--dy": "-20px" })}>
         <g transform={`rotate(${EA} ${EX.toFixed(1)} ${EY.toFixed(1)})`}>
           <ellipse cx={EX} cy={EY} rx={ER} ry={EH} className="scene-paper" stroke="none" />
           <g>
@@ -367,7 +382,7 @@ export default function KakuniIllustration({ className = "" }: { className?: str
           </g>
           <ellipse cx={EX + 1.5} cy={EY + 0.5} rx={ER * 0.6} ry={EH * 0.62} className="kakuni-yolk-line" />
           <ellipse cx={EX} cy={EY} rx={ER} ry={EH} className="scene-outline" />
-          <g className="scene-anim" style={anim("scene-pop", 48, 54)}>
+          <g className="scene-anim" style={animAt("scene-pop", ANIM.shine)}>
             <ellipse cx={EX - 7} cy={EY - 5} rx={4.4} ry={2.6} className="kakuni-shine" stroke="none" />
             <circle cx={EX} cy={EY - 7.5} r={1.6} className="kakuni-shine" stroke="none" />
           </g>

@@ -27,7 +27,7 @@
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
 import type { CSSProperties } from "react";
-import { PI, anim, jitter, line, polygon, roundRectPts, smooth, type P } from "./draw";
+import { PI, anim, animAt, cardTiming, jitter, line, polygon, roundRectPts, smooth, type P } from "./draw";
 import { Wash, WashFilter } from "./Wash";
 
 // ── 見る角度（床の面の点 u・v を、絵の座標にする） ──
@@ -191,10 +191,24 @@ const TARE_HOLES = [
   [...pr(36, 43), 3.6, 1.6],
 ] as const;
 
+// ── 動きの段（anim の from・to。4〜60。scenes.css の「名物の欄の決まり」） ──
+// 主役は、肉みそが1つずつ、少し上からふわっとのる所（28〜48.5 ＝ 全体の約 4 割弱）。段のあいだに短い間
+const T = {
+  dishOut: [4, 11], // お皿のふちの外が描かれる
+  dishIn: [6, 13], // ふちの内
+  tofu: [14, 19], // （間）豆腐が置かれる（1つ目。1つずつ 2.5 ずらす。4つ目は 21.5〜26.5）
+  miso: [28, 35], // （間）肉みそがのる（1つ目。1つずつ MISO_STEP ずらす。4つ目は 41.5〜48.5）
+  negi: [50, 53], // （間）ねぎが散る（輪ごとに 0.2 ずらす）
+  tare: [53, 60], // たれがじわっと出る（始まりを 0.5 ずつずらす。終わりは 60 にそろえる。完成）
+} as const;
+const MISO_STEP = 4.5;
+// 線のいちばん下は、絵の場所の上から 78.6%。主役が時間で動くとき (13.5 × 0.045 + 7 × 0.05) × 1.45 ≒ 1.4 秒
+const CARD = cardTiming({ ink: 0.8, time: 1.45 });
+
 // ねぎが散る動き（輪ごとに少しずつ遅らせる）
-const negiAnim = (n: number) => anim("scene-pop", 44 + n * 0.35, 48 + n * 0.35);
+const negiAnim = (n: number) => animAt("scene-pop", T.negi, {}, n * 0.2);
 // たれがじわっと出る動き（いちばん最後）
-const tareAnim = (n: number) => anim("hiyayakko-spread", 52 + n * 0.5, 60);
+const tareAnim = (n: number) => anim("hiyayakko-spread", T.tare[0] + n * 0.5, T.tare[1]);
 
 export default function HiyayakkoIllustration({ className = "" }: { className?: string }) {
   return (
@@ -203,7 +217,7 @@ export default function HiyayakkoIllustration({ className = "" }: { className?: 
       aria-hidden="true"
       focusable="false"
       className={`scene-svg ${className}`}
-      style={{ "--scene-z": 332 / 400 } as CSSProperties}
+      style={{ "--scene-z": 332 / 400, ...CARD } as CSSProperties}
       fill="none"
       stroke="currentColor"
       strokeLinecap="round"
@@ -216,8 +230,8 @@ export default function HiyayakkoIllustration({ className = "" }: { className?: 
 
       {/* 1. お皿（線だけ。ふちの外側 → 内側の順に描かれる） */}
       <g className="hiyayakko-dish">
-        <path d={DISH_OUTER} pathLength={1} className="scene-line scene-stroke-draw scene-anim" style={anim("scene-draw", 4, 14)} />
-        <path d={DISH_INNER} pathLength={1} className="scene-fine scene-stroke-draw scene-anim" style={anim("scene-draw", 8, 17)} />
+        <path d={DISH_OUTER} pathLength={1} className="scene-line scene-stroke-draw scene-anim" style={animAt("scene-draw", T.dishOut)} />
+        <path d={DISH_INNER} pathLength={1} className="scene-fine scene-stroke-draw scene-anim" style={animAt("scene-draw", T.dishIn)} />
       </g>
 
       {/* 5. たれ（お皿の上の水彩。いちばん最後にじわっと出る。豆腐の後ろに置く） */}
@@ -236,7 +250,7 @@ export default function HiyayakkoIllustration({ className = "" }: { className?: 
           豆腐ごとに、上の面のたれ・肉みそ・ねぎを重ねる（手前の豆腐が奥の豆腐の上の物を正しく隠すように） */}
       {TOFU.map((t, i) => (
         <g key={i}>
-          <g className="hiyayakko-tofu scene-anim" style={anim("scene-fade-up", 17 + i * 4, 23 + i * 4, { "--dy": "-14px" })}>
+          <g className="hiyayakko-tofu scene-anim" style={animAt("scene-fade-up", T.tofu, { "--dy": "-14px" }, i * 2.5)}>
             {/* 後ろの線とたれを隠す紙の色 → 水彩（形全体 → 側面にもう1段）→ 線 */}
             <path d={t.topFace} className="scene-paper" stroke="none" />
             <path d={t.front} className="scene-paper" stroke="none" />
@@ -259,7 +273,7 @@ export default function HiyayakkoIllustration({ className = "" }: { className?: 
           </g>
 
           {/* 3. 肉みそ（茶色の山 → ひき肉のかたまりを同じ色でうすく重ねる → てかり）。少し上からふわっとのる */}
-          <g className="hiyayakko-miso scene-anim" stroke="none" style={anim("scene-fade-up", 33 + i * 3, 39 + i * 3, { "--dy": "-10px" })}>
+          <g className="hiyayakko-miso scene-anim" stroke="none" style={animAt("scene-fade-up", T.miso, { "--dy": "-10px" }, i * MISO_STEP)}>
             <g>
               <Wash filter="hiyayakko-wash" d={MISO[i].base} tone="food-wash-kakuni" id={`hiyayakko-w-miso-${i}`} shift={[0.75, 0.6]} />
               <g className="food-wash-miso-crumb" transform="translate(0.6 0.5)" filter="url(#hiyayakko-wash)">

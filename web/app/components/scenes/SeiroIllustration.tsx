@@ -24,7 +24,7 @@
 // ・動きの順番：
 //   1. ふたがぴったり閉まったせいろが現れる（seiro-set をまとめて薄くしてから出すので、途中もしゅうまいは透けない）
 //   2. 手前のふちから持ち上がる（奥のふちを支点に、手前だけが少し浮いて傾く。奥のふちはせいろに付いたまま）
-//   3. 手前のすき間から、湯気が2本ふわっともれる（2〜3 の「少し浮いた状態」は、全体の動きの2割あまり）
+//   3. 手前のすき間から、湯気が2本ふわっともれる（2〜3 の「少し浮いた状態」は、ふたの動きの 2〜4 割。段の表は下の T_MENU・T_TOP）
 //   4. さらに傾けながら持ち上げる（奥のふちもせいろから離れ、上の奥へ）
 //   5. 上の奥へ持ち去られながら、すっと消える（2〜5 は scenes.css の seiro-lid-open。形は LID_VARS）
 //   6. しゅうまいの皮とあんの水彩がじわっと出て、湯気がしっかり立ちのぼる
@@ -38,7 +38,7 @@
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
 import type { CSSProperties } from "react";
-import { PI, anim, arc, arcPts, blobPts, jitter, polygon, r1, smooth, steam, sway, type P } from "./draw";
+import { PI, anim, animAt, arc, arcPts, blobPts, cardTiming, jitter, polygon, r1, smooth, steam, sway, type P } from "./draw";
 import { SteamFades, SteamWisps, mkWisp } from "./Steam";
 import { Wash, WashFilter, type Hole } from "./Wash";
 
@@ -244,14 +244,59 @@ const STEAM_FRONT_SWAY = [sway(5.1, -2.4), sway(4.5, -0.4)];
 const LEAK = [steam(104, 288, 192, 1.3, 11, 2600), steam(199, 292, 204, 3.4, 10, 2620)];
 const LEAK_SWAY = [sway(5.2, -0.6), sway(4.6, -2.2)];
 
-export default function SeiroIllustration({ className = "" }: { className?: string }) {
+// ── 動きの段（anim の from・to。4〜60） ──
+// pace="menu"（名物の欄のカード。既定）… scenes.css の「名物の欄の決まり」に合わせた配分。
+//   主役は、ふたが手前から浮いて、傾いて、持ち去られるまで（12〜34 ＝ 全体の約 4 割）。
+//   ふたの動きは seiro-lid-open-slow（「手前が少し浮いた状態」が、ふたの動きの 4 割 ＝ 全体の約 16%）。段のあいだに短い間
+//   ・現れる 4〜10 → 間 → ふた 12〜34（もれる湯気は、少し浮いているあいだ）→ 間 → 水彩 37〜48.5 → 湯気 47〜60
+// pace="top"（トップの名物の場面）… 今までの配分のまま（トップの動きは変えない）
+type Range = readonly [number, number];
+type SeiroT = {
+  set: Range;
+  lid: Range;
+  lidAnim: string;
+  leak: Range; // もれる湯気（1本目。2本目は leakStep だけ遅らせる）
+  leakStep: Range;
+  wash: Range; // 水彩（1つ目。1つずつ washStep だけ遅らせる）
+  washStep: number;
+  steamFront: readonly Range[];
+  steamBack: readonly Range[];
+};
+const T_MENU: SeiroT = {
+  set: [4, 10], // せいろ（ふたが閉まった形）が現れる
+  lid: [12, 34], // （間）ふたが手前から浮いて、少し浮いたまま、傾いて、持ち去られて消える
+  lidAnim: "seiro-lid-open-slow",
+  leak: [15.5, 31], // 少し浮いたすき間から湯気がもれて、持ち去られるころに消える
+  leakStep: [1.5, 1],
+  wash: [37, 44], // （間）しゅうまいの皮とあんの水彩がじわっと出る（1つずつ 1.5 ずらす）
+  washStep: 1.5,
+  steamFront: [[48, 55], [51, 58]], // 湯気が立ちのぼる（完成）
+  steamBack: [[47, 54], [49, 56], [51, 58], [53, 60]],
+};
+const T_TOP: SeiroT = {
+  set: [4, 12],
+  lid: [14, 48],
+  lidAnim: "seiro-lid-open",
+  leak: [21, 40],
+  leakStep: [2, 1],
+  wash: [40, 48],
+  washStep: 1,
+  steamFront: [[47, 55], [50, 59]],
+  steamBack: [[46, 54], [48, 56], [50, 58], [52, 60]],
+};
+// 名物の欄のカードの値（scenes.css の「名物の欄の決まり」。draw.ts の cardTiming）：
+// 線のいちばん下は、絵の場所の上から 97.2%（完成の形）。主役（ふた 22）が時間で動くとき 22 × 0.05 × 1.3 ≒ 1.4 秒
+const CARD = cardTiming({ ink: 0.98, time: 1.3 });
+
+export default function SeiroIllustration({ className = "", pace = "menu" }: { className?: string; pace?: "menu" | "top" }) {
+  const T = pace === "top" ? T_TOP : T_MENU;
   return (
     <svg
       viewBox="22 30 356 356"
       aria-hidden="true"
       focusable="false"
       className={`scene-svg ${className}`}
-      style={{ "--scene-z": 356 / 400 } as CSSProperties}
+      style={{ "--scene-z": 356 / 400, ...(pace === "menu" ? CARD : {}) } as CSSProperties}
       fill="none"
       stroke="currentColor"
       strokeLinecap="round"
@@ -273,7 +318,7 @@ export default function SeiroIllustration({ className = "" }: { className?: stri
 
       {/* 1. 閉じたせいろ（本体・しゅうまい・閉じたふた）が、まとめて1つの g で現れる。
           まとめて薄くしてから出すので、出てくる途中も、閉じたふたの下のしゅうまいは透けて見えない */}
-      <g className="seiro-set scene-anim" style={anim("scene-fade-up", 4, 12, { "--dy": "8px" })}>
+      <g className="seiro-set scene-anim" style={animAt("scene-fade-up", T.set, { "--dy": "8px" })}>
         {/* せいろ（後ろを隠す紙の色の面 → 線） */}
         <g className="seiro-body">
           <path d={OUTER_SIDE} className="scene-paper" stroke="none" />
@@ -298,7 +343,7 @@ export default function SeiroIllustration({ className = "" }: { className?: stri
             <g key={i}>
               {/* 後ろの線を隠す紙の色 → 皮とあんの水彩（ふたが開いて、しゅうまいが見えてから、じわっと出る）→ ひだ → 口のふち → 輪郭 */}
               <path d={p.body} className="scene-paper" stroke="none" />
-              <g className="scene-anim" style={anim("scene-fade-up", 40 + i, 48 + i, { "--dy": "0px" })}>
+              <g className="scene-anim" style={animAt("scene-fade-up", T.wash, { "--dy": "0px" }, i * T.washStep)}>
                 <Wash filter="seiro-wash" d={p.body} tone="food-wash-skin" id={`seiro-w-skin-${i}`} shift={[1.1, 0.9]} holes={[p.skinHole]} />
                 <Wash filter="seiro-wash" d={p.meat} tone="food-wash-meat" id={`seiro-w-meat-${i}`} shift={[0.9, 0.75]} holes={[p.meatHole]} />
               </g>
@@ -313,7 +358,7 @@ export default function SeiroIllustration({ className = "" }: { className?: stri
 
         {/* 2. ふた（手前のふちから持ち上がり、奥のふちを支点に傾いて、上の奥へ持ち去られて消える。動き終わりは見えない。
             transform は LID_VARS。ふたが残っている奥の部分は、しゅうまいを隠したまま） */}
-        <g className="seiro-lid-move scene-anim" style={anim("seiro-lid-open", 14, 48, LID_VARS)}>
+        <g className="seiro-lid-move scene-anim" style={animAt(T.lidAnim, T.lid, LID_VARS)}>
           {LID_CLOSED.fill.map((d, i) => (
             <path key={`f${i}`} d={d} className="scene-paper" stroke="none" />
           ))}
@@ -334,15 +379,15 @@ export default function SeiroIllustration({ className = "" }: { className?: stri
               d={d}
               pathLength={1}
               className="scene-fine scene-stroke-draw seiro-leak scene-anim"
-              style={anim("seiro-leak", 21 + i * 2, 40 + i)}
+              style={anim("seiro-leak", T.leak[0] + i * T.leakStep[0], T.leak[1] + i * T.leakStep[1])}
             />
           </g>
         ))}
       </g>
 
       {/* 4. 湯気（4つのしゅうまい全部から立ちのぼる。時間でゆっくり揺れる）。手前の列の短くうすい湯気 → 奥の列の湯気 */}
-      <SteamWisps className="seiro-steam" id="seiro-steam-front-fade" wisps={STEAM_FRONT} sways={STEAM_FRONT_SWAY} timing={[[47, 55], [50, 59]]} />
-      <SteamWisps className="seiro-steam" id="seiro-steam-fade" wisps={STEAM} sways={STEAM_SWAY} timing={[[46, 54], [48, 56], [50, 58], [52, 60]]} />
+      <SteamWisps className="seiro-steam" id="seiro-steam-front-fade" wisps={STEAM_FRONT} sways={STEAM_FRONT_SWAY} timing={T.steamFront} />
+      <SteamWisps className="seiro-steam" id="seiro-steam-fade" wisps={STEAM} sways={STEAM_SWAY} timing={T.steamBack} />
     </svg>
   );
 }

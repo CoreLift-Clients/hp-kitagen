@@ -177,7 +177,7 @@ export default async function Home() {
       <Scene
         tone="deep"
         reverse
-        art={<SeiroIllustration className={ART} />}
+        art={<SeiroIllustration className={ART} pace="top" />}
         heading="きたげんの名物。"
         lines={["しゅうまいに、", "鉄鍋餃子、", "まずは生ビール。"]}
         action={<SceneLink href="/menu">お品書きを見る →</SceneLink>}

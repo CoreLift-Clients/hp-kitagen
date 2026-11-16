@@ -19,7 +19,7 @@
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
 import type { CSSProperties } from "react";
-import { PI, anim, jitter, line, polygon, smooth, steam, sway, type P } from "./draw";
+import { PI, animAt, cardTiming, jitter, line, polygon, smooth, steam, sway, type P } from "./draw";
 
 // ── 見る角度（床の面の点 u・v と高さ z を、絵の座標にする） ──
 const CX = 202; // 絵の横のまん中（viewBox は x = 22〜382）
@@ -258,13 +258,30 @@ const SIZZLE = SIZZLE_AT.map(([deg, lens], c) => {
   });
 });
 
+// ── 動きの段（anim の from・to。4〜60。scenes.css の「名物の欄の決まり」） ──
+// 主役は、餃子が奥から時計回りに1つずつ置かれる所（19〜41 ＝ 全体の約 4 割）。段のあいだに短い間
+const T = {
+  rimOut: [4, 11], // 鍋のふちの外が描かれる
+  rimIn: [6, 13], // ふちの内
+  side: [8, 14], // 側面と下のふち
+  handle: [10, 16], // 取っ手
+  handleUnder: [12, 17],
+  gyoza: [19, 24.2], // （間）餃子が置かれる（1つ目。1つずつ GYOZA_STEP ずらす。8つ目は 35.8〜41）
+  yaki: [43, 48], // （間）焼き目がじわっと出る（1つずつ 0.6 ずらす）
+  steam: [51, 56], // 湯気（1本ずつ 2 ずらす。3本目は 55〜60）
+  sizzle: [54, 58.5], // ジュッの印（1.5 ずらす。2つ目は 55.5〜60）
+} as const;
+const GYOZA_STEP = 2.4;
+// 線のいちばん下は、絵の場所の上から 98.2%。主役が時間で動くとき (16.8 × 0.045 + 5.2 × 0.05) × 1.4 ≒ 1.4 秒
+const CARD = cardTiming({ ink: 0.99, time: 1.4 });
+
 // 焼き目がじわっと出る動き（餃子ごと）
-const lateAnim = (i: number) => anim("scene-fade-up", 42 + i * 0.6, 47 + i * 0.6, { "--dy": "0px" });
+const lateAnim = (i: number) => animAt("scene-fade-up", T.yaki, { "--dy": "0px" }, i * 0.6);
 
 // 餃子1つ（置かれる動きと、そのあと焼き目がじわっと出る動き）
 function GyozaPiece({ g, i }: { g: Gyoza; i: number }) {
   return (
-    <g className="scene-anim" style={anim("scene-fade-up", 20 + i * 2.2, 26 + i * 2.2, { "--dy": "-12px" })}>
+    <g className="scene-anim" style={animAt("scene-fade-up", T.gyoza, { "--dy": "-12px" }, i * GYOZA_STEP)}>
       {/* 皮の側面（厚み）と、ひだの皮の帯（下の餃子の上にのぞく）。紙の色 */}
       <path d={g.under} className="scene-paper" stroke="none" />
       <path d={g.skin} className="scene-paper" stroke="none" />
@@ -287,7 +304,7 @@ export default function TeppanIllustration({ className = "" }: { className?: str
       aria-hidden="true"
       focusable="false"
       className={`scene-svg ${className}`}
-      style={{ "--scene-z": 360 / 400 } as CSSProperties}
+      style={{ "--scene-z": 360 / 400, ...CARD } as CSSProperties}
       fill="none"
       stroke="currentColor"
       strokeLinecap="round"
@@ -315,18 +332,18 @@ export default function TeppanIllustration({ className = "" }: { className?: str
       {/* 1. 取っ手（根元は鍋のふちの下にもぐる。先は絵の右の端で切れる） */}
       <g className="teppan-handle">
         <path d={HANDLE_FILL} className="scene-paper" stroke="none" />
-        <path d={HANDLE_SIDE_A} pathLength={1} className="scene-line scene-stroke-draw scene-anim" style={anim("scene-draw", 12, 19)} />
-        <path d={HANDLE_SIDE_B} pathLength={1} className="scene-line scene-stroke-draw scene-anim" style={anim("scene-draw", 12, 19)} />
-        <path d={HANDLE_UNDER} pathLength={1} className="scene-fine scene-stroke-draw scene-anim" style={anim("scene-draw", 15, 20)} />
+        <path d={HANDLE_SIDE_A} pathLength={1} className="scene-line scene-stroke-draw scene-anim" style={animAt("scene-draw", T.handle)} />
+        <path d={HANDLE_SIDE_B} pathLength={1} className="scene-line scene-stroke-draw scene-anim" style={animAt("scene-draw", T.handle)} />
+        <path d={HANDLE_UNDER} pathLength={1} className="scene-fine scene-stroke-draw scene-anim" style={animAt("scene-draw", T.handleUnder)} />
       </g>
 
       {/* 1. 鍋（ふちの外側 → 内側 → 側面と下のふち。線だけ） */}
       <g className="teppan-pan">
         <path d={PAN_FILL} className="scene-paper" stroke="none" />
-        <path d={RIM_OUT} pathLength={1} className="scene-line scene-stroke-draw scene-anim" style={anim("scene-draw", 4, 13)} />
-        <path d={RIM_IN} pathLength={1} className="scene-line scene-stroke-draw scene-anim" style={anim("scene-draw", 7, 15)} />
+        <path d={RIM_OUT} pathLength={1} className="scene-line scene-stroke-draw scene-anim" style={animAt("scene-draw", T.rimOut)} />
+        <path d={RIM_IN} pathLength={1} className="scene-line scene-stroke-draw scene-anim" style={animAt("scene-draw", T.rimIn)} />
         {[SIDE_L, SIDE_R, BOTTOM].map((d, i) => (
-          <path key={i} d={d} pathLength={1} className="scene-line scene-stroke-draw scene-anim" style={anim("scene-draw", 10, 16)} />
+          <path key={i} d={d} pathLength={1} className="scene-line scene-stroke-draw scene-anim" style={animAt("scene-draw", T.side)} />
         ))}
       </g>
 
@@ -353,7 +370,7 @@ export default function TeppanIllustration({ className = "" }: { className?: str
               d={d}
               pathLength={1}
               className="scene-line scene-stroke-draw scene-anim"
-              style={anim("scene-draw", 49 + i * 2, 55 + i * 2)}
+              style={animAt("scene-draw", T.steam, {}, i * 2)}
             />
           </g>
         ))}
@@ -362,7 +379,7 @@ export default function TeppanIllustration({ className = "" }: { className?: str
       {/* 5. ジュッという音の印（2か所。ぱっと出て、少し薄くなって残る） */}
       <g className="teppan-sizzle">
         {SIZZLE.map((lines, c) => (
-          <g key={c} className="teppan-sizzle-mark scene-anim" style={anim("teppan-sizzle", 54 + c * 1.5, 59 + c)}>
+          <g key={c} className="teppan-sizzle-mark scene-anim" style={animAt("teppan-sizzle", T.sizzle, {}, c * 1.5)}>
             {lines.map((d, j) => (
               <path key={j} d={d} className="scene-fine" />
             ))}

@@ -68,7 +68,8 @@
    ・動かす部品には class の scene-anim と、style の --a（動きの名前）・--r0・--r1（どこからどこまで）を付ける
      （draw.ts の anim()）。--r0・--r1 は 4〜60 くらいの数で、動きの順番と長さの割合を決める。
      スクロールで進めるときは、この 4〜60 を「絵が画面の中に全部入ったところ」〜「絵の真ん中が画面の真ん中に来たところ」
-     に割り当てる（下の 1)）。画面に入る前の絵は、動く前の形（せいろはまだ何も出ていない など）で見える
+     に割り当てる（下の 1)。名物の欄のカードは、始まりを「絵の線のいちばん下が画面に入ったところ」にする）。
+     画面に入る前の絵は、動く前の形（せいろはまだ何も出ていない など）で見える
    ・動かすのは transform・opacity・stroke-dashoffset だけ
    ・時間で揺れ続ける動き（scene-sway・注がれる流れの筋 pour-flow）は、場面が画面の外にあるあいだ止める（data-inview="false"）
    ・--scene-paper … 後ろの線を隠す塗り。場面の背景（section-*）と同じ色（下で背景ごとに決める） */
@@ -357,6 +358,19 @@
   72%      { opacity: 1; transform: var(--lid-3); }
   to       { opacity: 0; transform: var(--lid-4); }
 }
+/* 名物の欄のカードのせいろのふた（形は同じ。「手前が少し浮いた状態」を長く見せる）。トップの場面は上の seiro-lid-open のまま
+   ・〜4%   閉じたまま
+   ・〜16%  手前のふちから少し浮く（--lid-1）
+   ・〜56%  少し浮いたまま、わずかに傾きが増す（--lid-2）。ふたの動きの 4 割。この間に、すき間から湯気がもれる
+   ・〜78%  大きく傾けながら、奥のふちも離れて上の奥へ（--lid-3）
+   ・〜100% 上の奥へ持ち去られながら、すっと消える（--lid-4） */
+@keyframes seiro-lid-open-slow {
+  from, 4% { opacity: 1; transform: var(--lid-0); }
+  16%      { opacity: 1; transform: var(--lid-1); }
+  56%      { opacity: 1; transform: var(--lid-2); }
+  78%      { opacity: 1; transform: var(--lid-3); }
+  to       { opacity: 0; transform: var(--lid-4); }
+}
 /* ふたのすき間からもれる湯気：下から描かれながらふわっと出て、少し残り、ふたが持ち去られるころに薄くなって消える */
 @keyframes seiro-leak {
   from { stroke-dashoffset: 1; opacity: 0; }
@@ -509,18 +523,20 @@
      ・画面の上の固定ヘッダー（4rem）と、md より狭い画面の下の「電話する」ボタン（52px ＋ safe-area）に隠れる分は、
        画面に入っていないものとして数える（view-timeline-inset）
      ・animation の一括指定は animation-timeline・animation-range を初期値に戻すので、必ずその後ろに書く
-     ・--scene-len・--scene-span … 長い動きの絵だけが、svg の style で付ける（焼酎・日本酒の絵 SakeIllustration.tsx）。
-       4 〜 (4 + --scene-len) の数を、contain 0% 〜 --scene-span に割り当てる。付けていない絵は 56 と 50%（4〜60 を 0〜50%）で、今までと同じ。
+     ・--scene-len … 4 〜 (4 + --scene-len) の数を、範囲の始まり 〜 終わりに割り当てる（付けていない絵は 56 ＝ 4〜60）
+     ・--scene-span … 終わりの位置（contain の %。付けていない絵は 50% ＝ 絵の真ん中が、見えている画面の真ん中）
      ・--scene-lead … 始まりを contain 0% より前へ出す長さ（付けていない絵は 0px）。始まりは contain 0% − lead、
        終わりは contain --scene-span のまま、そのあいだに 4 〜 (4 + --scene-len) を均等に割り当てる（段の配分の割合は変わらない）
-     ・焼酎・日本酒（SakeIllustration.tsx）… span 50%・lead 12cqw（絵の幅の 12%）・列のずらし 0%。
-       始まりは「絵の線のいちばん下（タンブラーの底。絵の場所の上から 87% ほど）が、画面の下の端から入ったところ」、
-       終わり（マドラーが抜けて完成）は「絵の場所の真ん中が、見えている画面の真ん中に来たところ」（contain 50% ＝ cover 50%）。
-       絵の場所は正方形なので、幅の 12% ＝ 高さの 12%
-     ・--scene-col … 名物の欄のカードの、同じ段の中での列の番号（左から 0・1・2。Specialties.tsx が付ける）。
-       列ごとに、動きの始まりと終わりを --scene-col-step（付けていない絵は contain 6%）ずつ後ろへずらす
-       （左のカードから順に、少しずつ遅れて動き始める）。焼酎・日本酒は、完成を画面の真ん中にそろえるため 0%。
-       付けていない絵（トップの場面など）は 0 で、今までと同じ */
+     ・トップの場面（Scene.tsx）は、どれも付けない（4〜60 を contain 0〜50%。今までと同じ）
+
+     名物の欄の決まり（ディナーメニューのページの、料理6品・お飲みもの3つのカード。Specialties.tsx・.scene-svg-card）
+     ・始まり：絵の線のいちばん下が、見えている画面の下の端に入ったところ。
+       --scene-lead ＝ (1 − --scene-ink) × 絵の場所の幅（cqw）。--scene-ink は、絵の線のいちばん下が絵の場所の上から何割の所か
+       （絵ごとに svg の style で付ける。draw.ts の cardTiming。完成の形で測り、線の太さの分だけ少し大きめ）。
+       絵の場所は正方形なので、幅の % ＝ 高さの %。絵は画面より小さいので、このとき絵の線の全体が画面に入っている
+     ・完成：絵の場所の真ん中が、見えている画面（固定ヘッダーとスマホの「電話する」を除く）の真ん中に来たところ（contain 50%）
+     ・列のずらしはしない（どのカードも、完成の位置を画面の真ん中にそろえる）
+     ・段の配分（各絵の T）は、主役の動きに全体の 3〜4 割をあて、段のあいだに短い「間」を入れる */
   @supports (animation-timeline: view()) {
     .scene-art {
       view-timeline: --scene block;
@@ -533,17 +549,18 @@
         contain
           calc(
             max(0, var(--r0) - 4) * var(--scene-span, 50%) / var(--scene-len, 56) -
-              (1 - max(0, var(--r0) - 4) / var(--scene-len, 56)) * var(--scene-lead, 0px) + var(--scene-col, 0) * var(--scene-col-step, 6%)
+              (1 - max(0, var(--r0) - 4) / var(--scene-len, 56)) * var(--scene-lead, 0px)
           )
         contain
           calc(
             min(var(--scene-len, 56), var(--r1) - 4) * var(--scene-span, 50%) / var(--scene-len, 56) -
-              (1 - min(var(--scene-len, 56), var(--r1) - 4) / var(--scene-len, 56)) * var(--scene-lead, 0px) +
-              var(--scene-col, 0) * var(--scene-col-step, 6%)
+              (1 - min(var(--scene-len, 56), var(--r1) - 4) / var(--scene-len, 56)) * var(--scene-lead, 0px)
           );
     }
-    /* 焼酎・日本酒の絵：--scene-lead に絵の幅（cqw）を使うので、絵の場所を幅のコンテナにする（幅はカードで決まるので、形は変わらない） */
-    .scene-art:has(> .sake-svg) { container-type: inline-size; }
+    /* 名物の欄のカードの絵：始まりを、絵の線のいちばん下に合わせて前へ出す（上の「名物の欄の決まり」）。
+       --scene-lead に絵の幅（cqw）を使うので、絵の場所を幅のコンテナにする（幅はカードで決まるので、形は変わらない） */
+    .scene-svg.scene-svg-card { --scene-lead: calc((1 - var(--scene-ink, 1)) * 100cqw); }
+    .scene-art:has(> .scene-svg-card) { container-type: inline-size; }
   }
   @supports (animation-timeline: view()) {
     @media (max-width: 767px) {
@@ -553,13 +570,13 @@
 
   /* 2) 使えないブラウザ：絵の 70% 以上が画面に入ったとき1回だけ、時間で同じ順に進める（data-scene は ScenePlayOnView が付ける）。
      始まる時刻は (--r0 − 4) × 0.045 秒、長さは (--r1 − --r0) × 0.05 秒（短くても 0.5 秒）。
-     どちらも --scene-time 倍（長い動きの絵だけが svg の style で付ける。焼酎・日本酒は 1.9。付けていない絵は 1）。
-     名物の欄のカードは、列ごとに 0.15 秒ずつ遅らせる（--scene-col × 0.15 秒） */
+     どちらも --scene-time 倍（名物の欄のカードの絵が、svg の style で付ける。主役の動きが 1.4 秒ほど見えるよう、絵ごとに
+     1.3〜1.45、焼酎・日本酒は 3。付けていない絵〈トップの場面〉は 1） */
   .scene-art[data-scene="wait"] .scene-anim {
     animation: var(--a) 1s linear both paused;
   }
   .scene-art[data-scene="play"] .scene-anim {
     animation: var(--a) calc(max(0.5, (var(--r1) - var(--r0)) * 0.05 * var(--scene-time, 1)) * 1s) cubic-bezier(0.33, 1, 0.68, 1)
-      calc(max(0, var(--r0) - 4) * 0.045s * var(--scene-time, 1) + var(--scene-col, 0) * 0.15s) both;
+      calc(max(0, var(--r0) - 4) * 0.045s * var(--scene-time, 1)) both;
   }
 }

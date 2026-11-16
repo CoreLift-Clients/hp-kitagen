@@ -25,7 +25,7 @@
 // ・絵は viewBox を 350 の幅に切り出す（線の太さは --scene-z で 400 の幅の絵とそろえる）
 // ・徳利は、まっすぐ立った形（動き終わりの形）で描き、右下の角を支点に、注ぐあいだだけ傾ける。
 //   水差しは、まっすぐ立った形で描き、左下の角を支点に傾けて置く（注ぐときの形。口がタンブラーの上に来る。動き終わりは見えない）
-// ・動きの順番（範囲は下の T。左の日本酒を先に、右の水割りをあとに）：
+// ・動きの順番（範囲は下の T。左の日本酒と右の水割りを並べて進め、水割りは少しだけ遅れて始める）：
 //   日本酒 … 徳利とお猪口が現れる → 徳利が傾く → 流れが伸びる → お猪口のお酒の色と波紋・しずく →
 //            流れが上から切れて消える → 徳利がまっすぐ立った形に戻る（波紋・しずくは静まって消える）
 //   水割り … タンブラーと氷（下に焼酎がたまった形）→ 水差しが現れて傾く → 水の流れが伸びる → 水割りの色がじわっと出る →
@@ -36,7 +36,7 @@
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
 import type { CSSProperties } from "react";
-import { PI, anim, arc, jitter, line, polygon, ring, smooth, type P } from "./draw";
+import { PI, anim, animAt, arc, cardTiming, jitter, line, polygon, ring, smooth, type P } from "./draw";
 import { Pour, pourShape } from "./Pour";
 import { Wash, WashFilter } from "./Wash";
 
@@ -297,46 +297,45 @@ const splash = (at: P, [x, y]: readonly [number, number, number], from: number, 
   anim("pour-splash-out", from, to, { "--sx": `${r(at[0] - x)}px`, "--sy": `${r(at[1] - y)}px` });
 const px = ([x, y]: P) => `${r(x)}px ${r(y)}px`;
 
-// 動きの範囲（anim の from・to。4〜60）。左の日本酒を先に、右の水割りをあとに進める
-// 動きの範囲（anim の from・to）。左の日本酒を先に、日本酒が完成してから「ひと呼吸」おいて、右の水割りを進める。
-// 4 〜 SAKE_END の数を、scenes.css で、スクロールの範囲（contain 0% − SAKE_LEAD 〜 contain SAKE_SPAN）に割り当てる（下の svg の style）。
-// 始まりは、絵の線のいちばん下が画面の下から入ったところ、終わり（完成）は、絵の真ん中が見えている画面の真ん中に来たところ。
-// 列のずらしは、このカードだけ 0（完成の位置を真ん中にそろえる）
+// 動きの範囲（anim の from・to。4〜60。scenes.css の「名物の欄の決まり」）。
+// 左の日本酒と右の水割りを、順番ではなく並べて進める。水割りは少しだけ遅れて始める（日本酒が注ぎ始めるころに、タンブラーが現れる）。
+// 範囲の始まりは、絵の線のいちばん下が画面の下から入ったところ、60（水割りの完成 ＝ マドラーが抜けて消える）は、
+// 絵の真ん中が見えている画面の真ん中に来たところ。日本酒は 46 で完成する（それより少し前）
+// ・日本酒 … 現れる → 傾く → 注ぐ（13〜30）→ 流れが切れる → 間 → 立つ
+// ・水割り … 現れる → 水差しで注ぐ（23〜33.5）→ 流れが切れる → 水差しが消える → 間 → 混ぜる（45〜55）→ 間 → 抜く
 const T = {
   // 日本酒
   tkIn: [4, 8], // 徳利とお猪口が現れる
-  tkTilt: [8, 11.5], // 徳利が傾く
-  sakePour: [11.5, 14], // 日本酒の流れが伸びる（注いでいる段は 11.5 〜 22）
-  sakeFill: [12.5, 18], // お猪口のお酒の色
-  ripple: [13, 25], // 波紋（広がって、静まる。1本ずつ 2 ずらす）
-  drops: [14, 25], // しずく（はねて、消える。1つおきに 1.5 ずらす）
-  sakeCut: [22, 25], // 流れが上から切れて消える
-  tkStand: [27.5, 35.5], // （間をおいて）徳利がゆっくりまっすぐ立った形に戻る。ここで日本酒は完成
-  // 水割り（日本酒の完成から 3.5 の間をおく）
-  tumblerIn: [39, 43], // タンブラー
-  iceIn: [40, 44], // 氷（1つずつ 2 ずらす）
-  dense: [41, 45], // 下にたまった焼酎
-  pitcherIn: [46, 49], // 水差しが現れる
-  pitcherTilt: [49, 52], // 水差しが傾く
-  pitcherWater: [51, 53], // 水差しの中の水
-  waterPour: [52, 55], // 水の流れが伸びる（注いでいる段は 52 〜 62.5）
-  mizuwari: [54, 62], // 水割りの色
-  waterDrops: [55, 63], // しずく（1つずつ 1.5 ずらす）
-  bubbles: [56, 64], // 泡粒（1つずつ 1.5 ずらす）
-  waterCut: [62.5, 65.5], // 水の流れが上から切れて消える
-  pitcherOut: [64, 72.5], // 水差しがゆっくり起き上がりながら消える
-  pitcherWaterOut: [64, 67], // 水差しの中の水が先に消える
-  muddlerIn: [75, 79], // （間をおいて）マドラーを上から差し入れる
-  stir: [79, 95], // ゆっくり 3 周混ぜる（マドラーが回り、氷が揺れ、下の濃い色が消える）
-  muddlerOut: [98, 105.5], // （間をおいて）マドラーを上へまっすぐ、ゆっくり抜いて、消える
+  tkTilt: [8, 13], // 徳利が傾く
+  sakePour: [13, 17], // 日本酒の流れが伸びる（注いでいる段は 13 〜 30）
+  sakeFill: [14, 26], // お猪口のお酒の色
+  ripple: [15, 28], // 波紋（広がって、静まる。1本ずつ 2 ずらす）
+  drops: [16, 28], // しずく（はねて、消える。1つおきに 1.5 ずらす）
+  sakeCut: [30, 33], // 流れが上から切れて消える
+  tkStand: [36, 46], // （間をおいて）徳利がゆっくりまっすぐ立った形に戻る。ここで日本酒は完成
+  // 水割り（日本酒が注ぎ始めるころに始める）
+  tumblerIn: [12, 16], // タンブラー
+  iceIn: [13, 16], // 氷（1つずつ 1.5 ずらす）
+  dense: [14, 18], // 下にたまった焼酎
+  pitcherIn: [17, 20], // 水差しが現れる
+  pitcherTilt: [20, 23], // 水差しが傾く
+  pitcherWater: [22, 24], // 水差しの中の水
+  waterPour: [23, 26], // 水の流れが伸びる（注いでいる段は 23 〜 33.5）
+  mizuwari: [25, 33], // 水割りの色
+  waterDrops: [26, 33], // しずく（1つずつ 1.5 ずらす）
+  bubbles: [27, 34], // 泡粒（1つずつ 1.5 ずらす）
+  waterCut: [33.5, 36.5], // 水の流れが上から切れて消える
+  pitcherOut: [35.5, 40.5], // 水差しが起き上がりながら消える
+  pitcherWaterOut: [35.5, 38], // 水差しの中の水が先に消える
+  muddlerIn: [42, 45], // （間をおいて）マドラーを上から差し入れる
+  stir: [45, 55], // ゆっくり 3 周混ぜる（マドラーが回り、氷が揺れ、下の濃い色が消える）
+  muddlerOut: [56.5, 60], // （間をおいて）マドラーを上へまっすぐ抜いて、消える。ここで水割りが完成
 } as const;
-const SAKE_END = 105.5; // 動きの終わり（マドラーが消える）
-const SAKE_SPAN = "50%"; // 終わりの位置（contain 50% ＝ 絵の真ん中が、見えている画面の真ん中）
-// 始まりを contain 0% より前へ出す長さ（絵の場所の幅 ＝ 高さの 12%）。絵の線のいちばん下（タンブラーの底 y 356 と線の太さ）は、
-// 絵の場所の上から (357.5 − 52) ÷ 350 ≒ 87.3% なので、88% の所が画面の下の端に来たときに、線の全体が画面に入っている
-const SAKE_LEAD = "12cqw";
-const SAKE_TIME = 1.9; // スクロールで動かせないブラウザで、時間で動くときの長さの倍率（ほかの絵は 1）
-const A = (name: string, [from, to]: readonly [number, number], vars?: Record<string, string>) => anim(name, from, to, vars);
+const ICE_STEP = 1.5;
+// 線のいちばん下（タンブラーの底）は、絵の場所の上から 87.1%。
+// 時間で動くときは 3 倍（混ぜる 10 × 0.05 × 3 ＝ 1.5 秒。全体は 56 × 0.045 × 3 ≒ 7.6 秒）
+const CARD = cardTiming({ ink: 0.88, time: 3 });
+const A = (name: string, range: readonly [number, number], vars?: Record<string, string>) => animAt(name, range, vars);
 
 export default function SakeIllustration({ className = "" }: { className?: string }) {
   return (
@@ -345,16 +344,7 @@ export default function SakeIllustration({ className = "" }: { className?: strin
       aria-hidden="true"
       focusable="false"
       className={`scene-svg sake-svg ${className}`}
-      style={
-        {
-          "--scene-z": 350 / 400,
-          "--scene-len": SAKE_END - 4,
-          "--scene-span": SAKE_SPAN,
-          "--scene-lead": SAKE_LEAD,
-          "--scene-col-step": "0%",
-          "--scene-time": SAKE_TIME,
-        } as CSSProperties
-      }
+      style={{ "--scene-z": 350 / 400, ...CARD } as CSSProperties}
       fill="none"
       stroke="currentColor"
       strokeLinecap="round"
@@ -445,7 +435,7 @@ export default function SakeIllustration({ className = "" }: { className?: strin
       {/* 氷（1つずつ、上から落ちる。混ぜるときに少し揺れる） */}
       <g className="sake-ice">
         {ICES.map((c, i) => (
-          <g key={i} className="scene-anim" style={anim("scene-fade-up", T.iceIn[0] + i * 2, T.iceIn[1] + i * 2, { "--dy": "-60px" })}>
+          <g key={i} className="scene-anim" style={animAt("scene-fade-up", T.iceIn, { "--dy": "-60px" }, i * ICE_STEP)}>
             <g className="scene-anim" style={A("sake-ice-jiggle", T.stir, { "--j": ["1", "-0.8", "0.6"][i] })}>
               <path d={c.fill} className="scene-paper" stroke="none" />
               <Wash filter="sake-wash" d={c.fill} tone="food-wash-ice" id={`sake-w-ice-${i}`} shift={[0.6, 0.5]} holes={[c.hole]} />

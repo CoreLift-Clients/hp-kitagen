@@ -22,7 +22,7 @@
 //   （動き終わりの形は、注いでいる途中の形。動きの名前と範囲は anim(...)、@keyframes は scenes.css）
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
-import { PI, anim, arcPts, jitter, line, polygon, ring, smooth, type P } from "./draw";
+import { PI, animAt, arcPts, cardTiming, jitter, line, polygon, ring, smooth, type P } from "./draw";
 import { Pour, pourShape } from "./Pour";
 import { Wash, WashFilter } from "./Wash";
 
@@ -193,6 +193,22 @@ const BUBBLES: readonly [number, number, number][] = [
   [262, 114, 2.3],
 ];
 
+// ── 動きの段（anim の from・to。4〜60。scenes.css の「名物の欄の決まり」） ──
+// 主役は、注いで泡が盛り上がるまで（流れが伸びる → ビールの線が上がる → 泡が盛り上がる。16.5〜38.5 ＝ 全体の約 4 割）。
+// 段のあいだに短い間
+const T = {
+  tap: [4, 9], // 注ぎ口が上から現れる
+  lever: [10, 15], // （間）レバーが手前へ倒れる
+  pour: [16.5, 22], // （間）流れが上から下へ伸びる
+  level: [21, 33], // ビールの線が下から上がる
+  foam: [29, 38.5], // 泡がふわっと盛り上がる
+  bubbles: [37.5, 45.5], // 泡の粒がはねる（1つおきに 2 ずらす）
+  liquid: [47, 57], // （間）ビールの水彩がじわっと出る
+  foamWash: [50, 60], // 泡の水彩（完成）
+} as const;
+// 線のいちばん下は、絵の場所の上から 96.7%。主役が時間で動くとき ((29 − 16.5) × 0.045 + 9.5 × 0.05) × 1.35 ≒ 1.4 秒
+const CARD = cardTiming({ ink: 0.975, time: 1.35 });
+
 export default function BeerIllustration({ className = "" }: { className?: string }) {
   return (
     <svg
@@ -200,6 +216,7 @@ export default function BeerIllustration({ className = "" }: { className?: strin
       aria-hidden="true"
       focusable="false"
       className={`scene-svg ${className}`}
+      style={CARD}
       fill="none"
       stroke="currentColor"
       strokeLinecap="round"
@@ -212,7 +229,7 @@ export default function BeerIllustration({ className = "" }: { className?: strin
       {/* 注がれるビールの流れは、ジョッキと泡の後ろ（泡の山の中へ入っていくように見せる）。
           上から下へ伸びる（pour-grow）。帯の水彩は、流れそのものなので、流れと一緒に出る。
           明るい筋は、時間でずっと上から下へ流れる（scenes.css の pour-flow） */}
-      <Pour shape={POUR} tone="food-wash-beer" filter="beer-wash" id="beer-w-pour" grow={[13, 20]} />
+      <Pour shape={POUR} tone="food-wash-beer" filter="beer-wash" id="beer-w-pour" grow={T.pour} />
 
       <g className="beer-mug">
         <path d={MUG_FILL} className="scene-paper" stroke="none" />
@@ -222,10 +239,10 @@ export default function BeerIllustration({ className = "" }: { className?: strin
       </g>
 
       {/* ビールの水彩（最後にじわっと出る） */}
-      <g className="beer-liquid scene-anim" style={anim("scene-fade-up", 40, 50, { "--dy": "0px" })}>
+      <g className="beer-liquid scene-anim" style={animAt("scene-fade-up", T.liquid, { "--dy": "0px" })}>
         <Wash filter="beer-wash" d={BEER_WASH} tone="food-wash-beer" id="beer-w-beer" shift={[1.5, 1]} holes={[[150, 300, 3, 10], [262, 226, 2.6, 6]]} />
       </g>
-      <g className="beer-level scene-anim" style={anim("scene-fade-up", 20, 30, { "--dy": "136px" })}>
+      <g className="beer-level scene-anim" style={animAt("scene-fade-up", T.level, { "--dy": "136px" })}>
         <path d={LEVEL} className="scene-fine" />
       </g>
       {/* ガラスの面の縦の筋は、ビールの上に */}
@@ -241,10 +258,10 @@ export default function BeerIllustration({ className = "" }: { className?: strin
         ))}
       </g>
 
-      <g className="beer-foam scene-anim" style={anim("scene-swell", 28, 38, { "--o": "50% 100%" })}>
+      <g className="beer-foam scene-anim" style={animAt("scene-swell", T.foam, { "--o": "50% 100%" })}>
         <path d={FOAM_FILL} className="scene-paper" stroke="none" />
         {/* 泡の水彩（ほぼ紙の色。ふちだけうすいクリーム。最後にじわっと出る） */}
-        <g className="scene-anim" style={anim("scene-fade-up", 42, 50, { "--dy": "0px" })}>
+        <g className="scene-anim" style={animAt("scene-fade-up", T.foamWash, { "--dy": "0px" })}>
           <Wash filter="beer-wash" d={FOAM_FILL} tone="food-wash-foam" id="beer-w-foam" shift={[1, 1]} holes={[[180, 160, 7, 3]]} />
         </g>
         {FOAM.map((d, i) => (
@@ -256,8 +273,8 @@ export default function BeerIllustration({ className = "" }: { className?: strin
       </g>
 
       {/* 注ぎ口（上から現れる）。レバーは管の後ろに置き、根元を管の面で隠す */}
-      <g className="beer-tap scene-anim" style={anim("scene-fade-up", 4, 8, { "--dy": "-10px" })}>
-        <g className="beer-lever scene-anim beer-lever-move" style={anim("beer-lever", 8, 13)}>
+      <g className="beer-tap scene-anim" style={animAt("scene-fade-up", T.tap, { "--dy": "-10px" })}>
+        <g className="beer-lever scene-anim beer-lever-move" style={animAt("beer-lever", T.lever)}>
           <path d={LEVER_ROD_FILL} className="scene-paper" stroke="none" />
           <Wash filter="beer-wash" d={LEVER_ROD_FILL} tone="food-wash-tap" id="beer-w-lever" shift={[0.6, 0.5]} />
           {LEVER_ROD.map((d, i) => (
@@ -283,10 +300,12 @@ export default function BeerIllustration({ className = "" }: { className?: strin
           <g
             key={i}
             className="scene-anim"
-            style={anim("pour-splash", 36 + (i % 2) * 2, 44 + (i % 2) * 2, {
-              "--sx": `${SPLASH_AT[0] - x}px`,
-              "--sy": `${SPLASH_AT[1] - y}px`,
-            })}
+            style={animAt(
+              "pour-splash",
+              T.bubbles,
+              { "--sx": `${SPLASH_AT[0] - x}px`, "--sy": `${SPLASH_AT[1] - y}px` },
+              (i % 2) * 2,
+            )}
           >
             <circle cx={x} cy={y} r={r} className="scene-fine" />
           </g>

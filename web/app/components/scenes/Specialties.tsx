@@ -41,12 +41,8 @@ import "./scenes.css";
 // ・カードのふち：筆ペンで描いたような、少し揺らぎのある四角い線（CardFrame。乱数なし）。影はごく薄く
 // ・絵の線の太さは scenes.css の .scene-svg-card（絵の幅に合わせて段に分ける）
 // ・各カードの動きは、その絵が画面に入る位置に合わせて、それぞれ進む（絵ごとに ScenePlayOnView で囲む）
-// ・動きの始まりのずらし：同じ段の中で、左のカードから順に少しずつ遅れて動き始める。
-//   カードに --scene-col（段の中の列の番号。左から 0・1・2）を付け、scenes.css で
-//   スクロールで進めるときは animation-range を列ごとに contain 6% ずつ後ろへ、
-//   使えないブラウザで時間で動くときは列ごとに 0.15 秒ずつ遅らせる。
-//   列の番号は、lg より狭い画面（2列）は「並び順 ÷ 2 の余り」、lg 以上（3列）は「並び順 ÷ 3 の余り」
-//   （お飲みもののスマホの最後の1つは、段に1つだけなので 0）
+// ・9枚とも同じ決まり（scenes.css の「名物の欄の決まり」）：絵の線のいちばん下が画面に入ったら始まり、
+//   絵の真ん中が見えている画面の真ん中に来たら完成。列によるずらしはしない（同じ段のカードは同時に進む）
 
 const ART_CLASS = "block h-full w-full text-foreground scene-svg-card";
 
@@ -64,10 +60,6 @@ const ART: Record<SpecialtyArt, ComponentType<{ className?: string }>> = {
 };
 
 const KANJI_NUM = ["壱", "弐", "参", "肆", "伍", "陸", "漆", "捌", "玖", "拾"] as const;
-
-// 段の中の列の番号（Tailwind が見つけられるよう、クラス名はそのままの形で書く）
-const COL_2 = ["[--scene-col:0]", "[--scene-col:1]"] as const;
-const COL_3 = ["lg:[--scene-col:0]", "lg:[--scene-col:1]", "lg:[--scene-col:2]"] as const;
 
 // ─── カードのふち（筆ペンで描いた四角い枠） ───
 // viewBox は 0〜100 の正方形で描き、カードの大きさに合わせて伸ばす（preserveAspectRatio="none"）。
@@ -126,7 +118,7 @@ function SpecialtyCard({ item, index, seed }: { item: SpecialtyItem; index: numb
   const Art = ART[item.art];
   return (
     <li
-      className={`scene-card section-light relative ${COL_2[index % 2]} ${COL_3[index % 3]} w-[calc((100%-1.5rem)/2)] md:w-[calc((100%-2rem)/2)] lg:w-[calc((100%-4rem)/3)] px-2 min-[400px]:px-2.5 pt-7 pb-4 md:px-5 md:pt-9 md:pb-6 shadow-[0_1px_4px_rgba(47,36,28,0.06)]`}
+      className={`scene-card section-light relative w-[calc((100%-1.5rem)/2)] md:w-[calc((100%-2rem)/2)] lg:w-[calc((100%-4rem)/3)] px-2 min-[400px]:px-2.5 pt-7 pb-4 md:px-5 md:pt-9 md:pb-6 shadow-[0_1px_4px_rgba(47,36,28,0.06)]`}
     >
       <CardFrame seed={seed} />
 

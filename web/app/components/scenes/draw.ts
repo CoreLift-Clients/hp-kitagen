@@ -96,12 +96,32 @@ export function steam(x0: number, yStart: number, yEnd: number, phase: number, a
 // 動かす部品（g や path）に、class の "scene-anim" と一緒に style={anim(...)} で付ける。
 // ・name … 動き（scenes.css の @keyframes の名前）
 // ・from・to … 動きの順番と長さを決める数（4〜60 の中で使う）。スクロールで進めるときは、
-//   4 が「絵が画面の中に全部入ったところ」、60 が「絵の真ん中が画面の真ん中に来たところ」になる
+//   4 が「絵が画面の中に全部入ったところ」（名物の欄のカードは「絵の線のいちばん下が画面に入ったところ」）、
+//   60 が「絵の真ん中が画面の真ん中に来たところ」になる
 //   （scenes.css で view() の contain 0%〜50% に割り当てる。60 より後ろは 60 として扱う）。
 //   使えないブラウザで1回だけ時間で動くときも、この数字から始まる時刻と長さを決める（scenes.css）
 // ・vars … 動きの中で使う値（--dy など）
 export function anim(name: string, from: number, to: number, vars: Record<string, string> = {}): CSSProperties {
   return { "--a": name, "--r0": from, "--r1": to, ...vars } as CSSProperties;
+}
+
+// 段の表（各絵の T）の [from, to] をそのまま渡す形の anim。shift … 部品ごとに少しずつずらすとき、from と to の両方に足す数
+export function animAt(
+  name: string,
+  [from, to]: readonly [number, number],
+  vars: Record<string, string> = {},
+  shift = 0,
+): CSSProperties {
+  return anim(name, from + shift, to + shift, vars);
+}
+
+// 名物の欄のカードの絵（svg）に付ける、動きの決まりの値（scenes.css の「名物の欄の決まり」）
+// ・ink … 絵の線のいちばん下が、絵の場所の上から何割の所にあるか（完成の形で測り、線の太さの分だけ少し大きめ）。
+//   スクロールの始まりを、この線のいちばん下が画面の下の端に入ったところにする
+// ・time … スクロールで動かせないブラウザで、時間で動くときの長さの倍率（主役の動きが 1.4 秒ほど見えるように）
+// ・len … 動きの数の長さ（4 〜 4 + len。付けないときは 56）
+export function cardTiming({ ink, time, len }: { ink: number; time: number; len?: number }): CSSProperties {
+  return { "--scene-ink": ink, "--scene-time": time, ...(len ? { "--scene-len": len } : {}) } as CSSProperties;
 }
 
 // 時間で揺れ続ける動き（class の "scene-sway" と一緒に付ける）。長さと、ずらす時間（秒）

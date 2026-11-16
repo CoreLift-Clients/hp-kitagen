@@ -28,7 +28,7 @@
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
 import type { CSSProperties } from "react";
-import { PI, anim, jitter, polygon, roundRectPts, smooth, sway, type P } from "./draw";
+import { PI, animAt, cardTiming, jitter, polygon, roundRectPts, smooth, sway, type P } from "./draw";
 import { SteamFades, SteamWisps, mkWisp } from "./Steam";
 import { Wash, WashFilter, type Hole } from "./Wash";
 
@@ -240,8 +240,22 @@ const STEAM = [
 ];
 const STEAM_SWAY = [sway(5.3, -1.1), sway(4.7, -2.6), sway(5.9, -0.3)];
 
+// ── 動きの段（anim の from・to。4〜60。scenes.css の「名物の欄の決まり」） ──
+// 主役は、串が奥から1本ずつ上から置かれる所（17〜40 ＝ 全体の約 4 割）。段のあいだに短い間
+const T = {
+  plateFill: [4, 8], // お皿の面
+  plateOut: [4, 12], // お皿のふちの外が描かれる
+  plateIn: [7, 15], // ふちの内
+  skewer: [17, 23], // （間）串が置かれる（1本目。1本ずつ SKEWER_STEP ずらす。6本目は 34〜40）
+  wash: [42, 47], // （間）水彩がじわっと出る（1本ずつ 1 ずらす。6本目は 47〜52）
+  steam: [[51, 56], [53, 58], [55, 60]], // 湯気が3本立ちのぼる（完成）
+} as const;
+const SKEWER_STEP = 3.4;
+// 線のいちばん下は、絵の場所の上から 74.2%。主役が時間で動くとき (17 × 0.045 + 6 × 0.05) × 1.35 ≒ 1.4 秒
+const CARD = cardTiming({ ink: 0.75, time: 1.35 });
+
 // 水彩がじわっと出る動き（串ごとに少しずつずらす。このあとに湯気が立ちのぼる）
-const washAnim = (i: number) => anim("scene-fade-up", 50 + i, 55 + i, { "--dy": "0px" });
+const washAnim = (i: number) => animAt("scene-fade-up", T.wash, { "--dy": "0px" }, i);
 
 export default function KushiIllustration({ className = "" }: { className?: string }) {
   return (
@@ -250,7 +264,7 @@ export default function KushiIllustration({ className = "" }: { className?: stri
       aria-hidden="true"
       focusable="false"
       className={`scene-svg ${className}`}
-      style={{ "--scene-z": 430 / 400 } as CSSProperties}
+      style={{ "--scene-z": 430 / 400, ...CARD } as CSSProperties}
       fill="none"
       stroke="currentColor"
       strokeLinecap="round"
@@ -265,16 +279,16 @@ export default function KushiIllustration({ className = "" }: { className?: stri
 
       {/* 1. お皿（線だけ。ふちの外 → 厚み → 内の順に描かれる） */}
       <g className="kushi-plate">
-        <path d={PLATE_FILL} className="scene-paper scene-anim" stroke="none" style={anim("scene-fade-up", 4, 8, { "--dy": "0px" })} />
-        <path d={PLATE_OUTER} pathLength={1} className="scene-line scene-stroke-draw scene-anim" style={anim("scene-draw", 4, 14)} />
-        <path d={PLATE_INNER} pathLength={1} className="scene-fine scene-stroke-draw scene-anim" style={anim("scene-draw", 8, 17)} />
+        <path d={PLATE_FILL} className="scene-paper scene-anim" stroke="none" style={animAt("scene-fade-up", T.plateFill, { "--dy": "0px" })} />
+        <path d={PLATE_OUTER} pathLength={1} className="scene-line scene-stroke-draw scene-anim" style={animAt("scene-draw", T.plateOut)} />
+        <path d={PLATE_INNER} pathLength={1} className="scene-fine scene-stroke-draw scene-anim" style={animAt("scene-draw", T.plateIn)} />
       </g>
 
       {/* 2. 串（6本。奥から1本ずつ、上から置かれる。手前の串が奥の串に重なる）。
           1本ごとに：竹串 → 具の後ろを隠す紙の色 → 水彩（いちばん最後にじわっと出る）→ 具の輪郭と中の線 */}
       <g className="kushi-skewers">
         {KUSHI.map((ku, i) => (
-          <g key={i} className="scene-anim" style={anim("scene-fade-up", 18 + i * 5, 26 + i * 5, { "--dy": "-30px" })}>
+          <g key={i} className="scene-anim" style={animAt("scene-fade-up", T.skewer, { "--dy": "-30px" }, i * SKEWER_STEP)}>
             <path d={STICKS[i].fill} className="scene-paper" stroke="none" />
             {STICKS[i].lines.map((d, k) => (
               <path key={k} d={d} className="scene-fine" />
@@ -307,7 +321,7 @@ export default function KushiIllustration({ className = "" }: { className?: stri
       </g>
 
       {/* 3. 湯気（水彩がじわっと出たあと、具の上から3本立ちのぼる。時間でゆっくり揺れる） */}
-      <SteamWisps className="kushi-steam" id="kushi-steam-fade" wisps={STEAM} sways={STEAM_SWAY} timing={[[53, 58], [55, 59], [56, 60]]} />
+      <SteamWisps className="kushi-steam" id="kushi-steam-fade" wisps={STEAM} sways={STEAM_SWAY} timing={T.steam} />
     </svg>
   );
 }
