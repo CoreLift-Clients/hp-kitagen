@@ -32,7 +32,7 @@
 //            しずくと泡粒 → 流れが上から切れて消える → 水差しが起き上がりながら消える →
 //            マドラーを上から差し入れて混ぜる（氷が揺れ、下の濃い色が消えて色がそろう）→ マドラーを上へまっすぐ抜いて消える
 //   動き終わり（prefers-reduced-motion のときも）は、両方とも完成の形。途中だけの部品は .sake-gone（scenes.css）で見えない
-//   （@keyframes は scenes.css。徳利は sake-pour-tilt、流れは pour-grow → pour-cut、マドラーは sake-stir・sake-pull-out など）
+//   （@keyframes は scenes.css。徳利は toast-tilt を2段（傾く・立つ）、流れは pour-grow → pour-cut、マドラーは sake-stir・sake-pull-out など）
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
 import type { CSSProperties } from "react";
@@ -298,33 +298,40 @@ const splash = (at: P, [x, y]: readonly [number, number, number], from: number, 
 const px = ([x, y]: P) => `${r(x)}px ${r(y)}px`;
 
 // 動きの範囲（anim の from・to。4〜60）。左の日本酒を先に、右の水割りをあとに進める
+// 動きの範囲（anim の from・to）。左の日本酒を先に、日本酒が完成してから「ひと呼吸」おいて、右の水割りを進める。
+// 4 〜 SAKE_END の数を、scenes.css で、スクロールの範囲（contain 0% 〜 SAKE_SPAN）に割り当てる（下の svg の style）。
+// ほかの絵（4〜60 を contain 0〜50% に割り当てる）より長いスクロールで進む
 const T = {
   // 日本酒
   tkIn: [4, 8], // 徳利とお猪口が現れる
-  tkTilt: [8, 24], // 徳利が傾く（〜20%）→ 傾いたまま注ぐ（〜75%）→ まっすぐ立った形に戻る
-  sakePour: [11.5, 14], // 日本酒の流れが伸びる
-  sakeFill: [12.5, 16.5], // お猪口のお酒の色
-  ripple: [13, 21], // 波紋（広がって、静まる）
-  drops: [14, 21], // しずく（はねて、消える）
-  sakeCut: [18.5, 20.5], // 流れが上から切れて消える
-  // 水割り
-  tumblerIn: [22, 26], // タンブラー
-  iceIn: [23, 27], // 氷（1つずつ 2 ずらす）
-  dense: [24, 28], // 下にたまった焼酎
-  pitcherIn: [28, 31], // 水差しが現れる
-  pitcherTilt: [31, 34], // 水差しが傾く
-  pitcherWater: [33, 35], // 水差しの中の水
-  waterPour: [34, 37], // 水の流れが伸びる
-  mizuwari: [36, 42], // 水割りの色
-  waterDrops: [37, 43], // しずく（1つずつ 1 ずらす）
-  bubbles: [38, 44], // 泡粒（1つずつ 1 ずらす）
-  waterCut: [41, 43], // 水の流れが上から切れて消える
-  pitcherOut: [42.5, 46.5], // 水差しが起き上がりながら消える
-  pitcherWaterOut: [42.5, 44], // 水差しの中の水が先に消える
-  muddlerIn: [45.5, 48], // マドラーを上から差し入れる
-  stir: [48, 55], // 混ぜる（マドラーが回り、氷が揺れ、下の濃い色が消える）
-  muddlerOut: [55, 60], // マドラーを上へまっすぐ抜いて、消える
+  tkTilt: [8, 11.5], // 徳利が傾く
+  sakePour: [11.5, 14], // 日本酒の流れが伸びる（注いでいる段は 11.5 〜 22）
+  sakeFill: [12.5, 18], // お猪口のお酒の色
+  ripple: [13, 25], // 波紋（広がって、静まる。1本ずつ 2 ずらす）
+  drops: [14, 25], // しずく（はねて、消える。1つおきに 1.5 ずらす）
+  sakeCut: [22, 25], // 流れが上から切れて消える
+  tkStand: [27.5, 35.5], // （間をおいて）徳利がゆっくりまっすぐ立った形に戻る。ここで日本酒は完成
+  // 水割り（日本酒の完成から 3.5 の間をおく）
+  tumblerIn: [39, 43], // タンブラー
+  iceIn: [40, 44], // 氷（1つずつ 2 ずらす）
+  dense: [41, 45], // 下にたまった焼酎
+  pitcherIn: [46, 49], // 水差しが現れる
+  pitcherTilt: [49, 52], // 水差しが傾く
+  pitcherWater: [51, 53], // 水差しの中の水
+  waterPour: [52, 55], // 水の流れが伸びる（注いでいる段は 52 〜 62.5）
+  mizuwari: [54, 62], // 水割りの色
+  waterDrops: [55, 63], // しずく（1つずつ 1.5 ずらす）
+  bubbles: [56, 64], // 泡粒（1つずつ 1.5 ずらす）
+  waterCut: [62.5, 65.5], // 水の流れが上から切れて消える
+  pitcherOut: [64, 72.5], // 水差しがゆっくり起き上がりながら消える
+  pitcherWaterOut: [64, 67], // 水差しの中の水が先に消える
+  muddlerIn: [75, 79], // （間をおいて）マドラーを上から差し入れる
+  stir: [79, 95], // ゆっくり 3 周混ぜる（マドラーが回り、氷が揺れ、下の濃い色が消える）
+  muddlerOut: [98, 105.5], // （間をおいて）マドラーを上へまっすぐ、ゆっくり抜いて、消える
 } as const;
+const SAKE_END = 105.5; // 動きの終わり（マドラーが消える）
+const SAKE_SPAN = "90%"; // 4 〜 SAKE_END を割り当てるスクロールの範囲（contain の %。ほかの絵は 50%）
+const SAKE_TIME = 1.9; // スクロールで動かせないブラウザで、時間で動くときの長さの倍率（ほかの絵は 1）
 const A = (name: string, [from, to]: readonly [number, number], vars?: Record<string, string>) => anim(name, from, to, vars);
 
 export default function SakeIllustration({ className = "" }: { className?: string }) {
@@ -334,7 +341,7 @@ export default function SakeIllustration({ className = "" }: { className?: strin
       aria-hidden="true"
       focusable="false"
       className={`scene-svg ${className}`}
-      style={{ "--scene-z": 350 / 400 } as CSSProperties}
+      style={{ "--scene-z": 350 / 400, "--scene-len": SAKE_END - 4, "--scene-span": SAKE_SPAN, "--scene-time": SAKE_TIME } as CSSProperties}
       fill="none"
       stroke="currentColor"
       strokeLinecap="round"
@@ -346,18 +353,21 @@ export default function SakeIllustration({ className = "" }: { className?: strin
       </defs>
 
       {/* ── 左：日本酒 ── */}
-      {/* 徳利（現れる → 傾いて注ぐ → まっすぐ立った形に戻る）。何も動かさない形（動き終わり）は、まっすぐ立った形。
-          傾きは、徳利の右下の角（PIVOT。絵の座標）を支点に */}
+      {/* 徳利（現れる → 傾いて注ぐ → 間をおいて、ゆっくりまっすぐ立った形に戻る）。何も動かさない形（動き終わり）は、まっすぐ立った形。
+          傾きは、徳利の右下の角（PIVOT。絵の座標）を支点に。外の g が「傾いた形 → 立った形」（tkStand）、
+          中の g が「立った形 → 傾いた形」（tkTilt）。どちらも動く前は、2つの傾きが打ち消し合って、まっすぐ立った形 */}
       <g className="sake-tokkuri scene-anim" style={A("scene-fade-up", T.tkIn, { "--dy": "10px" })}>
-        <g className="scene-anim sake-vb" style={A("sake-pour-tilt", T.tkTilt, { "--tilt": `${TILT}deg`, "--o": px(PIVOT) })}>
-          <path d={TK_FILL} className="scene-paper" stroke="none" />
-          <Wash filter="sake-wash" d={TK_FILL} tone="food-wash-yakimono" id="sake-w-tokkuri" shift={[1.2, 0.9]} holes={[TK_SHINE]} />
-          {TOKKURI_FINE.map((d, i) => (
-            <path key={i} d={d} className="scene-fine" />
-          ))}
-          {TOKKURI.map((d, i) => (
-            <path key={i} d={d} className="scene-line" />
-          ))}
+        <g className="scene-anim sake-vb" style={A("toast-tilt", T.tkStand, { "--tilt": `${TILT}deg`, "--o": px(PIVOT) })}>
+          <g className="scene-anim sake-vb" style={A("toast-tilt", T.tkTilt, { "--tilt": `${-TILT}deg`, "--o": px(PIVOT) })}>
+            <path d={TK_FILL} className="scene-paper" stroke="none" />
+            <Wash filter="sake-wash" d={TK_FILL} tone="food-wash-yakimono" id="sake-w-tokkuri" shift={[1.2, 0.9]} holes={[TK_SHINE]} />
+            {TOKKURI_FINE.map((d, i) => (
+              <path key={i} d={d} className="scene-fine" />
+            ))}
+            {TOKKURI.map((d, i) => (
+              <path key={i} d={d} className="scene-line" />
+            ))}
+          </g>
         </g>
       </g>
 
@@ -393,14 +403,14 @@ export default function SakeIllustration({ className = "" }: { className?: strin
             d={d}
             pathLength={1}
             className="sake-gone scene-fine scene-stroke-draw scene-anim"
-            style={anim("sake-ripple", T.ripple[0] + i * 1.5, T.ripple[1] + i * 1.5)}
+            style={anim("sake-ripple", T.ripple[0] + i * 2, T.ripple[1] + i * 2)}
           />
         ))}
       </g>
       {/* 小さなしずくのはね（はねて、消える。動き終わりは見えない） */}
       <g className="sake-drops">
         {SAKE_DROPS.map((b, i) => (
-          <g key={i} className="sake-gone scene-anim" style={splash(SAKE_LAND, b, T.drops[0] + (i % 2), T.drops[1] + (i % 2))}>
+          <g key={i} className="sake-gone scene-anim" style={splash(SAKE_LAND, b, T.drops[0] + (i % 2) * 1.5, T.drops[1] + (i % 2) * 1.5)}>
             <circle cx={b[0]} cy={b[1]} r={b[2]} className="scene-fine" />
           </g>
         ))}
@@ -507,12 +517,12 @@ export default function SakeIllustration({ className = "" }: { className?: strin
       {/* 落ちる所のしずくと泡粒（出て、注ぎ終わると消える。動き終わりは見えない） */}
       <g className="sake-bubbles">
         {WATER_DROPS.map((b, i) => (
-          <g key={`d${i}`} className="sake-gone scene-anim" style={splash(WATER_LAND, b, T.waterDrops[0] + i, T.waterDrops[1] + i)}>
+          <g key={`d${i}`} className="sake-gone scene-anim" style={splash(WATER_LAND, b, T.waterDrops[0] + i * 1.5, T.waterDrops[1] + i * 1.5)}>
             <circle cx={b[0]} cy={b[1]} r={b[2]} className="scene-fine" />
           </g>
         ))}
         {WATER_BUBBLES.map(([x, y, rr], i) => (
-          <g key={`b${i}`} className="sake-gone scene-anim" style={anim("scene-pop-out", T.bubbles[0] + i, T.bubbles[1] + i)}>
+          <g key={`b${i}`} className="sake-gone scene-anim" style={anim("scene-pop-out", T.bubbles[0] + i * 1.5, T.bubbles[1] + i * 1.5)}>
             <circle cx={x} cy={y} r={rr} className="scene-fine" />
           </g>
         ))}

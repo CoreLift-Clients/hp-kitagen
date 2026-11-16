@@ -420,11 +420,6 @@
   to   { opacity: 1; transform: none; }
 }
 /* ── 焼酎・日本酒（SakeIllustration.tsx）の「注いで、終える」動き ── */
-/* 徳利：まっすぐ立った形から傾き（〜20%）、傾いたまま注いで（〜75%）、まっすぐ立った形に戻る */
-@keyframes sake-pour-tilt {
-  from, to { transform: none; }
-  20%, 75% { transform: rotate(var(--tilt, 26deg)); }
-}
 /* 注ぎ終わり：流れが上から切れて、下へ吸い込まれるように縮んで消える（下の端 --o を支点に） */
 @keyframes pour-cut {
   from { opacity: 1; transform: none; }
@@ -464,12 +459,12 @@
   35%  { opacity: 1; }
   to   { opacity: 0; transform: translate(-3px, -8px) rotate(var(--rot, 12deg)); }
 }
-/* マドラーで混ぜる：グラスの口の少し下（--o）を中心に左右へ小さく傾け、少しずらして、小さく回るように 2 周 */
+/* マドラーで混ぜる：グラスの口の少し下（--o）を中心に左右へ小さく傾け、少しずらして、小さく回るように、ゆっくり 3 周 */
 @keyframes sake-stir {
-  from, 50%, to { transform: none; }
-  12.5%, 62.5%  { transform: translate(2px, -1px) rotate(5deg); }
-  25%, 75%      { transform: translate(0px, -2px) rotate(0deg); }
-  37.5%, 87.5%  { transform: translate(-2px, -1px) rotate(-5deg); }
+  from, 33.333%, 66.667%, to { transform: none; }
+  8.333%, 41.667%, 75%       { transform: translate(2px, -1px) rotate(5deg); }
+  16.667%, 50%, 83.333%      { transform: translate(0px, -2px) rotate(0deg); }
+  25%, 58.333%, 91.667%      { transform: translate(-2px, -1px) rotate(-5deg); }
 }
 /* 混ぜるときの氷の揺れ（--j で、氷ごとに向きと大きさを変える） */
 @keyframes sake-ice-jiggle {
@@ -514,6 +509,9 @@
      ・画面の上の固定ヘッダー（4rem）と、md より狭い画面の下の「電話する」ボタン（52px ＋ safe-area）に隠れる分は、
        画面に入っていないものとして数える（view-timeline-inset）
      ・animation の一括指定は animation-timeline・animation-range を初期値に戻すので、必ずその後ろに書く
+     ・--scene-len・--scene-span … 長い動きの絵だけが、svg の style で付ける（焼酎・日本酒の絵 SakeIllustration.tsx）。
+       4 〜 (4 + --scene-len) の数を、contain 0% 〜 --scene-span に割り当てる。付けていない絵は 56 と 50%（4〜60 を 0〜50%）で、今までと同じ。
+       焼酎・日本酒は、絵がほぼ画面の上の端（固定ヘッダーのすぐ下）に来るまでの、長いスクロールで進む
      ・--scene-col … 名物の欄のカードの、同じ段の中での列の番号（左から 0・1・2。Specialties.tsx が付ける）。
        列ごとに、動きの始まりと終わりを contain 6% ずつ後ろへずらす（左のカードから順に、少しずつ遅れて動き始める）。
        付けていない絵（トップの場面など）は 0 で、今までと同じ */
@@ -526,8 +524,8 @@
       animation: var(--a) linear both;
       animation-timeline: --scene;
       animation-range:
-        contain calc(max(0, var(--r0) - 4) * 50% / 56 + var(--scene-col, 0) * 6%)
-        contain calc(min(56, var(--r1) - 4) * 50% / 56 + var(--scene-col, 0) * 6%);
+        contain calc(max(0, var(--r0) - 4) * var(--scene-span, 50%) / var(--scene-len, 56) + var(--scene-col, 0) * 6%)
+        contain calc(min(var(--scene-len, 56), var(--r1) - 4) * var(--scene-span, 50%) / var(--scene-len, 56) + var(--scene-col, 0) * 6%);
     }
   }
   @supports (animation-timeline: view()) {
@@ -538,12 +536,13 @@
 
   /* 2) 使えないブラウザ：絵の 70% 以上が画面に入ったとき1回だけ、時間で同じ順に進める（data-scene は ScenePlayOnView が付ける）。
      始まる時刻は (--r0 − 4) × 0.045 秒、長さは (--r1 − --r0) × 0.05 秒（短くても 0.5 秒）。
+     どちらも --scene-time 倍（長い動きの絵だけが svg の style で付ける。焼酎・日本酒は 1.9。付けていない絵は 1）。
      名物の欄のカードは、列ごとに 0.15 秒ずつ遅らせる（--scene-col × 0.15 秒） */
   .scene-art[data-scene="wait"] .scene-anim {
     animation: var(--a) 1s linear both paused;
   }
   .scene-art[data-scene="play"] .scene-anim {
-    animation: var(--a) calc(max(0.5, (var(--r1) - var(--r0)) * 0.05) * 1s) cubic-bezier(0.33, 1, 0.68, 1)
-      calc(max(0, var(--r0) - 4) * 0.045s + var(--scene-col, 0) * 0.15s) both;
+    animation: var(--a) calc(max(0.5, (var(--r1) - var(--r0)) * 0.05 * var(--scene-time, 1)) * 1s) cubic-bezier(0.33, 1, 0.68, 1)
+      calc(max(0, var(--r0) - 4) * 0.045s * var(--scene-time, 1) + var(--scene-col, 0) * 0.15s) both;
   }
 }
