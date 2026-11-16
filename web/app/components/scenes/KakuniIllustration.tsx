@@ -352,14 +352,14 @@ export default function KakuniIllustration({ className = "" }: { className?: str
             <path d={p.body[0]} className="scene-paper" stroke="none" />
             <path d={p.top} className="scene-paper" stroke="none" />
             <g>
-              <Wash filter="kakuni-wash" d={p.body[0]} tone="food-wash-kakuni-dark" id={`kakuni-w-body-${i}`} shift={[1, 1]} />
-              <Wash filter="kakuni-wash" d={p.top} tone="food-wash-kakuni" id={`kakuni-w-top-${i}`} shift={[1, 0.75]} />
+              <Wash filter="kakuni-wash" d={p.body[0]} tone="food-wash-kakuni-dark" id={`kakuni-w-body-${i}`} shift={[1, 1]} line={1.8} />
+              <Wash filter="kakuni-wash" d={p.top} tone="food-wash-kakuni" id={`kakuni-w-top-${i}`} shift={[1, 0.75]} line={1.8} />
               <g clipPath={`url(#kakuni-top-${i})`}>
-                <Wash filter="kakuni-wash" d={p.bands[0].d} tone="food-wash-kakuni-dark" id={`kakuni-w-skin-${i}`} shift={[0.75, 0.5]} />
+                <Wash filter="kakuni-wash" d={p.bands[0].d} tone="food-wash-kakuni-dark" id={`kakuni-w-skin-${i}`} shift={[0.75, 0.5]} line={1.8} />
                 {[1, 3].map((k) => (
                   <g key={k}>
                     <path d={p.bands[k].d} className="scene-paper" stroke="none" />
-                    <Wash filter="kakuni-wash" d={p.bands[k].d} tone="food-wash-skin" id={`kakuni-w-fat-${i}-${k}`} shift={[0.75, 0.5]} />
+                    <Wash filter="kakuni-wash" d={p.bands[k].d} tone="food-wash-skin" id={`kakuni-w-fat-${i}-${k}`} shift={[0.75, 0.5]} line={1.1} />
                   </g>
                 ))}
               </g>
@@ -386,8 +386,8 @@ export default function KakuniIllustration({ className = "" }: { className?: str
         <g transform={`rotate(${EA} ${EX.toFixed(1)} ${EY.toFixed(1)})`}>
           <ellipse cx={EX} cy={EY} rx={ER} ry={EH} className="scene-paper" stroke="none" />
           <g>
-            <Wash filter="kakuni-wash" d={EGG_D} tone="food-wash-white" id="kakuni-w-white" shift={[1, 0.75]} />
-            <Wash filter="kakuni-wash" d={YOLK_D} tone="food-wash-yolk" id="kakuni-w-yolk" shift={[0.9, 0.7]} holes={[[EX + 10, EY + 6, 2.4, 1.5]]} />
+            <Wash filter="kakuni-wash" d={EGG_D} tone="food-wash-white" id="kakuni-w-white" shift={[1, 0.75]} line={1.8} />
+            <Wash filter="kakuni-wash" d={YOLK_D} tone="food-wash-yolk" id="kakuni-w-yolk" shift={[0.9, 0.7]} line={1.1} holes={[[EX + 10, EY + 6, 2.4, 1.5]]} />
           </g>
           <ellipse cx={EX + 1.5} cy={EY + 0.5} rx={ER * 0.6} ry={EH * 0.62} className="kakuni-yolk-line" />
           <ellipse cx={EX} cy={EY} rx={ER} ry={EH} className="kakuni-outline" />

@@ -27,7 +27,7 @@
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
 import type { CSSProperties } from "react";
-import { PI, anim, jitter, line, polygon, smooth, type P } from "./draw";
+import { PI, anim, jitter, line, polygon, roundRectPts, smooth, type P } from "./draw";
 import { Wash, WashFilter } from "./Wash";
 
 // ── 見る角度（床の面の点 u・v を、絵の座標にする） ──
@@ -51,36 +51,9 @@ function groundBlob(u0: number, v0: number, ru: number, rv: number, z: number, s
   return pts;
 }
 
-// ── お皿（横長の、角の丸い長方形。ふちの外側と内側の線 2本で厚みを表す） ──
-// 角の丸い長方形のまわりの点（床の面）。書き始めと書き終わりを少し重ねて、筆で描いた輪にする
-function roundRectPts(hl: number, hw: number, r: number, z: number, seed: number, amp: number): P[] {
-  const ground: [number, number][] = [];
-  const corners: [number, number, number][] = [
-    [hl - r, hw - r, 0], // 右手前
-    [-(hl - r), hw - r, PI / 2], // 左手前
-    [-(hl - r), -(hw - r), PI], // 左奥
-    [hl - r, -(hw - r), PI * 1.5], // 右奥
-  ];
-  corners.forEach(([cx, cy, t0], k) => {
-    for (let i = 0; i <= 4; i++) {
-      const t = t0 + (PI / 2) * (i / 4);
-      ground.push([cx + r * Math.cos(t), cy + r * Math.sin(t)]);
-    }
-    // 次の角までの辺のまん中に1点（辺がふくらまないように）
-    const [nx, ny, nt] = corners[(k + 1) % 4];
-    const a: [number, number] = [cx + r * Math.cos(t0 + PI / 2), cy + r * Math.sin(t0 + PI / 2)];
-    const b: [number, number] = [nx + r * Math.cos(nt), ny + r * Math.sin(nt)];
-    ground.push([(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]);
-  });
-  // 重ね：最初の2点をもう一度
-  ground.push(ground[0], ground[1]);
-  return ground.map(([u, v], i) => {
-    const [x, y] = pr(u, v, z);
-    return [x + jitter(seed + i) * amp, y + jitter(seed + i + 50) * amp * 0.6] as const;
-  });
-}
-const DISH_OUTER = smooth(roundRectPts(156, 62, 34, 0, 9300, 0.9));
-const DISH_INNER = smooth(roundRectPts(143, 50, 26, -3, 9360, 0.7)); // 内側の底のふち（少し低い）
+// ── お皿（横長の、角の丸い長方形。ふちの外側と内側の線 2本で厚みを表す。点の作り方は draw.ts の roundRectPts） ──
+const DISH_OUTER = smooth(roundRectPts(pr, 156, 62, 34, 0, 9300, 0.9));
+const DISH_INNER = smooth(roundRectPts(pr, 143, 50, 26, -3, 9360, 0.7)); // 内側の底のふち（少し低い）
 
 // ── 豆腐（4つの立方体。左奥から右手前へ、すき間を少しだけあけて一列） ──
 const TOFU_U = [-99, -33, 33, 99];
@@ -305,7 +278,7 @@ export default function HiyayakkoIllustration({ className = "" }: { className?: 
             <g>
               {NEGI_TOP[i].map((n, k) => (
                 <g key={k} className="scene-anim" style={negiAnim(i * 5 + k)}>
-                  <Wash filter="hiyayakko-wash" d={n.fill} tone="food-wash-negi" id={`hiyayakko-w-negi-${i}-${k}`} shift={[0.4, 0.3]} />
+                  <Wash filter="hiyayakko-wash" d={n.fill} tone="food-wash-negi" id={`hiyayakko-w-negi-${i}-${k}`} shift={[0.4, 0.3]} line={1.5} />
                 </g>
               ))}
             </g>
@@ -323,7 +296,7 @@ export default function HiyayakkoIllustration({ className = "" }: { className?: 
         <g>
           {NEGI_SPILL.map((n, k) => (
             <g key={k} className="scene-anim" style={negiAnim(20 + k)}>
-              <Wash filter="hiyayakko-wash" d={n.fill} tone="food-wash-negi" id={`hiyayakko-w-spill-${k}`} shift={[0.4, 0.3]} />
+              <Wash filter="hiyayakko-wash" d={n.fill} tone="food-wash-negi" id={`hiyayakko-w-spill-${k}`} shift={[0.4, 0.3]} line={1.5} />
             </g>
           ))}
         </g>

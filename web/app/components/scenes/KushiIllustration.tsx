@@ -1,13 +1,14 @@
 // ─── 串焼き（ぼんじり・鶏ハラミ・鶏皮）の線画 ───
 // ディナーメニューの「きたげんの名物」の欄の、料理の伍（串焼き）のカードで使う飾りの絵（aria-hidden。意味はカードの品名で伝える）。
-// 本物の串（代表者から届いたメニューの写真）に合わせる：白い楕円のお皿に、竹串を1本ずつ。持ち手は長く出る（この絵では右に出す）。
+// 本物の串（代表者から届いたメニューの写真）に合わせる：竹串を1本ずつ。持ち手は長く出る（この絵では右に出す）。
+// お皿は、肉みそ冷奴と同じ、横長の角の丸い長方形のお皿（ふちが少し立った形）。串は、お皿の長い向きに沿わせて並べる。
 // ・ぼんじり … まるっとした、ふっくらしたかたまりが5個。つやのあるきつね色に、ところどころ濃い焼き目
 // ・鶏ハラミ … 平たい身を折りたたんで刺した形が4個（少し傾いて重なり合う）。ぼんじりより赤みのある、濃い茶色
 // ・鶏皮 … 皮を波のようにくねらせて刺した、1本の長いうねり（上と下のふちが、互い違いにふくらむ）。淡いきつね色で、ふちが焦げる
 // 色は、料理の絵の決まり（scenes.css の先頭）の「水彩の塗り方」で、線画にうすく絵の具で塗ったように付ける
 // （部品は Wash.tsx。にじみのフィルタは kushi-wash の1つを使い回す）：
 // ・線は currentColor（＝ 呼び出し側の text-foreground）。端と角は丸く
-// ・お皿と竹串：線だけ（面は紙の色。後ろを隠す塗りだけ）
+// ・お皿と竹串：線だけ（面は紙の色。後ろを隠す塗りだけ）。お皿は外のふちと内の底のふちの2本（肉みそ冷奴と同じ）
 // ・ぼんじり：からあげと同じ色の水彩（.food-wash-karaage）。つやの白い抜けを1つ
 // ・鶏ハラミ：赤みのある濃い茶色の水彩（.food-wash-harami）
 // ・鶏皮：淡いきつね色の水彩で、ふちを濃く（.food-wash-kawa）
@@ -17,24 +18,33 @@
 // ・串は、奥から ぼんじり・鶏ハラミ・鶏皮。持ち手を右、先を左に、少し左上がりに、奥ほど右へずらして並べる。持ち手は串の長さの約3割
 //   （串の形は、持ち手を左にした向きで計算し、at() の中で、お皿のまん中の縦の線 x = CX について左右を折り返す。
 //   絵全体を CSS で反転しないので、水彩の塗りのずれ〈右下へ〉と白い抜けの考え方〈光は左上から〉は、ほかの絵と同じ向きのまま）
-// ・動きの順番：お皿のふちが描かれる → 串が1本ずつ（奥から手前へ）上から置かれる → 水彩の塗りがじわっと出る
+// ・動きの順番：お皿のふち（外 → 内）が描かれる → 串が1本ずつ（奥から手前へ）上から置かれる → 水彩の塗りがじわっと出る
 //   （動きの名前と範囲は anim(...)、@keyframes は scenes.css）。何も動かさないときの形が、動き終わった形
-// ・絵は viewBox を 360 の幅に切り出して大きく見せる（線の太さは --scene-z で 400 の幅の絵とそろえる。scenes.css）
+// ・絵は viewBox を 430 の幅にする（お皿と、少し出た持ち手の端まで入る幅。線の太さは --scene-z で 400 の幅の絵とそろえる。scenes.css）
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
 import type { CSSProperties } from "react";
-import { PI, anim, arc, jitter, polygon, ring, smooth, type P } from "./draw";
+import { PI, anim, jitter, polygon, roundRectPts, smooth, type P } from "./draw";
 import { Wash, WashFilter, type Hole } from "./Wash";
 
-// ── お皿（白い楕円の皿を斜め上から。ふちの外・内の2本と、手前の厚み） ──
-const CX = 200;
-const CY = 296;
-const RX = 176;
-const RY = 80;
-const PLATE_FILL = polygon(Array.from({ length: 41 }, (_, i) => [CX + RX * Math.cos((PI * 2 * i) / 40), CY + RY * Math.sin((PI * 2 * i) / 40) + (Math.sin((PI * 2 * i) / 40) > 0 ? 8 : 0)] as const));
-const PLATE_OUTER = ring(CX, CY, RX, RY, 9000, 0.9);
-const PLATE_INNER = ring(CX, CY + 3, RX * 0.86, RY * 0.8, 9030, 0.7); // 見込み（内側の段）
-const PLATE_SIDE = arc(CX, CY + 8, RX - 2, RY, PI * 0.06, PI * 0.94, 18, 0.6, 9060); // 厚み（手前の下のふち）
+// ── お皿（肉みそ冷奴と同じ、横長の角の丸い長方形のお皿。ふちが少し立った形を、外のふちと内の底のふちの2本で描く） ──
+// 点の作り方は肉みそ冷奴と同じ draw.ts の roundRectPts。見る角度も冷奴と同じ縦のつぶし（SQ 0.58）で、
+// お皿の長い向き（u）が串の向き（右の持ち手から左の先へ、少し左上がり ＝ 傾き 0.15）にそろうように、床の面で TH だけ回す
+const CX = 200; // 串を左右に折り返す縦の線（at()）
+const PX = 198; // お皿のまん中
+const PY = 279;
+const SQ = 0.58;
+const TH = Math.atan(0.15 / SQ);
+const COS = Math.cos(TH);
+const SIN = Math.sin(TH);
+const pr = (u: number, v: number, z = 0): P => [PX + u * COS - v * SIN, PY + (u * SIN + v * COS) * SQ - z];
+const PLATE_HL = 168; // 半分の長さ
+const PLATE_HW = 130; // 半分の幅（串3本と具が、内の底のふちの中に入る幅）
+const PLATE_R = 40; // 角の丸み
+const PLATE_PTS = roundRectPts(pr, PLATE_HL, PLATE_HW, PLATE_R, 0, 9000, 0.9);
+const PLATE_FILL = polygon(PLATE_PTS);
+const PLATE_OUTER = smooth(PLATE_PTS);
+const PLATE_INNER = smooth(roundRectPts(pr, PLATE_HL - 13, PLATE_HW - 12, PLATE_R - 8, -3, 9030, 0.7)); // 内の底のふち（少し低い）
 
 // ── 串（3本）。持ち手の端 from から長さ L。具は串の長さの U0〜U1 のあいだ ──
 // 点は、持ち手を左にした向き（from から右上がり）で計算し、at() で左右を折り返して、持ち手を右・先を左にする
@@ -47,9 +57,9 @@ const DIR: P = (() => {
 })();
 const NRM: P = [DIR[1], -DIR[0]]; // 串に直角で、上向き
 const FROM: readonly P[] = [
-  [22, 262], // 奥：ぼんじり
-  [36, 306], // まん中：鶏ハラミ
-  [50, 350], // 手前：鶏皮
+  [16, 262], // 奥：ぼんじり
+  [30, 304], // まん中：鶏ハラミ
+  [44, 346], // 手前：鶏皮
 ];
 // 串の上の点（u … 持ち手の端からの長さ、v … 串から上へ）。x は x = CX について折り返す（持ち手が右に来る）
 const at = (k: number, u: number, v: number): P => [2 * CX - (FROM[k][0] + DIR[0] * u + NRM[0] * v), FROM[k][1] + DIR[1] * u + NRM[1] * v];
@@ -179,11 +189,11 @@ const washAnim = (i: number) => anim("scene-fade-up", 50 + i * 2, 57 + i, { "--d
 export default function KushiIllustration({ className = "" }: { className?: string }) {
   return (
     <svg
-      viewBox="20 108 360 360"
+      viewBox="-17 64 430 430"
       aria-hidden="true"
       focusable="false"
       className={`scene-svg ${className}`}
-      style={{ "--scene-z": 360 / 400 } as CSSProperties}
+      style={{ "--scene-z": 430 / 400 } as CSSProperties}
       fill="none"
       stroke="currentColor"
       strokeLinecap="round"
@@ -197,9 +207,8 @@ export default function KushiIllustration({ className = "" }: { className?: stri
       {/* 1. お皿（線だけ。ふちの外 → 厚み → 内の順に描かれる） */}
       <g className="kushi-plate">
         <path d={PLATE_FILL} className="scene-paper scene-anim" stroke="none" style={anim("scene-fade-up", 4, 8, { "--dy": "0px" })} />
-        <path d={PLATE_OUTER} pathLength={1} className="scene-line scene-stroke-draw scene-anim" style={anim("scene-draw", 4, 12)} />
-        <path d={PLATE_SIDE} pathLength={1} className="scene-line scene-stroke-draw scene-anim" style={anim("scene-draw", 8, 14)} />
-        <path d={PLATE_INNER} pathLength={1} className="scene-fine scene-stroke-draw scene-anim" style={anim("scene-draw", 10, 16)} />
+        <path d={PLATE_OUTER} pathLength={1} className="scene-line scene-stroke-draw scene-anim" style={anim("scene-draw", 4, 14)} />
+        <path d={PLATE_INNER} pathLength={1} className="scene-fine scene-stroke-draw scene-anim" style={anim("scene-draw", 8, 17)} />
       </g>
 
       {/* 2. 串（奥から1本ずつ、上から置かれる）。
@@ -227,7 +236,7 @@ export default function KushiIllustration({ className = "" }: { className?: stri
             <g className="scene-anim" style={washAnim(i)}>
               <g>
                 {ku.koge.map((d, k) => (
-                  <Wash filter="kushi-wash" key={k} d={d} tone="food-wash-koge" id={`kushi-w-koge-${i}-${k}`} shift={[0.5, 0.4]} />
+                  <Wash filter="kushi-wash" key={k} d={d} tone="food-wash-koge" id={`kushi-w-koge-${i}-${k}`} shift={[0.5, 0.4]} line={2.1} />
                 ))}
               </g>
             </g>

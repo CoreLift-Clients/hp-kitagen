@@ -14,20 +14,27 @@
 // ・せいろ：高さのある竹の胴。中の線は、内のふち・竹の帯3本（上のふちの輪の下・胴の中ほど・下の帯）・奥の壁と底の境目の5本
 // ・敷き紙：ふちの線1本だけ
 // ・しゅうまい：中の線は、口のふち1本とひだ5本
-// ・ふた：動き終わりは、せいろの奥（上）へ持ち上げて少し傾けた形（しゅうまいを隠さない。せいろの後ろに描く）。
-//   閉じたふた（しゅうまいの上に描く）は、現れてから持ち上がって消え、入れ替わりに奥のふたが下から上がってくる
+// ・ふた：動き終わりは、せいろの右に、少し傾けて立てかけた形（下のふちが、せいろの右の胴に触れ、上のほうはせいろから離れる。
+//   しゅうまいと湯気を隠さない）。閉じたふた（しゅうまいの上に描く）と同じ形を、回して細くし、傾けて右へ移した形（stand()）
 // ・湯気（時間で揺れる）は、奥の列のしゅうまいの上から立ちのぼる
-// ・部品ごとに g でまとめる：奥のふた（seiro-lid）・本体（seiro-body）・敷き紙（seiro-paper）・しゅうまい（seiro-shumai）・
-//   閉じたふた（seiro-lid-closed）・湯気（seiro-steam）。重なりの順もこのとおり
-// ・動きの順番：せいろ → 敷き紙 → しゅうまいが1つずつ → ふたがかぶさってから持ち上がる → 湯気
+// ・部品ごとに g でまとめる：本体（seiro-body）・敷き紙（seiro-paper）・しゅうまい（seiro-shumai）・
+//   立てかけたふた（seiro-lid）・動くふた（seiro-lid-move）・湯気（seiro-steam）。重なりの順もこのとおり。
+//   湯気より前の5つは、まとめて1つの g（seiro-set）に入れる
+// ・動きの順番：
+//   1. ふたがぴったり閉まったせいろが現れる（seiro-set をまとめて薄くしてから出すので、途中もしゅうまいは透けない）
+//   2. ふたが持ち上がり、右へ移りながら縦に起きて、せいろの右に立てかけた形になる（scenes.css の seiro-lid-open）。
+//      最後に、同じ位置の立てかけたふた（seiro-lid）と入れ替わる
+//   3. ふたが開くと、もともとふたの下にあるしゅうまいが見える。皮とあんの水彩は、見えてからじわっと出る
+//   4. 湯気が立ちのぼる
 //   （動きの名前と範囲は anim(...)、@keyframes は scenes.css）。何も動かさないときの形が、動き終わった形
+//   （ふたは右に立てかけ、しゅうまいと湯気が見える）。トップの場面でも同じ
 // ・見る角度はななめ上から（床の面を縦に SQ だけつぶす。pr()）。胴の側面と、内側の奥の壁が帯として見える角度
-// ・絵は viewBox を 356 の幅に切り出して大きく見せる（線の太さは --scene-z で 400 の幅の絵とそろえる。scenes.css）
+// ・絵は viewBox を 428 の幅にする（右に立てかけたふたまで入る幅。線の太さは --scene-z で 400 の幅の絵とそろえる。scenes.css）
 //
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
 import type { CSSProperties } from "react";
-import { PI, anim, arc, blobPts, jitter, polygon, r1, smooth, steam, sway, type P } from "./draw";
+import { PI, anim, arc, arcPts, blobPts, jitter, polygon, r1, smooth, steam, sway, type P } from "./draw";
 import { Wash, WashFilter, type Hole } from "./Wash";
 
 // ── 見る角度（床の面の点 u・v と高さ z を、絵の座標にする） ──
@@ -165,54 +172,69 @@ const SHUMAI: Shumai[] = SHUMAI_AT.map(([u0, v0], i) => {
 });
 
 // ── ふた ──
-// 閉じたふた（せいろの上のふちにかぶさる。動きの途中だけ見える）
+// 閉じたふた（せいろの上のふちにかぶさる形）と、動き終わりの立てかけたふた（せいろの右）は、同じふたの形から作る。
+// 立てかけたふたは、閉じたふたの点を、下の LID_STAND の動き（CSS の transform と同じ式）で移した点で描く
+// （動きの途中は CSS の transform で閉じたふたを動かし、最後に、同じ位置に重なる立てかけたふたへ入れ替える）
 const LC_Z = RIM_Z + 14; // ふたの上の面の高さ
-const LID_CLOSED_TOP = ell(RO + 3, LC_Z);
-const LID_CLOSED_SIDE = polygon([...circ(0, 0, RO + 3, LC_Z, 24, PI, 0), ...circ(0, 0, RO + 3, RIM_Z - 2, 24, 0, PI)]);
-const LID_CLOSED_LINE = [
-  arc(CX, FY - LC_Z, RO + 3, (RO + 3) * SQ, PI * 0.97, PI * 3.03, 40, 0.7, 2000),
-  arc(CX, FY - RIM_Z + 2, RO + 3, (RO + 3) * SQ, PI * -0.005, PI * 1.005, 28, 0.7, 2050),
-  smooth([pr(-RO - 3, 0, LC_Z), pr(-RO - 3, 0, RIM_Z - 2)]),
-  smooth([pr(RO + 3, 0, LC_Z), pr(RO + 3, 0, RIM_Z - 2)]),
-];
-// 中の線（4本）：内側の枠と、編み目3本
-const LID_CLOSED_IN = [
-  arc(CX, FY - LC_Z, RO - 12, (RO - 12) * SQ, PI * 0.96, PI * 3.02, 40, 0.5, 2100),
-  ...[-40, 5, 50].map((v, i) => {
-    const half = (RO - 22) * Math.sqrt(1 - (v / (RO - 12)) ** 2);
-    return smooth([pr(-half, v, LC_Z), pr(jitter(2150 + i) * 6, v + jitter(2160 + i), LC_Z), pr(half, v, LC_Z)]);
-  }),
-];
+const LC_R = RO + 3; // ふたの半径（せいろの上のふちにかぶさる）
+const LC_BOTTOM = RIM_Z - 2; // ふたの下のふちの高さ
+// 閉じたふたのまん中（上の面のまん中）。動かすときの中心
+const LO: P = pr(0, 0, LC_Z);
 
-// 持ち上げたふた（奥。少し傾けて、せいろの奥のふちに立てかけたように見せる）
-const LO_X = 200;
-const LO_Y = 85; // 上の面のまん中
-const LO_RX = 150;
-const LO_RY = 41; // 奥へ倒れているので、上の面は細いだ円に見える（ななめ上からの角度に合わせて、少し太め）
-const LO_T = 13; // ふたのふちの厚み
-const LO_ROT = -5; // 傾き（度）
-const lidPts = (cy: number, t0: number, t1: number, n = 24): P[] =>
-  Array.from({ length: n + 1 }, (_, i) => {
-    const t = t0 + ((t1 - t0) * i) / n;
-    return [LO_X + LO_RX * Math.cos(t), cy + LO_RY * Math.sin(t)];
-  });
-const LID_OPEN_TOP = polygon(lidPts(LO_Y, 0, PI * 2, 48).slice(0, 48));
-const LID_OPEN_SIDE = polygon([...lidPts(LO_Y, PI, 0), ...lidPts(LO_Y + LO_T, 0, PI)]);
-const LID_OPEN_LINE = [
-  arc(LO_X, LO_Y, LO_RX, LO_RY, PI * 0.97, PI * 3.03, 40, 0.6, 2200),
-  arc(LO_X, LO_Y + LO_T, LO_RX, LO_RY, PI * -0.005, PI * 1.005, 28, 0.6, 2250),
-  smooth([[LO_X - LO_RX, LO_Y], [LO_X - LO_RX, LO_Y + LO_T]]),
-  smooth([[LO_X + LO_RX, LO_Y], [LO_X + LO_RX, LO_Y + LO_T]]),
-];
-// 中の線（4本）：内側の枠と、上の面の編み目3本
-const LID_OPEN_IN = [
-  arc(LO_X, LO_Y, LO_RX - 12, LO_RY - 4, PI * 0.96, PI * 3.02, 40, 0.4, 2300),
-  ...[-12, 0, 12].map((dy, i) => {
-    const y = LO_Y + dy;
-    const half = (LO_RX - 24) * Math.sqrt(Math.max(0, 1 - (dy / (LO_RY - 6)) ** 2));
-    return smooth([[LO_X - half, y], [LO_X + jitter(2350 + i) * 10, y + jitter(2360 + i)], [LO_X + half, y]]);
-  }),
-];
+// 立てかけたふた：閉じたふたを、
+// 1) 中心 LO のまわりに −90°（左回り）回して縦長にし（ふちの厚みは右に来る）、
+// 2) 横を SX・縦を SY 倍にして、少し横から見た細いだ円にし、
+// 3) 上が右へ離れるように LEAN° 傾け、
+// 4) まん中を LIFT_TO へ移す（下のふちが、せいろの右の胴に触れる所）
+const SX = 0.46;
+const SY = 0.94;
+const LEAN = 9;
+const LIFT_TO: P = [394, 172];
+const DEG = PI / 180;
+function stand([x, y]: P): P {
+  const dx = x - LO[0];
+  const dy = y - LO[1];
+  // rotate(−90°)：(dx, dy) → (dy, −dx)。画面の y は下向き
+  const rx = dy * SX;
+  const ry = -dx * SY;
+  const c = Math.cos(LEAN * DEG);
+  const s = Math.sin(LEAN * DEG);
+  return [LIFT_TO[0] + rx * c - ry * s, LIFT_TO[1] + rx * s + ry * c];
+}
+// CSS の transform（transform-box: view-box。絵の座標の原点が中心）。stand() と同じ式。
+// 動きの途中の形（持ち上がった所）も、同じ並びの関数で書く（scenes.css の @keyframes seiro-lid-open が、この変数を使う）
+const lidTransform = (to: P, lean: number, sx: number, sy: number, rot: number) =>
+  `translate(${r1(to[0])}px, ${r1(to[1])}px) rotate(${lean}deg) scale(${sx}, ${sy}) rotate(${rot}deg) translate(${r1(-LO[0])}px, ${r1(-LO[1])}px)`;
+const LID_VARS = {
+  "--lid-from": lidTransform(LO, 0, 1, 1, 0),
+  "--lid-up": lidTransform([LO[0] + 30, LO[1] - 64], 3, 0.8, 0.98, -30),
+  "--lid-to": lidTransform(LIFT_TO, LEAN, SX, SY, -90),
+};
+
+// ふたの形（点を f で移して作る。閉じたふたは f なし）
+function lidShapes(f: (p: P) => P = (p) => p) {
+  const m = (pts: P[]) => pts.map(f);
+  const top = m(circ(0, 0, LC_R, LC_Z, 48).slice(0, 48));
+  const side = m([...circ(0, 0, LC_R, LC_Z, 24, PI, 0), ...circ(0, 0, LC_R, LC_BOTTOM, 24, 0, PI)]);
+  const fill = [polygon(side), polygon(top)];
+  const lines = [
+    smooth(m(arcPts(CX, FY - LC_Z, LC_R, LC_R * SQ, PI * 0.97, PI * 3.03, 40, 0.7, 2000))),
+    smooth(m(arcPts(CX, FY - LC_BOTTOM, LC_R, LC_R * SQ, PI * -0.005, PI * 1.005, 28, 0.7, 2050))),
+    smooth(m([pr(-LC_R, 0, LC_Z), pr(-LC_R, 0, LC_BOTTOM)])),
+    smooth(m([pr(LC_R, 0, LC_Z), pr(LC_R, 0, LC_BOTTOM)])),
+  ];
+  // 中の線（4本）：内側の枠と、編み目3本
+  const inner = [
+    smooth(m(arcPts(CX, FY - LC_Z, RO - 12, (RO - 12) * SQ, PI * 0.96, PI * 3.02, 40, 0.5, 2100))),
+    ...[-40, 5, 50].map((v, i) => {
+      const half = (RO - 22) * Math.sqrt(1 - (v / (RO - 12)) ** 2);
+      return smooth(m([pr(-half, v, LC_Z), pr(jitter(2150 + i) * 6, v + jitter(2160 + i), LC_Z), pr(half, v, LC_Z)]));
+    }),
+  ];
+  return { fill, lines, inner };
+}
+const LID_CLOSED = lidShapes();
+const LID_STAND = lidShapes(stand);
 
 // ── 湯気（4本。奥の列のしゅうまいの口の上から。下から上へ描くので、点は下から並べる） ──
 // 奥の列の口のまん中は、左が (154, 171)・右が (246, 170) あたり
@@ -227,11 +249,11 @@ const STEAM_SWAY = [sway(4.8, 0), sway(5.6, -1.8), sway(4.2, -3.1), sway(6.1, -0
 export default function SeiroIllustration({ className = "" }: { className?: string }) {
   return (
     <svg
-      viewBox="22 30 356 356"
+      viewBox="30 -15 428 428"
       aria-hidden="true"
       focusable="false"
       className={`scene-svg ${className}`}
-      style={{ "--scene-z": 356 / 400 } as CSSProperties}
+      style={{ "--scene-z": 428 / 400 } as CSSProperties}
       fill="none"
       stroke="currentColor"
       strokeLinecap="round"
@@ -248,73 +270,78 @@ export default function SeiroIllustration({ className = "" }: { className?: stri
         <WashFilter id="seiro-wash" seed={11} />
       </defs>
 
-      {/* 1. 持ち上げたふた（せいろの奥。動き終わりの形。下から持ち上がってくる） */}
-      <g className="seiro-lid scene-anim" style={anim("seiro-lid-up", 38, 50, { "--o": "50% 100%" })}>
-        <g transform={`rotate(${LO_ROT} ${LO_X} ${LO_Y})`}>
-          <path d={LID_OPEN_SIDE} className="scene-paper" stroke="none" />
-          <path d={LID_OPEN_TOP} className="scene-paper" stroke="none" />
-          {LID_OPEN_IN.map((d, i) => (
-            <path key={i} d={d} className="scene-fine" />
+      {/* 1. 閉じたせいろ（本体・敷き紙・しゅうまい・閉じたふた）が、まとめて1つの g で現れる。
+          まとめて薄くしてから出すので、出てくる途中も、閉じたふたの下のしゅうまいは透けて見えない */}
+      <g className="seiro-set scene-anim" style={anim("scene-fade-up", 4, 12, { "--dy": "8px" })}>
+        {/* せいろ（後ろを隠す紙の色の面 → 線） */}
+        <g className="seiro-body">
+          <path d={OUTER_SIDE} className="scene-paper" stroke="none" />
+          <path d={INNER_WALL} className="scene-paper" stroke="none" />
+          <path d={FLOOR} className="scene-paper" stroke="none" />
+          <path d={RIM_FACE} className="scene-paper" fillRule="evenodd" stroke="none" />
+          {/* ごく淡い水彩の陰（せいろだけの例外）：内側の奥の壁と、外側の胴の右側 */}
+          <g>
+            <Wash filter="seiro-wash" d={SHADE_WALL} tone="seiro-wash-shade" id="seiro-w-wall" shift={[1, 0.75]} />
+            <Wash filter="seiro-wash" d={SHADE_SIDE} tone="seiro-wash-shade" id="seiro-w-side" shift={[1, 0.75]} />
+          </g>
+          {BODY_IN.map((d, i) => (
+            <path key={`i${i}`} d={d} className="scene-fine" />
           ))}
-          {LID_OPEN_LINE.map((d, i) => (
+          {BODY_LINE.map((d, i) => (
             <path key={i} d={d} className="scene-line" />
           ))}
         </g>
-      </g>
 
-      {/* 2. せいろ（後ろを隠す紙の色の面 → 線） */}
-      <g className="seiro-body scene-anim" style={anim("scene-fade-up", 4, 10, { "--dy": "8px" })}>
-        <path d={OUTER_SIDE} className="scene-paper" stroke="none" />
-        <path d={INNER_WALL} className="scene-paper" stroke="none" />
-        <path d={FLOOR} className="scene-paper" stroke="none" />
-        <path d={RIM_FACE} className="scene-paper" fillRule="evenodd" stroke="none" />
-        {/* ごく淡い水彩の陰（せいろだけの例外）：内側の奥の壁と、外側の胴の右側 */}
-        <g>
-          <Wash filter="seiro-wash" d={SHADE_WALL} tone="seiro-wash-shade" id="seiro-w-wall" shift={[1, 0.75]} />
-          <Wash filter="seiro-wash" d={SHADE_SIDE} tone="seiro-wash-shade" id="seiro-w-side" shift={[1, 0.75]} />
+        {/* 敷き紙（ふちの線） */}
+        <g className="seiro-paper">
+          <path d={PAPER} className="scene-fine" />
         </g>
-        {BODY_IN.map((d, i) => (
-          <path key={`i${i}`} d={d} className="scene-fine" />
-        ))}
-        {BODY_LINE.map((d, i) => (
-          <path key={i} d={d} className="scene-line" />
-        ))}
-      </g>
 
-      {/* 3. 敷き紙（ふちの線） */}
-      <g className="seiro-paper scene-anim" style={anim("scene-fade-up", 10, 14, { "--dy": "0px" })}>
-        <path d={PAPER} className="scene-fine" />
-      </g>
-
-      {/* 4. しゅうまい（奥の列から1つずつ、上から置かれる） */}
-      <g className="seiro-shumai">
-        {SHUMAI.map((p, i) => (
-          <g key={i} className="scene-anim" style={anim("scene-fade-up", 14 + i * 5, 20 + i * 5, { "--dy": "-18px" })}>
-            {/* 後ろの線を隠す紙の色 → 皮とあんの水彩 → ひだ → 口のふち → 輪郭 */}
-            <path d={p.body} className="scene-paper" stroke="none" />
-            <g>
-              <Wash filter="seiro-wash" d={p.body} tone="food-wash-skin" id={`seiro-w-skin-${i}`} shift={[1.1, 0.9]} holes={[p.skinHole]} />
-              <Wash filter="seiro-wash" d={p.meat} tone="food-wash-meat" id={`seiro-w-meat-${i}`} shift={[0.9, 0.75]} holes={[p.meatHole]} />
+        {/* しゅうまい（はじめから、閉じたふたの下にある） */}
+        <g className="seiro-shumai">
+          {SHUMAI.map((p, i) => (
+            <g key={i}>
+              {/* 後ろの線を隠す紙の色 → 皮とあんの水彩（ふたが開いて、しゅうまいが見えてから、じわっと出る）→ ひだ → 口のふち → 輪郭 */}
+              <path d={p.body} className="scene-paper" stroke="none" />
+              <g className="scene-anim" style={anim("scene-fade-up", 26 + i, 36 + i, { "--dy": "0px" })}>
+                <Wash filter="seiro-wash" d={p.body} tone="food-wash-skin" id={`seiro-w-skin-${i}`} shift={[1.1, 0.9]} holes={[p.skinHole]} />
+                <Wash filter="seiro-wash" d={p.meat} tone="food-wash-meat" id={`seiro-w-meat-${i}`} shift={[0.9, 0.75]} holes={[p.meatHole]} />
+              </g>
+              {p.creases.map((d, k) => (
+                <path key={`c${k}`} d={d} className="scene-fine" />
+              ))}
+              <path d={p.lipLine} className="scene-fine" />
+              <path d={p.outline} className="scene-line" />
             </g>
-            {p.creases.map((d, k) => (
-              <path key={`c${k}`} d={d} className="scene-fine" />
-            ))}
-            <path d={p.lipLine} className="scene-fine" />
-            <path d={p.outline} className="scene-line" />
-          </g>
-        ))}
-      </g>
+          ))}
+        </g>
 
-      {/* 5. 閉じたふた（しゅうまいの上にかぶさってから、持ち上がって消える。動き終わりは見えない） */}
-      <g className="seiro-lid-closed scene-anim" style={anim("seiro-lid-lift", 32, 44)}>
-        <path d={LID_CLOSED_SIDE} className="scene-paper" stroke="none" />
-        <path d={LID_CLOSED_TOP} className="scene-paper" stroke="none" />
-        {LID_CLOSED_IN.map((d, i) => (
-          <path key={i} d={d} className="scene-fine" />
-        ))}
-        {LID_CLOSED_LINE.map((d, i) => (
-          <path key={i} d={d} className="scene-line" />
-        ))}
+        {/* 2. 立てかけたふた（せいろの右。動き終わりの形）。動きの最後に、動いてきたふた（下の 3.）と同じ位置で入れ替わる */}
+          <g className="seiro-lid scene-anim" style={anim("seiro-lid-settle", 16, 40)}>
+            {LID_STAND.fill.map((d, i) => (
+              <path key={`f${i}`} d={d} className="scene-paper" stroke="none" />
+            ))}
+            {LID_STAND.inner.map((d, i) => (
+              <path key={`i${i}`} d={d} className="scene-fine" />
+            ))}
+            {LID_STAND.lines.map((d, i) => (
+              <path key={i} d={d} className="scene-line" />
+            ))}
+          </g>
+
+        {/* 3. 動くふた（閉じたふたの形。せいろにぴったりかぶさった形から、持ち上がって右へ移り、立てかけた形になる。
+            動き終わりは見えない。transform は LID_VARS ＝ 立てかけたふたの点と同じ式） */}
+          <g className="seiro-lid-move scene-anim" style={anim("seiro-lid-open", 16, 40, LID_VARS)}>
+            {LID_CLOSED.fill.map((d, i) => (
+              <path key={`f${i}`} d={d} className="scene-paper" stroke="none" />
+            ))}
+            {LID_CLOSED.inner.map((d, i) => (
+              <path key={`i${i}`} d={d} className="scene-fine" />
+            ))}
+            {LID_CLOSED.lines.map((d, i) => (
+              <path key={i} d={d} className="scene-line" />
+            ))}
+          </g>
       </g>
 
       {/* 6. 湯気（奥の列のしゅうまいの上から立ちのぼる。時間でゆっくり揺れる） */}
@@ -325,7 +352,7 @@ export default function SeiroIllustration({ className = "" }: { className?: stri
               d={d}
               pathLength={1}
               className="scene-line scene-stroke-draw scene-anim"
-              style={anim("scene-draw", 46 + i * 2, [55, 57, 58, 59][i])}
+              style={anim("scene-draw", 42 + i * 2, [52, 55, 57, 59][i])}
             />
           </g>
         ))}

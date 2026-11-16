@@ -132,3 +132,42 @@ export function blobPts(
   }
   return pts;
 }
+
+// 横長の、角の丸い長方形のお皿のまわりの点（肉みそ冷奴と串焼きのお皿）。
+// 床の面（u … 長い向き、v … 短い向き。半分の長さ hl・半分の幅 hw・角の丸み r、高さ z）で作り、
+// 絵ごとの見る角度 pr で絵の座標にする。書き始めと書き終わりを少し重ねて、筆で描いた輪にする。
+// ふちが少し立ったお皿は、外のふち（z = 0）と、ひと回り小さく少し低い内の底のふち（hl − 13・hw − 12・r − 8、z = −3）の2本で描く
+export function roundRectPts(
+  pr: (u: number, v: number, z?: number) => P,
+  hl: number,
+  hw: number,
+  r: number,
+  z: number,
+  seed: number,
+  amp: number,
+): P[] {
+  const ground: [number, number][] = [];
+  const corners: [number, number, number][] = [
+    [hl - r, hw - r, 0], // 右手前
+    [-(hl - r), hw - r, PI / 2], // 左手前
+    [-(hl - r), -(hw - r), PI], // 左奥
+    [hl - r, -(hw - r), PI * 1.5], // 右奥
+  ];
+  corners.forEach(([cx, cy, t0], k) => {
+    for (let i = 0; i <= 4; i++) {
+      const t = t0 + (PI / 2) * (i / 4);
+      ground.push([cx + r * Math.cos(t), cy + r * Math.sin(t)]);
+    }
+    // 次の角までの辺のまん中に1点（辺がふくらまないように）
+    const [nx, ny, nt] = corners[(k + 1) % 4];
+    const a: [number, number] = [cx + r * Math.cos(t0 + PI / 2), cy + r * Math.sin(t0 + PI / 2)];
+    const b: [number, number] = [nx + r * Math.cos(nt), ny + r * Math.sin(nt)];
+    ground.push([(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]);
+  });
+  // 重ね：最初の2点をもう一度
+  ground.push(ground[0], ground[1]);
+  return ground.map(([u, v], i) => {
+    const [x, y] = pr(u, v, z);
+    return [x + jitter(seed + i) * amp, y + jitter(seed + i + 50) * amp * 0.6] as const;
+  });
+}
