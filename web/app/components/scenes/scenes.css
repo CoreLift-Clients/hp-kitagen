@@ -10,8 +10,9 @@
       （viewBox を切り出した絵は --scene-z で、400 の幅の絵と同じ太さに見せる）
    9枚の塗る所：
    ・しゅうまい … 皮とあん（水彩。.food-wash-skin・.food-wash-meat）
-   ・鉄鍋餃子 … 餃子の皮（水彩。.food-wash-skin）と焼き目（水彩。.food-wash-yaki・.food-wash-yaki-dark）。
-     形は写真を見て描いた形（丸い鉄のスキレットいっぱいに8個が中心へ向かって並ぶ、焼き目を上にした形）。鍋は線だけ
+   ・鉄鍋餃子 … 餃子の皮（水彩。.food-wash-skin）、焼き色（水彩。きつね色 .food-wash-yaki に、濃い焼き色 .food-wash-yaki-dark の斑点）、
+     羽根（水彩。.food-wash-hane）。形は写真を見て描いた形（厚みのある鉄のスキレットに、ぷっくりした三日月形の8個が
+     中心のまわりを渦を巻くように並ぶ。ひだは背の側だけ）。鍋は線だけ。ふちの厚みの帯の淡い墨色だけは、下の「入れ物は線だけ」の例外
    ・からあげ … からあげ（水彩。.food-wash-karaage）。形は写真を見て描いた形（浅く広い無地の白い平鉢を上からのぞき込む角度で、
      まん中に6個をこんもり）。器のふちの帯の奥側の陰だけは、下の「入れ物は線だけ」の例外
    ・豚の角煮 … 角煮の肉・脂の層・味玉・千切りキャベツ（水彩。.food-wash-*）。形は千切りキャベツを敷いた形（43575ec）
@@ -35,6 +36,8 @@
      塗り方（ずれ・ふちの濃さ・にじみ）は、ほかの水彩と同じ
      例外：からあげの器（無地の白い平鉢）だけは、浅さと広いふちが分かるよう、ふちの帯の奥側（内の線のすぐ外の、
      奥の半分）に、ごく淡い陰を1段だけ付けてよい（.karaage-wash-shade。foreground をうすく 0.12。塗り方はほかの水彩と同じ）
+     例外：鉄鍋餃子の鉄鍋（スキレット）だけは、厚みのある黒い鉄に見えるよう、ふちの厚みの帯（外と内の2本の線のあいだ）にだけ、
+     淡い墨色を1段塗ってよい（.teppan-wash-rim。foreground をうすく 0.3。塗り方はほかの水彩と同じ）。鍋の内側・側面・取っ手には付けない
    ・飲み物の塗り方（生ビール・焼酎・日本酒・ソフトドリンクの3枚）：飲み物は、入れ物そのものが主役なので、
      入れ物にも水彩の色を付けてよい（上の「入れ物は線だけ」は、飲み物には当てない）。
      塗り方は料理と同じ水彩の決まり（線の内側だけ・ふちの濃さ・白い抜け・にじみ・ムラ）。3枚でそろえるため、
@@ -155,8 +158,10 @@
    ・.food-wash-koge … 串焼きの焼き目（濃い茶色。accent 45% に foreground。小さな塗りを具の上に重ねる）
    ・.food-wash-yaki … 鉄鍋餃子の焼き目（黄みのあるきつね色。accent 82% に こげ茶 #6B3A12。新しく足した色。
      からあげの .food-wash-karaage と同じ系統で、写真の焼き色に合わせて赤みを少し抜いた色）。餃子の皮は .food-wash-skin
-   ・.food-wash-yaki-dark … 鉄鍋餃子の焼き目のまん中（こげ茶。accent 55% に こげ茶 #5A2A0E を、もう1段重ねる。
-     新しく足した色。餃子ごとに濃さを 0.75〜1 倍に変える。ふちへ向かって淡くなるよう、ふちの濃さ --wash-edge は低め 0.12）
+   ・.food-wash-yaki-dark … 鉄鍋餃子の濃い焼き色（こげ茶。accent 55% に こげ茶 #5A2A0E）。
+     きつね色の上に、大きさの違う小さな塊で斑点のように散らす（1つの餃子に 3〜6 個）
+   ・.food-wash-hane … 鉄鍋餃子の羽根（.food-wash-yaki-dark と同じ色を淡めに 0.36。餃子より目立たない濃さ。小さな穴を空ける）
+   ・.teppan-wash-rim … 鉄鍋のふちの厚みの帯（入れ物の例外。foreground をうすく 0.3。ふちはさらにうすく）
    ・.seiro-wash-shade … せいろの陰（入れ物の例外。foreground をうすく 0.16。ふちはさらにうすく）
    ・.karaage-wash-shade … からあげの器のふちの帯の奥側の陰（入れ物の例外。foreground をうすく 0.12。ふちはさらにうすく）
    飲み物（入れ物にも塗る。「料理の絵の決まり」の「飲み物の塗り方」）
@@ -190,7 +195,8 @@
 .food-wash-kawa { --wash: color-mix(in srgb, var(--accent) 74%, #fff); --wash-a: 0.7; --wash-edge: 0.7; }
 .food-wash-koge { --wash: color-mix(in srgb, var(--accent) 45%, currentColor); --wash-a: 0.62; --wash-edge: 0.42; }
 .food-wash-yaki { --wash: color-mix(in srgb, var(--accent) 82%, #6B3A12); --wash-a: 0.66; --wash-edge: 0.42; }
-.food-wash-yaki-dark { --wash: color-mix(in srgb, var(--accent) 55%, #5A2A0E); --wash-a: 0.42; --wash-edge: 0.12; }
+.food-wash-yaki-dark { --wash: color-mix(in srgb, var(--accent) 55%, #5A2A0E); --wash-a: 0.6; --wash-edge: 0.38; }
+.food-wash-hane { --wash: color-mix(in srgb, var(--accent) 55%, #5A2A0E); --wash-a: 0.36; --wash-edge: 0.22; }
 /* 飲み物（入れ物も主役なので、入れ物にも塗る。上の「料理の絵の決まり」の「飲み物の塗り方」） */
 .food-wash-glass { --wash: color-mix(in srgb, #D6E7EC 70%, currentColor); --wash-a: 0.12; --wash-edge: 0.4; }
 .food-wash-ice { --wash: #D6E7EC; --wash-a: 0.8; --wash-edge: 0.55; }
@@ -202,6 +208,12 @@
 .food-wash-tap { --wash: color-mix(in srgb, currentColor 30%, #fff); --wash-a: 0.35; --wash-edge: 0.4; }
 .seiro-wash-shade { --wash: currentColor; --wash-a: 0.16; --wash-edge: 0.1; }
 .karaage-wash-shade { --wash: currentColor; --wash-a: 0.12; --wash-edge: 0.07; }
+.teppan-wash-rim { --wash: currentColor; --wash-a: 0.3; --wash-edge: 0.18; }
+/* 鉄鍋餃子の羽根のふちの線（細く、うすく。とぎれとぎれ。餃子の線より目立たないように） */
+.teppan-hane-line {
+  stroke-width: calc(1.1px * var(--scene-k) * var(--scene-z, 1));
+  opacity: 0.55;
+}
 /* 肉みそ冷奴の線の色（HiyayakkoIllustration.tsx。ab2dae6 の決まり）：ねぎの輪の線は落ち着いた緑、てかりは白い小さな点 */
 .hiyayakko-negi { --hiyayakko-negi: #7E9A4C; }
 .hiyayakko-negi-ring {

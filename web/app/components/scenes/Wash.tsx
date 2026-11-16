@@ -71,7 +71,9 @@ export function Wash({
 // 2) 絵の具のムラ：少し細かい模様で、塗りの濃さを 0.65〜0.95 倍くらいの間でやわらかく変える
 //    （feColorMatrix で模様の赤の明るさを濃さに変え、feComposite の in で塗りに掛ける）。
 //    wide のときは、ムラの幅を少し広く 0.55〜0.95 倍くらいに（色を濃くしても水彩に見えるように。肉みそ冷奴）
-export function WashFilter({ id, seed, scale = 3, wide = false }: { id: string; seed: number; scale?: number; wide?: boolean }) {
+// 3) blur を渡したときだけ、最後に塗りのふちを少しぼかす（feGaussianBlur。鉄鍋餃子の、焼き色と皮の境目）。
+//    切り抜き（Wash の mask）はぼかしの後なので、線の側のふちはぼけない
+export function WashFilter({ id, seed, scale = 3, wide = false, blur = 0 }: { id: string; seed: number; scale?: number; wide?: boolean; blur?: number }) {
   const mura = wide ? "-1 0 0 0 1.25" : "-0.75 0 0 0 1.2";
   return (
     <filter id={id} x="-30%" y="-30%" width="160%" height="160%">
@@ -79,7 +81,8 @@ export function WashFilter({ id, seed, scale = 3, wide = false }: { id: string; 
       <feDisplacementMap in="SourceGraphic" in2="n" scale={scale} xChannelSelector="R" yChannelSelector="G" result="d" />
       <feTurbulence type="fractalNoise" baseFrequency="0.06" numOctaves={2} seed={seed + 1} result="m" />
       <feColorMatrix in="m" type="matrix" values={`0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  ${mura}`} result="ma" />
-      <feComposite in="d" in2="ma" operator="in" />
+      <feComposite in="d" in2="ma" operator="in" result="w" />
+      {blur > 0 && <feGaussianBlur in="w" stdDeviation={blur} />}
     </filter>
   );
 }
