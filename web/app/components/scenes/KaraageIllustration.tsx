@@ -1,12 +1,17 @@
 // ─── からあげの線画 ───
 // ディナーメニューの「きたげんの名物」の欄の、料理の参（からあげ）のカードで使う飾りの絵（aria-hidden。意味はカードの品名で伝える）。
-// 本物の盛り付け（代表者から届いた写真）に合わせる：白い浅い丸鉢を斜め上から。ふちは厚く、ふちの内側に
+// 本物の盛り付け（代表者から届いた写真）に合わせる：白地に藍の模様の、染付のような丸鉢を斜め上から。
+// 胴は少し深くふくらみ、底に高台（器の足）が帯のように見える。ふちは少し厚く、丸い。ふちの内側に
 // 藍色の花びらの模様がぐるりと並ぶ。からあげは 6個で、鉢の中にこんもり山に積む（奥のまん中の1個がいちばん高く、
 // 中の段に3個、手前に2個）。1つ1つは、ごつごつ・でこぼこした不ぞろいな形。
 // 色は、料理の絵の決まり（scenes.css の先頭）の「水彩の塗り方」で、線画にうすく絵の具で塗ったように付ける
 // （部品は Wash.tsx。にじみのフィルタは karaage-wash の1つを使い回す）：
 // ・線は currentColor（＝ 呼び出し側の text-foreground）。端と角は丸く
-// ・鉢と模様：線だけ（面は紙の色。後ろを隠す塗りだけ）
+// ・鉢：線だけ（面は紙の色。後ろを隠す塗りだけ）。ただし、この器だけの例外（scenes.css の「料理の絵の決まり」）として
+//   - 模様の花びら：淡い藍の水彩（.karaage-wash-ai）。輪郭の線は少し濃い藍の細い線（.karaage-ai-line）。あいだの点も藍
+//   - 内側の奥（ふちの内から見込みへ下がる壁の、奥の半分）に、ごく淡い陰を1段だけ（.karaage-wash-shade。foreground をうすく）
+// ・線の太さ：器とからあげの輪郭は、角煮の輪郭と同じ細めの線（.scene-outline）。中の線（ふちの内・ふちの厚み・見込み・
+//   衣のでこぼこ）は、それより少し細い .scene-outline-fine
 // ・からあげ：赤みのあるきつね色の水彩（.food-wash-karaage）。ふちは同じ色が細く濃くたまる（.wash-edge）。
 //   下のほう（右下）は、同じ色をもう1段重ねて陰に（.food-wash-karaage-dark）。山のいちばん上に白い抜けを1つ
 // ・衣のでこぼこ：中の短い曲線を、1つに 2〜3本
@@ -15,7 +20,7 @@
 //   （油のパチパチの線は、湯気と重なってごちゃつくので外した）
 // ・部品ごとに g でまとめる：鉢（karaage-bowl）・模様（karaage-pattern）・からあげ（karaage-pieces）・湯気（karaage-steam）
 // ・見る角度は斜め上から（鉢の丸を縦に 0.55 につぶす）
-// ・動きの順番：鉢のふちが描かれる → 模様の花びらが1つずつ描かれる → からあげが1つずつ上から積まれる（奥から手前へ）→
+// ・動きの順番：鉢のふちが描かれる（内側の奥の陰も出る）→ 模様の花びらが1つずつ描かれる（藍の水彩も一緒にじわっと出る）→ からあげが1つずつ上から積まれる（奥から手前へ）→
 //   水彩の塗りがじわっと出る → 湯気が2本立ちのぼる
 //   （動きの名前と範囲は anim(...)、@keyframes は scenes.css）。何も動かさないときの形が、動き終わった形
 // ・絵は viewBox を 380 の幅に切り出して大きく見せる（湯気の上の端まで入るよう、少し上へずらす。線の太さは --scene-z で 400 の幅の絵とそろえる。scenes.css）
@@ -36,29 +41,54 @@ const rim = (rho: number, t: number): P => [CX + RX * rho * Math.cos(t), CY + RX
 
 const RIM_OUTER = ring(CX, CY, RX, RX * SQ, 8000, 0.9); // ふちの外
 const RIM_INNER = ring(CX, CY + 3, RX * 0.9, RX * SQ * 0.88, 8030, 0.7); // ふちの内（厚み。内側は少し下がる）
-// 鉢の外側（手前のふちの下にふくらむ胴）と高台
-const BODY = smooth([
-  [CX - RX + 1, CY + 4],
-  [CX - RX * 0.9, CY + 52],
-  [CX - RX * 0.6, CY + 92],
-  [CX, CY + 108],
-  [CX + RX * 0.6, CY + 92],
-  [CX + RX * 0.9, CY + 52],
-  [CX + RX - 1, CY + 4],
-]);
-const FOOT = arc(CX, CY + 102, 54, 10, PI * 0.12, PI * 0.88, 10, 0.5, 8060); // 高台（胴の下の、手前のふち）
+// ふちの厚み（手前の半分。ふちの外のすぐ下に沿う細い線で、ふちに少し厚みと丸みを付ける。左右の端は胴の線に溶け込む）
+const RIM_LIP = arc(CX, CY + 6, RX - 1.5, RX * SQ - 0.5, PI * 0.06, PI * 0.94, 24, 0.5, 8040);
+// 鉢の外側（手前のふちの下にふくらむ胴。少し深めにして、ふくらみを大きく）。
+// ふちの外の左右の端から、まず真下へ少し下りて（ふちの丸み）、ふくらみながら底へすぼまる
+const BODY_PTS: P[] = [
+  [CX - RX + 1, CY + 2],
+  [CX - RX * 0.985, CY + 22],
+  [CX - RX * 0.92, CY + 62],
+  [CX - RX * 0.66, CY + 104],
+  [CX - RX * 0.3, CY + 120],
+  [CX, CY + 123],
+  [CX + RX * 0.3, CY + 120],
+  [CX + RX * 0.66, CY + 104],
+  [CX + RX * 0.92, CY + 62],
+  [CX + RX * 0.985, CY + 22],
+  [CX + RX - 1, CY + 2],
+];
+const BODY = smooth(BODY_PTS);
+// 高台（器の足）：胴の下に、細い帯として見せる（左右の短い縦の線と、手前の下のふち）
+const FOOT_RX = 60;
+const FOOT_TOP = CY + 117; // 帯の上（胴の線とまじわる高さ）
+const FOOT_H = 10; // 帯の高さ
+const FOOT_RY = 9;
+const footArc = (wobble: boolean): P[] =>
+  Array.from({ length: 13 }, (_, i): P => {
+    const t = PI - (PI * i) / 12;
+    const j = wobble ? jitter(8060 + i) * 0.4 : 0;
+    return [CX + FOOT_RX * Math.cos(t) + j, FOOT_TOP + FOOT_H + FOOT_RY * 0.9 * Math.sin(t)];
+  });
+const FOOT_LINE = smooth([[CX - FOOT_RX, FOOT_TOP], ...footArc(true), [CX + FOOT_RX, FOOT_TOP]]);
+const FOOT_PAPER = polygon([[CX - FOOT_RX, FOOT_TOP - 4], ...footArc(false), [CX + FOOT_RX, FOOT_TOP - 4]]);
 // 見込み（鉢の内側の底。からあげの下に少しだけ見え、深さを表す）
 const FLOOR = arc(CX, CY + 22, RX * 0.56, RX * SQ * 0.5, PI * 0.02, PI * 0.98, 16, 0.6, 8080);
 // 後ろの線を隠す紙の色（鉢の上の面と胴）
-const BOWL_PAPER = polygon([
-  ...Array.from({ length: 33 }, (_, i) => rim(1, PI + (PI * i) / 32)),
-  [CX + RX - 1, CY + 4],
-  [CX + RX * 0.9, CY + 52],
-  [CX + RX * 0.6, CY + 92],
-  [CX, CY + 112],
-  [CX - RX * 0.6, CY + 92],
-  [CX - RX * 0.9, CY + 52],
-  [CX - RX + 1, CY + 4],
+const BOWL_PAPER = polygon([...Array.from({ length: 33 }, (_, i) => rim(1, PI + (PI * i) / 32)), ...BODY_PTS.slice().reverse()]);
+// 内側の奥の陰（ごく淡い水彩を1段。この器だけの例外）：ふちの内の奥の半分から、見込みのほうへ下がる壁の帯。
+// 奥のまん中でいちばん幅が広く、左右の端で細くなって、ふちの内に溶け込む（光は手前から当たり、奥の壁が少し暗い）
+const IN_RX = RX * 0.9;
+const IN_RY = RX * SQ * 0.88;
+const SHADE_BACK = polygon([
+  ...Array.from({ length: 25 }, (_, i): P => {
+    const t = PI + (PI * i) / 24;
+    return [CX + IN_RX * Math.cos(t), CY + 3 + IN_RY * Math.sin(t)];
+  }),
+  ...Array.from({ length: 23 }, (_, i): P => {
+    const t = PI * 2 - (PI * (i + 1)) / 24;
+    return [CX + IN_RX * 0.97 * Math.cos(t), CY + 3 + IN_RY * 0.42 * Math.sin(t)];
+  }),
 ]);
 
 // ── 模様（ふちの内側に、花びらの形を 8か所。花びらの先は鉢のまん中を向く） ──
@@ -79,7 +109,7 @@ const PETALS = Array.from({ length: 8 }, (_, k) => {
     const [x, y] = rim(rho, a + dt);
     return [x + jitter(s + i) * 0.5, y + jitter(s + i + 9) * 0.4] as const;
   });
-  return { d: smooth(pts), depth: Math.sin(a) };
+  return { d: smooth(pts), fill: polygon(pts), depth: Math.sin(a) };
 });
 // 花びらのあいだの小さな点（ふちの上。写真の、模様のあいだの小さな点）
 const DOTS = Array.from({ length: 8 }, (_, k) => rim(0.95, (PI * 2 * k) / 8));
@@ -211,24 +241,36 @@ export default function KaraageIllustration({ className = "" }: { className?: st
 
       {/* 1. 鉢（線だけ。ふちの外 → ふちの内 → 胴と高台 → 見込みの順に描かれる） */}
       <g className="karaage-bowl">
-        <path d={BOWL_PAPER} className="scene-paper scene-anim" stroke="none" style={anim("scene-fade-up", 4, 8, { "--dy": "0px" })} />
-        <path d={RIM_OUTER} pathLength={1} className="scene-line scene-stroke-draw scene-anim" style={anim("scene-draw", 4, 12)} />
-        <path d={RIM_INNER} pathLength={1} className="scene-fine scene-stroke-draw scene-anim" style={anim("scene-draw", 7, 14)} />
-        <path d={BODY} pathLength={1} className="scene-line scene-stroke-draw scene-anim" style={anim("scene-draw", 9, 15)} />
-        <path d={FOOT} pathLength={1} className="scene-fine scene-stroke-draw scene-anim" style={anim("scene-draw", 12, 16)} />
-        <path d={FLOOR} pathLength={1} className="scene-fine scene-stroke-draw scene-anim" style={anim("scene-draw", 13, 17)} />
+        <g className="scene-anim" style={anim("scene-fade-up", 4, 8, { "--dy": "0px" })}>
+          <path d={FOOT_PAPER} className="scene-paper" stroke="none" />
+          <path d={BOWL_PAPER} className="scene-paper" stroke="none" />
+        </g>
+        {/* 内側の奥の、ごく淡い陰（この器だけの例外。水彩の塗り方で） */}
+        <g className="scene-anim" style={anim("scene-fade-up", 9, 16, { "--dy": "0px" })}>
+          <Wash filter="karaage-wash" d={SHADE_BACK} tone="karaage-wash-shade" id="karaage-w-back" shift={[1, 0.75]} line={1.45} />
+        </g>
+        <path d={RIM_OUTER} pathLength={1} className="scene-outline scene-stroke-draw scene-anim" style={anim("scene-draw", 4, 12)} />
+        <path d={RIM_LIP} pathLength={1} className="scene-outline-fine scene-stroke-draw scene-anim" style={anim("scene-draw", 6, 13)} />
+        <path d={RIM_INNER} pathLength={1} className="scene-outline-fine scene-stroke-draw scene-anim" style={anim("scene-draw", 7, 14)} />
+        <path d={BODY} pathLength={1} className="scene-outline scene-stroke-draw scene-anim" style={anim("scene-draw", 9, 15)} />
+        <path d={FOOT_LINE} pathLength={1} className="scene-outline scene-stroke-draw scene-anim" style={anim("scene-draw", 12, 16)} />
+        <path d={FLOOR} pathLength={1} className="scene-outline-fine scene-stroke-draw scene-anim" style={anim("scene-draw", 13, 17)} />
       </g>
 
-      {/* 2. 模様（ふちの内側の花びら 8つと、あいだの小さな点。線だけ） */}
+      {/* 2. 模様（ふちの内側の花びら 8つと、あいだの小さな点。この器だけの例外として藍色：淡い藍の水彩 → 少し濃い藍の細い線） */}
       <g className="karaage-pattern">
         {PETALS.map((p, k) => (
-          <path
-            key={k}
-            d={p.d}
-            pathLength={1}
-            className="scene-fine scene-stroke-draw scene-anim"
-            style={anim("scene-draw", 15 + k * 0.8, 19 + k * 0.8)}
-          />
+          <g key={k}>
+            <g className="scene-anim" style={anim("scene-fade-up", 16 + k * 0.8, 21 + k * 0.8, { "--dy": "0px" })}>
+              <Wash filter="karaage-wash" d={p.fill} tone="karaage-wash-ai" id={`karaage-w-ai-${k}`} shift={[0.75, 0.5]} line={1.45} />
+            </g>
+            <path
+              d={p.d}
+              pathLength={1}
+              className="karaage-ai-line scene-stroke-draw scene-anim"
+              style={anim("scene-draw", 15 + k * 0.8, 19 + k * 0.8)}
+            />
+          </g>
         ))}
         {DOTS.map(([x, y], k) => (
           <g key={k} className="scene-anim" style={anim("scene-pop", 17 + k * 0.8, 20 + k * 0.8)}>
@@ -245,15 +287,15 @@ export default function KaraageIllustration({ className = "" }: { className?: st
             <path d={p.fill} className="scene-paper" stroke="none" />
             <g className="scene-anim" style={washAnim(i)}>
               <g>
-                <Wash filter="karaage-wash" d={p.fill} tone="food-wash-karaage" id={`karaage-w-${i}`} shift={[1, 0.75]} holes={i === 0 ? TOP_HOLE : []} />
+                <Wash filter="karaage-wash" d={p.fill} tone="food-wash-karaage" id={`karaage-w-${i}`} shift={[1, 0.75]} holes={i === 0 ? TOP_HOLE : []} line={1.8} />
                 <g clipPath={`url(#karaage-clip-${i})`}>
                   <Wash filter="karaage-wash" d={p.shade} tone="food-wash-karaage-dark" id={`karaage-w-shade-${i}`} shift={[0.75, 0.75]} />
                 </g>
               </g>
             </g>
-            <path d={p.outline} className="scene-line" />
+            <path d={p.outline} className="scene-outline" />
             {p.cracks.map((d, k) => (
-              <path key={k} d={d} className="scene-fine" />
+              <path key={k} d={d} className="scene-outline-fine" />
             ))}
           </g>
         ))}

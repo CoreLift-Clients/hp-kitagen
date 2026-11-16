@@ -340,13 +340,13 @@ export default function KakuniIllustration({ className = "" }: { className?: str
                 ))}
               </g>
             </g>
-            <path d={p.body[0]} className="kakuni-outline" />
+            <path d={p.body[0]} className="scene-outline" />
             <g clipPath={`url(#kakuni-top-${i})`}>
               {p.bandLines.map((d, k) => (
                 <path key={`l${k}`} d={d} className="kakuni-band-line" />
               ))}
             </g>
-            <path d={p.top} className="kakuni-outline" />
+            <path d={p.top} className="scene-outline" />
             {/* 5. つや（白い細い筋） */}
             <g className="scene-anim" style={anim("scene-fade-up", 48 + i, 54 + i, { "--dy": "0px" })}>
               {p.gloss.map((d, k) => (
@@ -366,7 +366,7 @@ export default function KakuniIllustration({ className = "" }: { className?: str
             <Wash filter="kakuni-wash" d={YOLK_D} tone="food-wash-yolk" id="kakuni-w-yolk" shift={[0.9, 0.7]} line={1.1} holes={[[EX + 10, EY + 6, 2.4, 1.5]]} />
           </g>
           <ellipse cx={EX + 1.5} cy={EY + 0.5} rx={ER * 0.6} ry={EH * 0.62} className="kakuni-yolk-line" />
-          <ellipse cx={EX} cy={EY} rx={ER} ry={EH} className="kakuni-outline" />
+          <ellipse cx={EX} cy={EY} rx={ER} ry={EH} className="scene-outline" />
           <g className="scene-anim" style={anim("scene-pop", 48, 54)}>
             <ellipse cx={EX - 7} cy={EY - 5} rx={4.4} ry={2.6} className="kakuni-shine" stroke="none" />
             <circle cx={EX} cy={EY - 7.5} r={1.6} className="kakuni-shine" stroke="none" />
