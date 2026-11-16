@@ -8,6 +8,9 @@
 // ・流れの通り道は、2次ベジェ曲線（from → ctrl → to）。まっすぐ落ちる流れは ctrl を from と to の間に置く
 // ・帯の細さのための線の太さの例外は scenes.css の .pour（小さい絵でも輪郭の線が帯を埋めないように）
 // ・動き：上から下へ伸びる（scenes.css の pour-grow。上の端を支点に縦に伸びる）
+// ・cut を渡すと、注ぎ終わりに流れが上から切れて、下へ吸い込まれるように縮んで消える（scenes.css の pour-cut。
+//   焼酎・日本酒の流れと同じ消え方）。明るい筋は、切れ始めにすっと消える（流れが止まって見えるように）。
+//   動き終わり（prefers-reduced-motion のときも）は、流れも筋も見えない（.pour-gone）
 
 import type { CSSProperties } from "react";
 import { PI, anim, polygon, smooth, type P } from "./draw";
@@ -67,7 +70,8 @@ export function pourShape({ from, ctrl, to, w0, w1, steps = 8 }: PourPath) {
 }
 
 // 流れ1本。shape は pourShape の結果。tone は水彩の色（.food-wash-*）、filter は絵のにじみのフィルタの id。
-// streaks … 明るい筋の本数（1 か 2）。grow … 伸びる動きの範囲（anim の from・to）
+// streaks … 明るい筋の本数（1 か 2）。grow … 伸びる動きの範囲（anim の from・to）。
+// cut … 注ぎ終わりに、流れが上から切れて消える範囲（anim の from・to。渡さないときは、流れは注いでいる形のまま残る）
 export function Pour({
   shape,
   tone,
@@ -75,6 +79,7 @@ export function Pour({
   id,
   streaks = 2,
   grow,
+  cut,
   className = "",
 }: {
   shape: ReturnType<typeof pourShape>;
@@ -83,17 +88,33 @@ export function Pour({
   id: string;
   streaks?: 1 | 2;
   grow: readonly [number, number];
+  cut?: readonly [number, number];
   className?: string;
 }) {
-  return (
+  const flow = shape.streaks
+    .slice(0, streaks)
+    .map((s, i) => <path key={i} d={s.d} pathLength={s.length} className={`pour-flow pour-flow-${i + 1}`} />);
+  const body = (
     <g className={`pour scene-anim ${className}`} style={anim("pour-grow", grow[0], grow[1], { "--o": "50% 0%" }) as CSSProperties}>
       <Wash filter={filter} d={shape.fill} tone={tone} id={id} shift={[0.4, 0.3]} line={2.1} />
-      {shape.streaks.slice(0, streaks).map((s, i) => (
-        <path key={i} d={s.d} pathLength={s.length} className={`pour-flow pour-flow-${i + 1}`} />
-      ))}
+      {cut ? (
+        // 明るい筋は、切れ始め（cut の最初の 4 割）ですっと消える
+        <g className="scene-anim" style={anim("scene-fade-out", cut[0], cut[0] + (cut[1] - cut[0]) * 0.4)}>
+          {flow}
+        </g>
+      ) : (
+        flow
+      )}
       {shape.edges.map((d, i) => (
         <path key={i} d={d} className="scene-fine" />
       ))}
+    </g>
+  );
+  if (!cut) return body;
+  // 注ぎ終わり：上から切れて、下の端を支点に縮んで消える
+  return (
+    <g className="pour-gone scene-anim" style={anim("pour-cut", cut[0], cut[1], { "--o": "50% 100%" }) as CSSProperties}>
+      {body}
     </g>
   );
 }

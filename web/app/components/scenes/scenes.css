@@ -265,7 +265,11 @@
      帯の中だけ線の太さの倍率を 1.6 までにする（--scene-z で割り戻す。輪郭の線・水彩の切り抜き・明るい筋に効く）
    ・明るい筋（.pour-flow）：白をうすく。破線を、時間でずっと上から下へ流す（下の @media の中。場面が画面の外にあるあいだは止める）。
      prefers-reduced-motion のときは、破線のまま止まって見える。破線の長さは pathLength で流れの長さによらずそろえる（Pour.tsx）
-   ・生ビールのレバー：根元（管の上、絵の座標 331・20）を中心に、まっすぐ立った形から手前（左）へ少し倒れる */
+   ・.pour-gone … 注ぎ終わりに切れて消える流れ（Pour の cut）。動き終わり（prefers-reduced-motion のとき、
+     JavaScript が動かないブラウザで動き終わったあとも）は見えない。流れの中の明るい筋も、流れと一緒に見えなくなる
+   ・生ビールのレバー：根元（管の上、絵の座標 331・20）を中心に、まっすぐ立った形から手前（左）へ少し倒れ、
+     注ぎ終えると、まっすぐ立った形に戻る（toast-tilt を2段） */
+.pour-gone { opacity: 0; }
 .pour { --scene-z: calc(min(var(--scene-k), 1.6) / var(--scene-k)); }
 /* 日本酒・水の流れ（幅 3.5〜6 と、ビールより細い）は、輪郭の線をさらに 0.6 倍に（中の色と筋が見えるように） */
 .pour.pour-thin { --scene-z: calc(min(var(--scene-k), 1.6) / var(--scene-k) * 0.6); }
@@ -422,19 +426,14 @@
   8%   { opacity: 1; }
   to   { opacity: 1; transform: none; }
 }
-/* 生ビールのレバー：まっすぐ立った形から、手前へ少し倒れる */
-@keyframes beer-lever {
-  from { transform: rotate(var(--rot, 15deg)); }
-  to   { transform: none; }
-}
 /* 流れが当たる所の粒（生ビールの泡の粒、日本酒・水割りのしずく）：当たる所（--sx・--sy だけ戻った位置）から、外へはねて出る */
 @keyframes pour-splash {
   from { opacity: 0; transform: translate(var(--sx, 0px), var(--sy, 0px)) scale(0.4); }
   55%  { opacity: 1; transform: translate(calc(var(--sx, 0px) * -0.15), calc(var(--sy, 0px) * -0.15)); }
   to   { opacity: 1; transform: none; }
 }
-/* ── 焼酎・日本酒（SakeIllustration.tsx）の「注いで、終える」動き ── */
-/* 注ぎ終わり：流れが上から切れて、下へ吸い込まれるように縮んで消える（下の端 --o を支点に） */
+/* ── 「注いで、終える」動き（焼酎・日本酒 SakeIllustration.tsx、生ビール BeerIllustration.tsx） ── */
+/* 注ぎ終わり：流れが上から切れて、下へ吸い込まれるように縮んで消える（下の端 --o を支点に。Pour.tsx の cut） */
 @keyframes pour-cut {
   from { opacity: 1; transform: none; }
   70%  { opacity: 1; }
@@ -473,20 +472,31 @@
   35%  { opacity: 1; }
   to   { opacity: 0; transform: translate(-3px, -8px) rotate(var(--rot, 12deg)); }
 }
-/* マドラーで混ぜる：グラスの口の少し下（--o）を中心に左右へ小さく傾け、少しずらして、小さく回るように、ゆっくり 3 周 */
+/* マドラーで混ぜる：グラスの口の少し下（--o）を中心に左右へ小さく傾け、少しずらして、小さく回るように、ゆっくり 1 周
+   （グラスの中の先が、左 → 奥 → 右 → 元の位置と、左右に1往復する。止まって見えないよう、円を 12 コマでなめらかにたどる。
+   最初と最後だけ、ゆっくり動き出して、ゆっくり止まる） */
 @keyframes sake-stir {
-  from, 33.333%, 66.667%, to { transform: none; }
-  8.333%, 41.667%, 75%       { transform: translate(2px, -1px) rotate(5deg); }
-  16.667%, 50%, 83.333%      { transform: translate(0px, -2px) rotate(0deg); }
-  25%, 58.333%, 91.667%      { transform: translate(-2px, -1px) rotate(-5deg); }
+  from     { transform: none; animation-timing-function: ease-in; }
+  8.333%   { transform: translate(1px, -0.13px) rotate(2.5deg); }
+  16.667%  { transform: translate(1.73px, -0.5px) rotate(4.33deg); }
+  25%      { transform: translate(2px, -1px) rotate(5deg); }
+  33.333%  { transform: translate(1.73px, -1.5px) rotate(4.33deg); }
+  41.667%  { transform: translate(1px, -1.87px) rotate(2.5deg); }
+  50%      { transform: translate(0px, -2px) rotate(0deg); }
+  58.333%  { transform: translate(-1px, -1.87px) rotate(-2.5deg); }
+  66.667%  { transform: translate(-1.73px, -1.5px) rotate(-4.33deg); }
+  75%      { transform: translate(-2px, -1px) rotate(-5deg); }
+  83.333%  { transform: translate(-1.73px, -0.5px) rotate(-4.33deg); }
+  91.667%  { transform: translate(-1px, -0.13px) rotate(-2.5deg); animation-timing-function: ease-out; }
+  to       { transform: none; }
 }
-/* 混ぜるときの氷の揺れ（--j で、氷ごとに向きと大きさを変える） */
+/* 混ぜるときの氷の揺れ（--j で、氷ごとに向きと大きさを変える）。マドラーの1周に合わせて、1回だけ揺れる
+   （マドラーの先が左へ来るころに片側へ、右へ来るころに反対側へ傾き、元に戻る） */
 @keyframes sake-ice-jiggle {
+  from, 28%, 72%, to { animation-timing-function: ease-in-out; }
   from, to { transform: none; }
-  20% { transform: translate(calc(1.5px * var(--j, 1)), -1px) rotate(calc(4deg * var(--j, 1))); }
-  45% { transform: translate(calc(-1.5px * var(--j, 1)), 0.5px) rotate(calc(-3deg * var(--j, 1))); }
-  70% { transform: translate(calc(1px * var(--j, 1)), -0.5px) rotate(calc(2.5deg * var(--j, 1))); }
-  90% { transform: translate(calc(-0.5px * var(--j, 1)), 0px) rotate(calc(-1deg * var(--j, 1))); }
+  28% { transform: translate(calc(1.5px * var(--j, 1)), -1px) rotate(calc(4deg * var(--j, 1))); }
+  72% { transform: translate(calc(-1.5px * var(--j, 1)), 0.5px) rotate(calc(-3deg * var(--j, 1))); }
 }
 /* マドラーを抜く：上へまっすぐ（--pull）動かし、後ろ半分で消える */
 @keyframes sake-pull-out {

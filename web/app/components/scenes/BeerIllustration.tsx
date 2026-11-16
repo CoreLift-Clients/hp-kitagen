@@ -8,18 +8,21 @@
 //   飲み物は入れ物そのものが主役なので、入れ物にも水彩の色を付ける（料理の絵の決まり、scenes.css の先頭）：
 //   ジョッキのガラス（胴と取っ手）はごく淡い色（ほぼ紙の色、ふちだけうすく .food-wash-glass）、
 //   注ぎ口（サーバー）は淡い灰色を1段（.food-wash-tap）。焼酎・日本酒、ソフトドリンクのカードと塗り方をそろえる。
-//   ビールと泡の水彩は、泡が盛り上がったあと、最後にじわっと出る
+//   ビールと泡の水彩は、注ぎ終えてレバーが戻ったあと、最後にじわっと出る
 // ・注がれるビールは、琥珀色の水彩の帯（.food-wash-beer。輪郭は細い線）。下へ行くほど少し細く、ほんの少しよじれる。
 //   帯の中に白をうすくした明るい筋を2本入れ、時間でずっと上から下へ流す（scenes.css の pour-flow。画面の外では止まる）
-//   流れの描き方は、焼酎・日本酒の絵と共通の部品（Pour.tsx）
-// ・流れが泡に当たる所は、泡がこんもり盛り上がった山。そのまわりに小さな泡の粒を4つ、はねるように置く
-//   （泡の粒は、ほかの線と同じ foreground の色）
-// ・注ぎ口の上に、上へ伸びる太いレバー（先は丸い玉）。注ぎ口とレバーは淡い灰色の水彩
+//   流れの描き方と、注ぎ終わりに上から切れて消える動きは、焼酎・日本酒の絵と共通の部品（Pour.tsx の cut）
+// ・流れが泡に当たっていた所は、泡がこんもり盛り上がった山（流れが切れたあとも、完成の形で残る）。
+//   そのまわりに小さな泡の粒を4つ、はねるように置く（泡の粒は、ほかの線と同じ foreground の色）
+// ・注ぎ口の上に、上へ伸びる太いレバー（先は丸い玉）。注ぎ口とレバーは淡い灰色の水彩。
+//   レバーは、まっすぐ立った形（完成の形）で描き、注ぐあいだだけ手前（左）へ倒す
 // ・部品ごとに g でまとめる：注ぎ口（beer-tap）・レバー（beer-lever）・注がれる流れ（Pour。class は pour）・ジョッキ（beer-mug）・
 //   ビールの線（beer-level）・泡（beer-foam）・泡の粒（beer-bubbles）
 // ・動きの順番：注ぎ口が上から現れる → レバーが手前へ少し倒れる → 流れが上から下へ伸びる →
-//   ジョッキの中のビールの線が下から上がる → 泡がふわっと盛り上がる → 泡の粒がはねる → 流れの中の筋が流れ続ける
-//   （動き終わりの形は、注いでいる途中の形。動きの名前と範囲は anim(...)、@keyframes は scenes.css）
+//   ジョッキの中のビールの線が下から上がる → 泡がふわっと盛り上がる → 流れが上から切れて消える（中の筋も先に消える）→
+//   間をおいて、レバーがまっすぐ立った形に戻る → 泡の粒がはねて、ビールと泡の水彩がじわっと出る
+//   動き終わり（prefers-reduced-motion のときも）は完成の形：泡の乗ったジョッキと、止まった注ぎ口（流れ・筋はない）
+//   （動きの名前と範囲は anim(...)、@keyframes は scenes.css。レバーは toast-tilt を2段（倒れる・戻る）、流れは pour-grow → pour-cut）
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
 import { PI, animAt, arcPts, cardTiming, jitter, line, polygon, ring, smooth, type P } from "./draw";
@@ -56,9 +59,18 @@ const TAP_FILL = polygon([
 ]);
 
 // ── レバー（管の上から上へ伸びる太い取っ手。先は丸い玉） ──
-// 動き終わりの形は、手前（左）へ少し倒れた形。根元（LEVER_PIVOT）を中心に、まっすぐ立った形から倒れる（scenes.css の beer-lever）
+// 描く形（動き終わりの形）は、まっすぐ立った形。注ぐあいだだけ、根元（LEVER_PIVOT）を中心に手前（左）へ LEVER_TILT 度倒れる。
+// 下の数は、倒れた形（前の動き終わりの形）の数。それを根元を中心に LEVER_TILT 度起こして、立った形にする
 const LEVER_PIVOT: P = [331, 20];
-const LEVER_TOP: P = [324, -1];
+const LEVER_TILT = 15; // 倒れる角度（度）
+const upright = ([x, y]: P): P => {
+  const a = (LEVER_TILT * PI) / 180;
+  const dx = x - LEVER_PIVOT[0];
+  const dy = y - LEVER_PIVOT[1];
+  const r = (n: number) => Math.round(n * 10) / 10;
+  return [r(LEVER_PIVOT[0] + dx * Math.cos(a) - dy * Math.sin(a)), r(LEVER_PIVOT[1] + dx * Math.sin(a) + dy * Math.cos(a))];
+};
+const LEVER_TOP: P = upright([324, -1]);
 const LEVER_HALF = 5.5;
 const leverEdge = (side: 1 | -1): [P, P] => {
   const dx = LEVER_TOP[0] - LEVER_PIVOT[0];
@@ -76,7 +88,9 @@ const LEVER_L = leverEdge(-1);
 const LEVER_R = leverEdge(1);
 const LEVER_ROD = [line(LEVER_L[0], LEVER_L[1], 5050, 0.3, 1), line(LEVER_R[0], LEVER_R[1], 5055, 0.3, 1)];
 const LEVER_ROD_FILL = polygon([LEVER_L[0], LEVER_L[1], LEVER_R[1], LEVER_R[0]]);
-const KNOB: readonly [number, number, number, number] = [323, -5, 8, 7.5];
+const KNOB_C = upright([323, -5]);
+const KNOB: readonly [number, number, number, number] = [KNOB_C[0], KNOB_C[1], 8, 7.5];
+const KNOB_HOLE = upright([320.5, -7.5]);
 const LEVER_KNOB = ring(KNOB[0], KNOB[1], KNOB[2], KNOB[3], 5060, 0.3);
 const LEVER_KNOB_FILL = polygon(arcPts(KNOB[0], KNOB[1], KNOB[2], KNOB[3], 0, PI * 2, 24, 0, 0));
 
@@ -194,19 +208,22 @@ const BUBBLES: readonly [number, number, number][] = [
 ];
 
 // ── 動きの段（anim の from・to。4〜60。scenes.css の「名物の欄の決まり」） ──
-// 主役は、注いで泡が盛り上がるまで（流れが伸びる → ビールの線が上がる → 泡が盛り上がる。16.5〜38.5 ＝ 全体の約 4 割）。
+// 60（完成）は、絵の真ん中が見えている画面の真ん中に来たところ。
+// 主役は、注いで泡が盛り上がるまで（流れが伸びる → ビールの線が上がる → 泡が盛り上がる。14〜35 ＝ 全体の約 4 割弱）。
 // 段のあいだに短い間
 const T = {
-  tap: [4, 9], // 注ぎ口が上から現れる
-  lever: [10, 15], // （間）レバーが手前へ倒れる
-  pour: [16.5, 22], // （間）流れが上から下へ伸びる
-  level: [21, 33], // ビールの線が下から上がる
-  foam: [29, 38.5], // 泡がふわっと盛り上がる
-  bubbles: [37.5, 45.5], // 泡の粒がはねる（1つおきに 2 ずらす）
-  liquid: [47, 57], // （間）ビールの水彩がじわっと出る
+  tap: [4, 8], // 注ぎ口が上から現れる
+  lever: [9, 13], // （間）レバーが手前へ倒れる
+  pour: [14, 18.5], // （間）流れが上から下へ伸びる（注いでいる段は 14 〜 35.5）
+  level: [18, 30], // ビールの線が下から上がる
+  foam: [25.5, 35], // 泡がふわっと盛り上がる
+  pourCut: [35.5, 38.5], // 注ぎ終わる：流れが上から切れて消える（中の筋は、その始めにすっと消える）
+  leverBack: [41, 45], // （間をおいて）レバーがまっすぐ立った形に戻る
+  bubbles: [45.5, 51.5], // 泡の粒がはねる（1つおきに 2 ずらす）
+  liquid: [48, 58], // ビールの水彩がじわっと出る
   foamWash: [50, 60], // 泡の水彩（完成）
 } as const;
-// 線のいちばん下は、絵の場所の上から 96.7%。主役が時間で動くとき ((29 − 16.5) × 0.045 + 9.5 × 0.05) × 1.35 ≒ 1.4 秒
+// 線のいちばん下は、絵の場所の上から 96.7%。主役が時間で動くとき ((25.5 − 14) × 0.045 + 9.5 × 0.05) × 1.35 ≒ 1.34 秒
 const CARD = cardTiming({ ink: 0.975, time: 1.35 });
 
 export default function BeerIllustration({ className = "" }: { className?: string }) {
@@ -228,8 +245,9 @@ export default function BeerIllustration({ className = "" }: { className?: strin
       </defs>
       {/* 注がれるビールの流れは、ジョッキと泡の後ろ（泡の山の中へ入っていくように見せる）。
           上から下へ伸びる（pour-grow）。帯の水彩は、流れそのものなので、流れと一緒に出る。
-          明るい筋は、時間でずっと上から下へ流れる（scenes.css の pour-flow） */}
-      <Pour shape={POUR} tone="food-wash-beer" filter="beer-wash" id="beer-w-pour" grow={T.pour} />
+          明るい筋は、注いでいるあいだ時間でずっと上から下へ流れる（scenes.css の pour-flow）。
+          注ぎ終わると、上から切れて消える（cut。動き終わりは見えない） */}
+      <Pour shape={POUR} tone="food-wash-beer" filter="beer-wash" id="beer-w-pour" grow={T.pour} cut={T.pourCut} />
 
       <g className="beer-mug">
         <path d={MUG_FILL} className="scene-paper" stroke="none" />
@@ -272,17 +290,21 @@ export default function BeerIllustration({ className = "" }: { className?: strin
         ))}
       </g>
 
-      {/* 注ぎ口（上から現れる）。レバーは管の後ろに置き、根元を管の面で隠す */}
+      {/* 注ぎ口（上から現れる）。レバーは管の後ろに置き、根元を管の面で隠す。
+          レバーは、まっすぐ立った形（完成の形）で描き、根元（絵の座標 331・20）を中心に傾ける。
+          外の g が「倒れた形 → 立った形」（leverBack）、内の g が「立った形 → 倒れた形」（lever） */}
       <g className="beer-tap scene-anim" style={animAt("scene-fade-up", T.tap, { "--dy": "-10px" })}>
-        <g className="beer-lever scene-anim beer-lever-move" style={animAt("beer-lever", T.lever)}>
-          <path d={LEVER_ROD_FILL} className="scene-paper" stroke="none" />
-          <Wash filter="beer-wash" d={LEVER_ROD_FILL} tone="food-wash-tap" id="beer-w-lever" shift={[0.6, 0.5]} />
-          {LEVER_ROD.map((d, i) => (
-            <path key={i} d={d} className="scene-line" />
-          ))}
-          <path d={LEVER_KNOB_FILL} className="scene-paper" stroke="none" />
-          <Wash filter="beer-wash" d={LEVER_KNOB_FILL} tone="food-wash-tap" id="beer-w-knob" shift={[0.6, 0.5]} holes={[[320.5, -7.5, 2, 1.4]]} />
-          <path d={LEVER_KNOB} className="scene-line" />
+        <g className="beer-lever scene-anim beer-lever-move" style={animAt("toast-tilt", T.leverBack, { "--tilt": `${-LEVER_TILT}deg` })}>
+          <g className="scene-anim beer-lever-move" style={animAt("toast-tilt", T.lever, { "--tilt": `${LEVER_TILT}deg` })}>
+            <path d={LEVER_ROD_FILL} className="scene-paper" stroke="none" />
+            <Wash filter="beer-wash" d={LEVER_ROD_FILL} tone="food-wash-tap" id="beer-w-lever" shift={[0.6, 0.5]} />
+            {LEVER_ROD.map((d, i) => (
+              <path key={i} d={d} className="scene-line" />
+            ))}
+            <path d={LEVER_KNOB_FILL} className="scene-paper" stroke="none" />
+            <Wash filter="beer-wash" d={LEVER_KNOB_FILL} tone="food-wash-tap" id="beer-w-knob" shift={[0.6, 0.5]} holes={[[KNOB_HOLE[0], KNOB_HOLE[1], 2, 1.4]]} />
+            <path d={LEVER_KNOB} className="scene-line" />
+          </g>
         </g>
         <path d={TAP_FILL} className="scene-paper" stroke="none" />
         <Wash filter="beer-wash" d={TAP_FILL} tone="food-wash-tap" id="beer-w-tap" shift={[1, 0.75]} holes={[[300, 26, 14, 1.6]]} />
