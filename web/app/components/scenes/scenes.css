@@ -282,8 +282,13 @@
   stroke-dashoffset: 0.19;
 }
 .scene-anim.beer-lever-move { transform-box: view-box; transform-origin: 331px 20px; }
-/* 水差し（SakeIllustration.tsx）の傾き：支点（--o。絵の座標の px）を中心に、まっすぐ立った形から傾く */
-.scene-anim.sake-pitcher-tilt { transform-box: view-box; }
+/* 焼酎・日本酒（SakeIllustration.tsx）
+   ・徳利・水差しの傾き、マドラーの混ぜる動き：支点（--o。絵の座標の px）を中心に回る
+   ・.sake-gone … 動き終わりは見えない部品（注いでいる流れ・波紋・しずく・泡粒・水差し・マドラー・混ぜる前の濃い焼酎）。
+     prefers-reduced-motion のときと、JavaScript が動かないブラウザで動き終わったあとも、見えない（完成の形で止まる）。
+     流れの中の明るい筋（.pour-flow）も、流れと一緒に見えなくなる */
+.scene-anim.sake-vb { transform-box: view-box; }
+.sake-gone { opacity: 0; }
 
 /* 店主紹介のページの手元の絵（幅は 画面の幅の 70%、広い画面では 390px まで）。
    絵の幅に合わせて太さを3段に分け、線を 2〜3px に保つ（320px の画面で約 2.1px、390px の絵で約 2.5px） */
@@ -413,6 +418,72 @@
   from { opacity: 0; transform: translate(var(--sx, 0px), var(--sy, 0px)) scale(0.4); }
   55%  { opacity: 1; transform: translate(calc(var(--sx, 0px) * -0.15), calc(var(--sy, 0px) * -0.15)); }
   to   { opacity: 1; transform: none; }
+}
+/* ── 焼酎・日本酒（SakeIllustration.tsx）の「注いで、終える」動き ── */
+/* 徳利：まっすぐ立った形から傾き（〜20%）、傾いたまま注いで（〜75%）、まっすぐ立った形に戻る */
+@keyframes sake-pour-tilt {
+  from, to { transform: none; }
+  20%, 75% { transform: rotate(var(--tilt, 26deg)); }
+}
+/* 注ぎ終わり：流れが上から切れて、下へ吸い込まれるように縮んで消える（下の端 --o を支点に） */
+@keyframes pour-cut {
+  from { opacity: 1; transform: none; }
+  70%  { opacity: 1; }
+  to   { opacity: 0; transform: scaleY(0.04); }
+}
+/* 波紋：描かれながら少し広がり、静まって消える */
+@keyframes sake-ripple {
+  from { stroke-dashoffset: 1; opacity: 0; transform: scale(0.85); }
+  12%  { opacity: 1; }
+  45%  { stroke-dashoffset: 0; opacity: 1; }
+  70%  { opacity: 0.7; }
+  to   { stroke-dashoffset: 0; opacity: 0; transform: scale(1.2); }
+}
+/* しずく：当たる所からはねて出て、少し落ちながら消える */
+@keyframes pour-splash-out {
+  from { opacity: 0; transform: translate(var(--sx, 0px), var(--sy, 0px)) scale(0.4); }
+  35%  { opacity: 1; transform: translate(calc(var(--sx, 0px) * -0.15), calc(var(--sy, 0px) * -0.15)); }
+  55%  { opacity: 1; transform: none; }
+  to   { opacity: 0; transform: translateY(3px) scale(0.6); }
+}
+/* 泡粒：ぱっと出て、少し浮かびながら消える */
+@keyframes scene-pop-out {
+  from { opacity: 0; transform: scale(0.3); }
+  30%  { opacity: 1; transform: scale(1.15); }
+  50%  { opacity: 1; transform: none; }
+  to   { opacity: 0; transform: translateY(-6px) scale(0.6); }
+}
+/* すっと消える */
+@keyframes scene-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+/* 水差し：注ぎ終わったら、支点を中心に起き上がりながら（--rot）少し上へ動き、すっと消える */
+@keyframes sake-lift-out {
+  from { opacity: 1; transform: none; }
+  35%  { opacity: 1; }
+  to   { opacity: 0; transform: translate(-3px, -8px) rotate(var(--rot, 12deg)); }
+}
+/* マドラーで混ぜる：グラスの口の少し下（--o）を中心に左右へ小さく傾け、少しずらして、小さく回るように 2 周 */
+@keyframes sake-stir {
+  from, 50%, to { transform: none; }
+  12.5%, 62.5%  { transform: translate(2px, -1px) rotate(5deg); }
+  25%, 75%      { transform: translate(0px, -2px) rotate(0deg); }
+  37.5%, 87.5%  { transform: translate(-2px, -1px) rotate(-5deg); }
+}
+/* 混ぜるときの氷の揺れ（--j で、氷ごとに向きと大きさを変える） */
+@keyframes sake-ice-jiggle {
+  from, to { transform: none; }
+  20% { transform: translate(calc(1.5px * var(--j, 1)), -1px) rotate(calc(4deg * var(--j, 1))); }
+  45% { transform: translate(calc(-1.5px * var(--j, 1)), 0.5px) rotate(calc(-3deg * var(--j, 1))); }
+  70% { transform: translate(calc(1px * var(--j, 1)), -0.5px) rotate(calc(2.5deg * var(--j, 1))); }
+  90% { transform: translate(calc(-0.5px * var(--j, 1)), 0px) rotate(calc(-1deg * var(--j, 1))); }
+}
+/* マドラーを抜く：上へまっすぐ（--pull）動かし、後ろ半分で消える */
+@keyframes sake-pull-out {
+  from { opacity: 1; transform: none; }
+  50%  { opacity: 1; transform: translateY(calc(var(--pull, -110px) * 0.5)); }
+  to   { opacity: 0; transform: translateY(var(--pull, -110px)); }
 }
 /* 流れの中の明るい筋（Pour.tsx）：破線を上から下へ流す（破線ひと組の長さ 0.38 だけずらして、つなぎ目なく繰り返す） */
 @keyframes pour-flow {
