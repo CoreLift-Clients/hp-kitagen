@@ -11,8 +11,8 @@
    9枚の塗る所：
    ・しゅうまい … 皮とあん（水彩。.food-wash-skin・.food-wash-meat）
    ・鉄鍋餃子 … 餃子の焼き目（.food-yaki）
-   ・からあげ … からあげ（水彩。.food-wash-karaage）。形は写真を見て描いた形（白地に藍の花の模様の丸鉢に、6個をこんもり）。
-     器の模様の藍と、器の内側の奥の陰は、下の「入れ物は線だけ」の例外
+   ・からあげ … からあげ（水彩。.food-wash-karaage）。形は写真を見て描いた形（浅く広い無地の白い平鉢を上からのぞき込む角度で、
+     まん中に6個をこんもり）。器のふちの帯の奥側の陰だけは、下の「入れ物は線だけ」の例外
    ・豚の角煮 … 角煮の肉・脂の層・味玉・千切りキャベツ（水彩。.food-wash-*）。形は千切りキャベツを敷いた形（43575ec）
    ・串焼き … ぼんじり・鶏ハラミ・鶏皮の具と焼き目（水彩。.food-wash-karaage・.food-wash-harami・.food-wash-kawa・.food-wash-koge）。
      形はメニューの写真を見て描いた串（持ち手の出た竹串を3本）を、肉みそ冷奴と同じ横長の角の丸い長方形のお皿
@@ -30,12 +30,8 @@
      付ける所は、内側の奥の壁の1か所だけ（光は左上から。陰の下のふちが、奥の壁と底の境目になる）。
      外側の胴には付けない（斜めの帯に見えて目立つため）。色は foreground をうすく（不透明度 0.12〜0.2）。
      塗り方（ずれ・ふちの濃さ・にじみ）は、ほかの水彩と同じ
-     例外：からあげの器だけは、白地に藍の模様の器（染付のような器）に見えるよう、
-     ・ふちの内側の花びらの模様を、淡い藍の水彩で塗ってよい（.karaage-wash-ai。線の内側だけ。ふちの濃さ・にじみ・ムラはほかの水彩と同じ）。
-       花びらの輪郭の線と、あいだの小さな点は、こげ茶ではなく少し濃い藍（.karaage-ai-line・.karaage-dot）
-     ・内側の奥（ふちの内の奥の半分から、見込みへ下がる壁）に、ごく淡い陰を1段だけ付けてよい
-       （.karaage-wash-shade。foreground をうすく 0.12。塗り方はほかの水彩と同じ）
-     ・藍色は、くすんだ落ち着いた藍 #3E5A86 の1色だけ（明るい青にしない）。からあげの器の模様のほかには使わない
+     例外：からあげの器（無地の白い平鉢）だけは、浅さと広いふちが分かるよう、ふちの帯の奥側（内の線のすぐ外の、
+     奥の半分）に、ごく淡い陰を1段だけ付けてよい（.karaage-wash-shade。foreground をうすく 0.12。塗り方はほかの水彩と同じ）
    ・飲み物の塗り方（生ビール・焼酎・日本酒・ソフトドリンクの3枚）：飲み物は、入れ物そのものが主役なので、
      入れ物にも水彩の色を付けてよい（上の「入れ物は線だけ」は、飲み物には当てない）。
      塗り方は料理と同じ水彩の決まり（線の内側だけ・ふちの濃さ・白い抜け・にじみ・ムラ）。3枚でそろえるため、
@@ -156,8 +152,7 @@
    ・.food-wash-kawa … 串焼きの鶏皮（淡いきつね色。白に accent 74%。カリッと焼けたふちを濃く ＝ --wash-edge を高め）
    ・.food-wash-koge … 串焼きの焼き目（濃い茶色。accent 45% に foreground。小さな塗りを具の上に重ねる）
    ・.seiro-wash-shade … せいろの陰（入れ物の例外。foreground をうすく 0.16。ふちはさらにうすく）
-   ・.karaage-wash-ai … からあげの器の模様の花びら（入れ物の例外。くすんだ藍 #3E5A86 を淡く 0.45。新しく足した色）
-   ・.karaage-wash-shade … からあげの器の内側の奥の陰（入れ物の例外。foreground をうすく 0.12。ふちはさらにうすく）
+   ・.karaage-wash-shade … からあげの器のふちの帯の奥側の陰（入れ物の例外。foreground をうすく 0.12。ふちはさらにうすく）
    飲み物（入れ物にも塗る。「料理の絵の決まり」の「飲み物の塗り方」）
    ・.food-wash-glass … ガラス（ジョッキ・グラス・ロックグラス）。ほぼ紙の色（塗り 0.12）で、ふちだけうすく（0.4）。
      色は氷の色に foreground を 30% 混ぜた、ごく淡い青灰色
@@ -198,16 +193,7 @@
 .food-wash-straw { --wash: color-mix(in srgb, var(--accent) 45%, #fff); --wash-a: 0.7; --wash-edge: 0.45; }
 .food-wash-tap { --wash: color-mix(in srgb, currentColor 30%, #fff); --wash-a: 0.35; --wash-edge: 0.4; }
 .seiro-wash-shade { --wash: currentColor; --wash-a: 0.16; --wash-edge: 0.1; }
-.karaage-wash-ai { --wash: #3E5A86; --wash-a: 0.45; --wash-edge: 0.4; }
 .karaage-wash-shade { --wash: currentColor; --wash-a: 0.12; --wash-edge: 0.07; }
-/* からあげの器（KaraageIllustration.tsx）の藍の模様（料理の絵の決まりの、この器だけの例外）。
-   藍は、くすんだ落ち着いた藍 #3E5A86（新しく足した色）。花びらの塗りは、この色の淡い水彩（.karaage-wash-ai）。
-   花びらの輪郭の線と、あいだの小さな点は、同じ藍に foreground を少し混ぜた、少し濃い藍（太さは .scene-outline-fine と同じ） */
-.karaage-ai-line {
-  stroke: color-mix(in srgb, #3E5A86 78%, currentColor);
-  stroke-width: calc(1.45px * var(--scene-k) * var(--scene-z, 1));
-}
-.karaage-dot { fill: color-mix(in srgb, #3E5A86 78%, currentColor); fill-opacity: 0.85; }
 /* 肉みそ冷奴の線の色（HiyayakkoIllustration.tsx。ab2dae6 の決まり）：ねぎの輪の線は落ち着いた緑、てかりは白い小さな点 */
 .hiyayakko-negi { --hiyayakko-negi: #7E9A4C; }
 .hiyayakko-negi-ring {
