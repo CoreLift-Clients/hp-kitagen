@@ -83,6 +83,9 @@
 .scene-line { stroke-width: calc(2.6px * var(--scene-k) * var(--scene-z, 1)); }
 .scene-fine { stroke-width: calc(2.1px * var(--scene-k) * var(--scene-z, 1)); }
 .scene-paper { fill: var(--scene-paper); }
+/* せいろ（SeiroIllustration.tsx）の湯気の線：毛やひげに見えないよう、scene-line より少し太く、やわらかく。
+   濃さは線にかける縦のグラデーション（根元と上の端は透明）で、うすくする（決まりの 5. の例外。湯気だけ） */
+.seiro-steam-line { stroke-width: calc(3.4px * var(--scene-k) * var(--scene-z, 1)); }
 /* 名物の欄のイラストのカード（Specialties.tsx）の絵。絵の幅（正方形の場所の幅）に合わせて太さを段に分け、
    線（scene-line）を 2〜3px くらいに保つ。絵の幅はおおよそ
    ・md より狭い画面：2列で、画面の幅の半分から約 56px を引いた幅（320px の画面で約 104px、767px で約 327px）

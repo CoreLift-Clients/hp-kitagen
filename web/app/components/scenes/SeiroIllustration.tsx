@@ -17,7 +17,7 @@
 // ・しゅうまい：中の線は、口のふち1本とひだ5本
 // ・ふた：閉じた形（しゅうまいの上にかぶさる）だけ。開くときは、手で開けるように、手前のふちから持ち上がって傾き、
 //   上の奥へ持ち去られて消える（手は描かない。動き終わりは、ふたのないせいろ）
-// ・湯気（時間で揺れる）は、4つのしゅうまい全部から立ちのぼる（奥の列は2本ずつ、手前の列は細く短く1本ずつ）。ふたが少し浮いた間だけ、手前のすき間からも2本もれる
+// ・湯気（時間で揺れる）は、4つのしゅうまい全部から立ちのぼる（奥の列は2本ずつ、手前の列は短くうすく1本ずつ。根元はふわっと消える）。ふたが少し浮いた間だけ、手前のすき間からも2本もれる
 // ・部品ごとに g でまとめる：本体（seiro-body）・しゅうまい（seiro-shumai）・
 //   ふた（seiro-lid-move）・もれる湯気と湯気（seiro-steam）。重なりの順もこのとおり。
 //   湯気より前の3つは、まとめて1つの g（seiro-set）に入れる
@@ -215,29 +215,58 @@ const LID_CLOSED = (() => {
 })();
 
 // ── 湯気（4つのしゅうまい全部から。下から上へ描くので、点は下から並べる） ──
-// 奥の列（口のまん中は、左が (154, 165)・右が (246, 165) あたり）から2本ずつ、太い線（scene-line）で高く。
+// 6本とも同じ描き方（wisp）。毛やひげに見えないよう、やわらかい線にする：
+// ・根元はふわっと消す：しゅうまいの口から少し浮いた所（口の上 10 くらい）から立ち、線の濃さは
+//   根元 0（透明）→ 少し上で最も濃く → 上の端でまた 0（1本ずつの縦のグラデーション STEAM_FADE。線にかける）
+// ・形は、ゆるいS字のうねり（左右へのふくらみが1〜2回）。上へ行くほど少しだけ大きくうねる
+// ・太さは scene-line より少し太い .seiro-steam-line、色はうすく（最も濃い所で 0.42。手前は 0.3）
+// 奥の列（口のまん中は、左が (154, 165)・右が (246, 165) あたり）から2本ずつ、高く。
 // 手前の列（口のまん中は、左が (153, 232)・右が (245, 232) あたり）から1本ずつ。手前の湯気は、奥のしゅうまいの手前に
-// 重なるので、細い線（scene-fine）で短く（奥の列の湯気の立ち始めより下で消える）、うすめ（seiro-steam-front-fade）にし、
-// 外側へ少し寄せて、奥の湯気とつながって見えないようにする。立ち始める位置と高さは、6本とも少しずつずらす
-const STEAM = [
-  steam(146, 166, 58, 0.2, 8, 2500),
-  steam(171, 161, 42, 2.1, 10, 2520),
-  steam(231, 160, 46, 4.0, 9, 2540),
-  steam(255, 165, 62, 1.0, 8, 2560),
-];
-const STEAM_SWAY = [sway(4.8, 0), sway(5.6, -1.8), sway(4.2, -3.1), sway(6.1, -0.9)];
-// 手前の列の湯気：口から立ち、外側へ少し寄りながら（lean）、奥のしゅうまいの胴の高さで消える
-function leanSteam(x0: number, yStart: number, yEnd: number, lean: number, phase: number, amp: number, seed: number): string {
+// 重なるので、短く（奥の列の湯気の立ち始めより下で消える）、よりうすくし、外側へ少し寄せて（lean）、
+// 奥の湯気とつながって見えないようにする。立ち始める位置と高さは、6本とも少しずつずらす
+function wisp(x0: number, yStart: number, yEnd: number, lean: number, phase: number, amp: number, seed: number): string {
   const pts: P[] = [];
-  for (let i = 0; i <= 8; i++) {
-    const t = i / 8;
-    const x = x0 + lean * t * t + Math.sin(phase + t * 5) * amp * (0.3 + t) + jitter(seed + i) * 0.6;
+  const steps = 12;
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    // 1本の中で左右へ1〜2回ふくらむ（sin の 0.65 周ぶん × 2）。根元はふくらみを小さく、上ほど大きく
+    const x = x0 + lean * t * t + Math.sin(phase + t * PI * 2.6) * amp * (0.45 + 0.75 * t) + jitter(seed + i) * 0.3;
     pts.push([x, yStart + (yEnd - yStart) * t]);
   }
   return smooth(pts);
 }
-const STEAM_FRONT = [leanSteam(151, 228, 180, -9, 1.6, 4.5, 2580), leanSteam(247, 225, 186, 8, 3.3, 4.5, 2600)];
+type Wisp = { d: string; y0: number; y1: number; peak: number };
+const mkWisp = (x0: number, y0: number, y1: number, lean: number, phase: number, amp: number, seed: number, peak: number): Wisp => ({
+  d: wisp(x0, y0, y1, lean, phase, amp, seed),
+  y0,
+  y1,
+  peak,
+});
+const STEAM = [
+  mkWisp(147, 156, 58, -2, 0.2, 6, 2500, 0.42),
+  mkWisp(169, 152, 44, 3, 2.3, 6.5, 2520, 0.42),
+  mkWisp(232, 151, 48, -3, 4.1, 6, 2540, 0.42),
+  mkWisp(254, 155, 62, 2, 1.0, 6.5, 2560, 0.42),
+];
+const STEAM_SWAY = [sway(4.8, 0), sway(5.6, -1.8), sway(4.2, -3.1), sway(6.1, -0.9)];
+// 手前の列の湯気：口から少し浮いた所から立ち、外側へ少し寄りながら、奥のしゅうまいの胴の高さで消える
+const STEAM_FRONT = [
+  mkWisp(150, 221, 178, -8, 1.6, 4, 2580, 0.3),
+  mkWisp(248, 220, 182, 7, 3.6, 4, 2600, 0.3),
+];
 const STEAM_FRONT_SWAY = [sway(5.1, -2.4), sway(4.5, -0.4)];
+// 1本ずつの縦のグラデーション（根元 0 → 少し上で最も濃く → 上の端で 0）
+function SteamFade({ id, w }: { id: string; w: Wisp }) {
+  return (
+    <linearGradient id={id} gradientUnits="userSpaceOnUse" x1="0" y1={w.y0} x2="0" y2={w.y1}>
+      <stop offset="0" stopColor="currentColor" stopOpacity="0" />
+      <stop offset="0.22" stopColor="currentColor" stopOpacity={w.peak} />
+      <stop offset="0.5" stopColor="currentColor" stopOpacity={r1(w.peak * 0.8)} />
+      <stop offset="1" stopColor="currentColor" stopOpacity="0" />
+    </linearGradient>
+  );
+}
+
 // すき間からもれる湯気（2本）。手前が浮いた所（ふたの手前のふちと、せいろの手前のふちの間）から、ふわっと出て、
 // ふたが持ち去られるころに消える（scenes.css の seiro-leak。動き終わりは見えない）。
 // 出どころは、左のすき間（しゅうまいとせいろの内のふちの間）と、手前の2つのしゅうまいの間。ふたの手前のふちを越えて立ちのぼる
@@ -258,18 +287,13 @@ export default function SeiroIllustration({ className = "" }: { className?: stri
       strokeLinejoin="round"
     >
       <defs>
-        {/* 湯気は上のほうで薄くなる（線の色は同じ foreground のまま、濃さだけ変える。ほかの絵の湯気と同じ） */}
-        <linearGradient id="seiro-steam-fade" gradientUnits="userSpaceOnUse" x1="0" y1="230" x2="0" y2="40">
-          <stop offset="0" stopColor="currentColor" stopOpacity="0.95" />
-          <stop offset="0.55" stopColor="currentColor" stopOpacity="0.75" />
-          <stop offset="1" stopColor="currentColor" stopOpacity="0" />
-        </linearGradient>
-        {/* 手前の列の湯気は、奥の湯気よりうすく始まり、早めに薄くなる */}
-        <linearGradient id="seiro-steam-front-fade" gradientUnits="userSpaceOnUse" x1="0" y1="230" x2="0" y2="176">
-          <stop offset="0" stopColor="currentColor" stopOpacity="0.8" />
-          <stop offset="0.5" stopColor="currentColor" stopOpacity="0.55" />
-          <stop offset="1" stopColor="currentColor" stopOpacity="0" />
-        </linearGradient>
+        {/* 湯気の濃さ（1本ずつ。根元と上の端は透明。線の色は同じ foreground のまま、濃さだけ変える） */}
+        {STEAM.map((w, i) => (
+          <SteamFade key={`g${i}`} id={`seiro-steam-fade-${i}`} w={w} />
+        ))}
+        {STEAM_FRONT.map((w, i) => (
+          <SteamFade key={`gf${i}`} id={`seiro-steam-front-fade-${i}`} w={w} />
+        ))}
         {/* すき間からもれる湯気は、出どころ（下）から上へ、すぐ薄くなる */}
         <linearGradient id="seiro-leak-fade" gradientUnits="userSpaceOnUse" x1="0" y1="292" x2="0" y2="190">
           <stop offset="0" stopColor="currentColor" stopOpacity="0.85" />
@@ -349,26 +373,28 @@ export default function SeiroIllustration({ className = "" }: { className?: stri
         ))}
       </g>
 
-      {/* 4. 湯気（4つのしゅうまい全部から立ちのぼる。時間でゆっくり揺れる）。手前の列の細く短い湯気 → 奥の列の湯気 */}
-      <g className="seiro-steam" stroke="url(#seiro-steam-front-fade)">
-        {STEAM_FRONT.map((d, i) => (
+      {/* 4. 湯気（4つのしゅうまい全部から立ちのぼる。時間でゆっくり揺れる）。手前の列の短くうすい湯気 → 奥の列の湯気 */}
+      <g className="seiro-steam">
+        {STEAM_FRONT.map((w, i) => (
           <g key={`f${i}`} className="scene-sway" style={STEAM_FRONT_SWAY[i]}>
             <path
-              d={d}
+              d={w.d}
               pathLength={1}
-              className="scene-fine scene-stroke-draw scene-anim"
+              stroke={`url(#seiro-steam-front-fade-${i})`}
+              className="seiro-steam-line scene-stroke-draw scene-anim"
               style={anim("scene-draw", 47 + i * 3, [55, 59][i])}
             />
           </g>
         ))}
       </g>
-      <g className="seiro-steam" stroke="url(#seiro-steam-fade)">
-        {STEAM.map((d, i) => (
+      <g className="seiro-steam">
+        {STEAM.map((w, i) => (
           <g key={i} className="scene-sway" style={STEAM_SWAY[i]}>
             <path
-              d={d}
+              d={w.d}
               pathLength={1}
-              className="scene-line scene-stroke-draw scene-anim"
+              stroke={`url(#seiro-steam-fade-${i})`}
+              className="seiro-steam-line scene-stroke-draw scene-anim"
               style={anim("scene-draw", 46 + i * 2, [54, 56, 58, 60][i])}
             />
           </g>
