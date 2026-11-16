@@ -299,8 +299,9 @@ const px = ([x, y]: P) => `${r(x)}px ${r(y)}px`;
 
 // 動きの範囲（anim の from・to。4〜60）。左の日本酒を先に、右の水割りをあとに進める
 // 動きの範囲（anim の from・to）。左の日本酒を先に、日本酒が完成してから「ひと呼吸」おいて、右の水割りを進める。
-// 4 〜 SAKE_END の数を、scenes.css で、スクロールの範囲（contain 0% 〜 SAKE_SPAN）に割り当てる（下の svg の style）。
-// ほかの絵（4〜60 を contain 0〜50% に割り当てる）より長いスクロールで進む
+// 4 〜 SAKE_END の数を、scenes.css で、スクロールの範囲（contain 0% − SAKE_LEAD 〜 contain SAKE_SPAN）に割り当てる（下の svg の style）。
+// 始まりは、絵の線のいちばん下が画面の下から入ったところ、終わり（完成）は、絵の真ん中が見えている画面の真ん中に来たところ。
+// 列のずらしは、このカードだけ 0（完成の位置を真ん中にそろえる）
 const T = {
   // 日本酒
   tkIn: [4, 8], // 徳利とお猪口が現れる
@@ -330,7 +331,10 @@ const T = {
   muddlerOut: [98, 105.5], // （間をおいて）マドラーを上へまっすぐ、ゆっくり抜いて、消える
 } as const;
 const SAKE_END = 105.5; // 動きの終わり（マドラーが消える）
-const SAKE_SPAN = "90%"; // 4 〜 SAKE_END を割り当てるスクロールの範囲（contain の %。ほかの絵は 50%）
+const SAKE_SPAN = "50%"; // 終わりの位置（contain 50% ＝ 絵の真ん中が、見えている画面の真ん中）
+// 始まりを contain 0% より前へ出す長さ（絵の場所の幅 ＝ 高さの 12%）。絵の線のいちばん下（タンブラーの底 y 356 と線の太さ）は、
+// 絵の場所の上から (357.5 − 52) ÷ 350 ≒ 87.3% なので、88% の所が画面の下の端に来たときに、線の全体が画面に入っている
+const SAKE_LEAD = "12cqw";
 const SAKE_TIME = 1.9; // スクロールで動かせないブラウザで、時間で動くときの長さの倍率（ほかの絵は 1）
 const A = (name: string, [from, to]: readonly [number, number], vars?: Record<string, string>) => anim(name, from, to, vars);
 
@@ -340,8 +344,17 @@ export default function SakeIllustration({ className = "" }: { className?: strin
       viewBox="67 52 350 350"
       aria-hidden="true"
       focusable="false"
-      className={`scene-svg ${className}`}
-      style={{ "--scene-z": 350 / 400, "--scene-len": SAKE_END - 4, "--scene-span": SAKE_SPAN, "--scene-time": SAKE_TIME } as CSSProperties}
+      className={`scene-svg sake-svg ${className}`}
+      style={
+        {
+          "--scene-z": 350 / 400,
+          "--scene-len": SAKE_END - 4,
+          "--scene-span": SAKE_SPAN,
+          "--scene-lead": SAKE_LEAD,
+          "--scene-col-step": "0%",
+          "--scene-time": SAKE_TIME,
+        } as CSSProperties
+      }
       fill="none"
       stroke="currentColor"
       strokeLinecap="round"

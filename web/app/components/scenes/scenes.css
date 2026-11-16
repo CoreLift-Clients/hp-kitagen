@@ -511,9 +511,15 @@
      ・animation の一括指定は animation-timeline・animation-range を初期値に戻すので、必ずその後ろに書く
      ・--scene-len・--scene-span … 長い動きの絵だけが、svg の style で付ける（焼酎・日本酒の絵 SakeIllustration.tsx）。
        4 〜 (4 + --scene-len) の数を、contain 0% 〜 --scene-span に割り当てる。付けていない絵は 56 と 50%（4〜60 を 0〜50%）で、今までと同じ。
-       焼酎・日本酒は、絵がほぼ画面の上の端（固定ヘッダーのすぐ下）に来るまでの、長いスクロールで進む
+     ・--scene-lead … 始まりを contain 0% より前へ出す長さ（付けていない絵は 0px）。始まりは contain 0% − lead、
+       終わりは contain --scene-span のまま、そのあいだに 4 〜 (4 + --scene-len) を均等に割り当てる（段の配分の割合は変わらない）
+     ・焼酎・日本酒（SakeIllustration.tsx）… span 50%・lead 12cqw（絵の幅の 12%）・列のずらし 0%。
+       始まりは「絵の線のいちばん下（タンブラーの底。絵の場所の上から 87% ほど）が、画面の下の端から入ったところ」、
+       終わり（マドラーが抜けて完成）は「絵の場所の真ん中が、見えている画面の真ん中に来たところ」（contain 50% ＝ cover 50%）。
+       絵の場所は正方形なので、幅の 12% ＝ 高さの 12%
      ・--scene-col … 名物の欄のカードの、同じ段の中での列の番号（左から 0・1・2。Specialties.tsx が付ける）。
-       列ごとに、動きの始まりと終わりを contain 6% ずつ後ろへずらす（左のカードから順に、少しずつ遅れて動き始める）。
+       列ごとに、動きの始まりと終わりを --scene-col-step（付けていない絵は contain 6%）ずつ後ろへずらす
+       （左のカードから順に、少しずつ遅れて動き始める）。焼酎・日本酒は、完成を画面の真ん中にそろえるため 0%。
        付けていない絵（トップの場面など）は 0 で、今までと同じ */
   @supports (animation-timeline: view()) {
     .scene-art {
@@ -524,9 +530,20 @@
       animation: var(--a) linear both;
       animation-timeline: --scene;
       animation-range:
-        contain calc(max(0, var(--r0) - 4) * var(--scene-span, 50%) / var(--scene-len, 56) + var(--scene-col, 0) * 6%)
-        contain calc(min(var(--scene-len, 56), var(--r1) - 4) * var(--scene-span, 50%) / var(--scene-len, 56) + var(--scene-col, 0) * 6%);
+        contain
+          calc(
+            max(0, var(--r0) - 4) * var(--scene-span, 50%) / var(--scene-len, 56) -
+              (1 - max(0, var(--r0) - 4) / var(--scene-len, 56)) * var(--scene-lead, 0px) + var(--scene-col, 0) * var(--scene-col-step, 6%)
+          )
+        contain
+          calc(
+            min(var(--scene-len, 56), var(--r1) - 4) * var(--scene-span, 50%) / var(--scene-len, 56) -
+              (1 - min(var(--scene-len, 56), var(--r1) - 4) / var(--scene-len, 56)) * var(--scene-lead, 0px) +
+              var(--scene-col, 0) * var(--scene-col-step, 6%)
+          );
     }
+    /* 焼酎・日本酒の絵：--scene-lead に絵の幅（cqw）を使うので、絵の場所を幅のコンテナにする（幅はカードで決まるので、形は変わらない） */
+    .scene-art:has(> .sake-svg) { container-type: inline-size; }
   }
   @supports (animation-timeline: view()) {
     @media (max-width: 767px) {
