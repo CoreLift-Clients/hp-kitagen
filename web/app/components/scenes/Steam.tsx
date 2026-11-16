@@ -1,5 +1,5 @@
 // ─── 料理の絵の湯気（共通の部品） ───
-// しゅうまい（SeiroIllustration.tsx）・からあげ（KaraageIllustration.tsx）・串焼き（KushiIllustration.tsx）で使い回す。
+// しゅうまい（SeiroIllustration.tsx）・からあげ（KaraageIllustration.tsx）・串焼き（KushiIllustration.tsx）・鉄鍋餃子（TeppanIllustration.tsx）で使い回す。
 // 毛やひげに見えないよう、やわらかい線にする：
 // ・根元はふわっと消す：食材から少し浮いた所から立ち、線の濃さは
 //   根元 0（透明）→ 少し上で最も濃く → 上の端でまた 0（1本ずつの縦のグラデーション SteamFades。線にかける）

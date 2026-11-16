@@ -10,7 +10,8 @@
       （viewBox を切り出した絵は --scene-z で、400 の幅の絵と同じ太さに見せる）
    9枚の塗る所：
    ・しゅうまい … 皮とあん（水彩。.food-wash-skin・.food-wash-meat）
-   ・鉄鍋餃子 … 餃子の焼き目（.food-yaki）
+   ・鉄鍋餃子 … 餃子の皮（水彩。.food-wash-skin）と焼き目（水彩。.food-wash-yaki・.food-wash-yaki-dark）。
+     形は写真を見て描いた形（丸い鉄のスキレットいっぱいに8個が中心へ向かって並ぶ、焼き目を上にした形）。鍋は線だけ
    ・からあげ … からあげ（水彩。.food-wash-karaage）。形は写真を見て描いた形（浅く広い無地の白い平鉢を上からのぞき込む角度で、
      まん中に6個をこんもり）。器のふちの帯の奥側の陰だけは、下の「入れ物は線だけ」の例外
    ・豚の角煮 … 角煮の肉・脂の層・味玉・千切りキャベツ（水彩。.food-wash-*）。形は千切りキャベツを敷いた形（43575ec）
@@ -25,7 +26,7 @@
      焼酎の水割り（.food-wash-shochu）
    ・ソフトドリンク … グラス（.food-wash-glass）、ウーロン茶（.food-wash-tea）、氷（.food-wash-ice）、ストロー（.food-wash-straw）
 
-   水彩の塗り方（9枚すべて。鉄鍋餃子だけは焼き目のべた。部品は Wash.tsx）：
+   水彩の塗り方（9枚すべて。部品は Wash.tsx）：
    線画に、うすく絵の具で塗ったように見せる。上の 1.〜5. のうち、塗りについては、この決まりを優先する
    ・塗るのは食材だけ。お皿・せいろ・鍋・グラス・ジョッキなどの入れ物は線だけ（塗りは後ろを隠す紙の色だけ）
      例外：せいろだけは、深さが分かるよう、ごく淡い水彩の陰を1段だけ付けてよい（.seiro-wash-shade）。
@@ -89,7 +90,7 @@
 .scene-line { stroke-width: calc(2.6px * var(--scene-k) * var(--scene-z, 1)); }
 .scene-fine { stroke-width: calc(2.1px * var(--scene-k) * var(--scene-z, 1)); }
 .scene-paper { fill: var(--scene-paper); }
-/* 料理の絵の湯気の線（Steam.tsx。しゅうまい・からあげ・串焼き）：毛やひげに見えないよう、scene-line より少し太く、やわらかく。
+/* 料理の絵の湯気の線（Steam.tsx。しゅうまい・からあげ・串焼き・鉄鍋餃子）：毛やひげに見えないよう、scene-line より少し太く、やわらかく。
    濃さは線にかける縦のグラデーション（根元と上の端は透明）で、うすくする（決まりの 5. の例外。湯気だけ） */
 .scene-steam-line { stroke-width: calc(3.4px * var(--scene-k) * var(--scene-z, 1)); }
 /* 名物の欄のイラストのカード（Specialties.tsx）の絵。絵の幅（正方形の場所の幅）に合わせて太さを段に分け、
@@ -126,9 +127,7 @@
 /* 料理の色（このファイルの先頭の「料理の絵の決まり」の 2.）。どれもべた塗り。今まで使っていた色（accent・foreground・白・ねぎの緑）を混ぜて作る。
    水彩の塗り（.food-wash-*）は、色 --wash と、塗りの不透明度 --wash-a、ふちの濃さ --wash-edge を決める。
    しゅうまいのあんだけは、小豆あんに見えないよう、少し赤み寄りの肉の色（#C98A74）
-   ・.food-yaki … 焼き目・揚げ色（きつね色。白に accent 62%）
    ・.food-tare … たれ（accent 70% に foreground。今はどの絵でも使っていない） */
-.food-yaki { fill: color-mix(in srgb, var(--accent) 62%, #fff); }
 .food-tare { fill: color-mix(in srgb, var(--accent) 70%, currentColor); }
 /* 水彩の塗り（Wash.tsx）。塗り・ふちの濃い所・紙の色の抜け */
 .wash { fill: var(--wash); fill-opacity: var(--wash-a, 0.45); }
@@ -154,6 +153,10 @@
    ・.food-wash-harami … 串焼きの鶏ハラミ（赤みのある濃い茶色。accent 62% に こげ茶 #5E2414）
    ・.food-wash-kawa … 串焼きの鶏皮（淡いきつね色。白に accent 74%。カリッと焼けたふちを濃く ＝ --wash-edge を高め）
    ・.food-wash-koge … 串焼きの焼き目（濃い茶色。accent 45% に foreground。小さな塗りを具の上に重ねる）
+   ・.food-wash-yaki … 鉄鍋餃子の焼き目（黄みのあるきつね色。accent 82% に こげ茶 #6B3A12。新しく足した色。
+     からあげの .food-wash-karaage と同じ系統で、写真の焼き色に合わせて赤みを少し抜いた色）。餃子の皮は .food-wash-skin
+   ・.food-wash-yaki-dark … 鉄鍋餃子の焼き目のまん中（こげ茶。accent 55% に こげ茶 #5A2A0E を、もう1段重ねる。
+     新しく足した色。餃子ごとに濃さを 0.75〜1 倍に変える。ふちへ向かって淡くなるよう、ふちの濃さ --wash-edge は低め 0.12）
    ・.seiro-wash-shade … せいろの陰（入れ物の例外。foreground をうすく 0.16。ふちはさらにうすく）
    ・.karaage-wash-shade … からあげの器のふちの帯の奥側の陰（入れ物の例外。foreground をうすく 0.12。ふちはさらにうすく）
    飲み物（入れ物にも塗る。「料理の絵の決まり」の「飲み物の塗り方」）
@@ -186,6 +189,8 @@
 .food-wash-harami { --wash: color-mix(in srgb, var(--accent) 62%, #5E2414); --wash-a: 0.72; --wash-edge: 0.44; }
 .food-wash-kawa { --wash: color-mix(in srgb, var(--accent) 74%, #fff); --wash-a: 0.7; --wash-edge: 0.7; }
 .food-wash-koge { --wash: color-mix(in srgb, var(--accent) 45%, currentColor); --wash-a: 0.62; --wash-edge: 0.42; }
+.food-wash-yaki { --wash: color-mix(in srgb, var(--accent) 82%, #6B3A12); --wash-a: 0.66; --wash-edge: 0.42; }
+.food-wash-yaki-dark { --wash: color-mix(in srgb, var(--accent) 55%, #5A2A0E); --wash-a: 0.42; --wash-edge: 0.12; }
 /* 飲み物（入れ物も主役なので、入れ物にも塗る。上の「料理の絵の決まり」の「飲み物の塗り方」） */
 .food-wash-glass { --wash: color-mix(in srgb, #D6E7EC 70%, currentColor); --wash-a: 0.12; --wash-edge: 0.4; }
 .food-wash-ice { --wash: #D6E7EC; --wash-a: 0.8; --wash-edge: 0.55; }
@@ -232,8 +237,6 @@
   stroke-width: calc(1.1px * var(--scene-k) * var(--scene-z, 1));
 }
 .kakuni-shine { fill: #fff; fill-opacity: 0.9; }
-/* 鉄鍋餃子のジュッという音の印（動き終わりは少し薄くなって残る） */
-.teppan-sizzle-mark { opacity: 0.7; }
 
 
 /* 線を描き進める部品（pathLength="1" と一緒に使う） */
@@ -413,12 +416,6 @@
   30%  { opacity: 1; transform: none; }
   65%  { opacity: 1; transform: none; }
   to   { opacity: 0; transform: scale(1.15); }
-}
-/* 鉄鍋餃子のジュッという音の印：ぱっと出て、少し薄くなって残る（動き終わりは .teppan-sizzle-mark と同じ 0.7） */
-@keyframes teppan-sizzle {
-  from { opacity: 0; transform: scale(0.5); }
-  40%  { opacity: 1; transform: scale(1.1); }
-  to   { opacity: 0.7; transform: none; }
 }
 /* 注がれる流れ（Pour.tsx）：上から下へ伸びる（上の端を支点に、縦に伸びる） */
 @keyframes pour-grow {
