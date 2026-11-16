@@ -220,8 +220,12 @@
 }
 
 /* せいろのふた（SeiroIllustration.tsx）：動き終わりは見えない（opacity 0。ふたのないせいろ）。
-   prefers-reduced-motion のときと、JavaScript が動かないブラウザで動き終わったあとも、この形で止まる */
+   prefers-reduced-motion のときと、JavaScript が動かないブラウザで動き終わったあとも、この形で止まる。
+   transform は絵の座標で書くので、中心は絵の座標の原点（view-box の 0 0） */
 .seiro-lid-move { opacity: 0; }
+.scene-anim.seiro-lid-move { transform-box: view-box; transform-origin: 0 0; }
+/* ふたのすき間からもれる湯気：動き終わりは見えない（ふたが持ち去られるころに消える） */
+.seiro-leak { opacity: 0; }
 
 /* 店主紹介のページの手元の絵（幅は 画面の幅の 70%、広い画面では 390px まで）。
    絵の幅に合わせて太さを3段に分け、線を 2〜3px に保つ（320px の画面で約 2.1px、390px の絵で約 2.5px） */
@@ -277,12 +281,25 @@
   45%  { transform: scale(1.04, 1.14); }
   to   { transform: none; }
 }
-/* せいろのふた：せいろにぴったりかぶさった形から、まっすぐ上へ --lift（SeiroIllustration.tsx の LIFT）だけ持ち上がりながら、
-   すっと消えていく。持ち上がりの 4 割（40%）までは濃いまま（中のしゅうまいが透けない）、そこから上がりながら薄くなり、上がりきった所で消える */
-@keyframes seiro-lid-lift {
-  from { opacity: 1; transform: none; }
-  40%  { opacity: 1; transform: translateY(calc(var(--lift, -30px) * 0.4)); }
-  to   { opacity: 0; transform: translateY(var(--lift, -30px)); }
+/* せいろのふた：手で開けるように（形は SeiroIllustration.tsx の LID_VARS。奥のふちを支点にした回転・縦の伸び縮み・移動）
+   ・〜6%   閉じたまま（--lid-0）
+   ・〜22%  手前のふちから少し浮く（--lid-1）。奥のふちはせいろに付いたまま
+   ・〜46%  少し浮いたまま、わずかに傾きが増す（--lid-2）。この間に、すき間から湯気がもれる（seiro-leak）
+   ・〜72%  大きく傾けながら、奥のふちも離れて上の奥へ（--lid-3）
+   ・〜100% 上の奥へ持ち去られながら、すっと消える（--lid-4）。消え始めるまでは濃いまま（残ったふたの下は透けない） */
+@keyframes seiro-lid-open {
+  from, 6% { opacity: 1; transform: var(--lid-0); }
+  22%      { opacity: 1; transform: var(--lid-1); }
+  46%      { opacity: 1; transform: var(--lid-2); }
+  72%      { opacity: 1; transform: var(--lid-3); }
+  to       { opacity: 0; transform: var(--lid-4); }
+}
+/* ふたのすき間からもれる湯気：下から描かれながらふわっと出て、少し残り、ふたが持ち去られるころに薄くなって消える */
+@keyframes seiro-leak {
+  from { stroke-dashoffset: 1; opacity: 0; }
+  20%  { opacity: 0.9; }
+  60%  { stroke-dashoffset: 0; opacity: 0.9; }
+  to   { stroke-dashoffset: 0; opacity: 0; }
 }
 /* しゅうまいの皮が、ひだを寄せるようにすぼまる（下を支点に、広く平たい形から。OwnerHandsIllustration.tsx） */
 @keyframes owner-gather {

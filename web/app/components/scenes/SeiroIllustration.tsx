@@ -14,20 +14,24 @@
 // ・せいろ：高さのある竹の胴。中の線は、内のふち・竹の帯3本（上のふちの輪の下・胴の中ほど・下の帯）・奥の壁と底の境目の5本
 // ・敷き紙：ふちの線1本だけ
 // ・しゅうまい：中の線は、口のふち1本とひだ5本
-// ・ふた：閉じた形（しゅうまいの上にかぶさる）だけ。開くときは、まっすぐ上へ持ち上がりながら消える（動き終わりは、ふたのないせいろ）
-// ・湯気（時間で揺れる）は、奥の列のしゅうまいの上から立ちのぼる
+// ・ふた：閉じた形（しゅうまいの上にかぶさる）だけ。開くときは、手で開けるように、手前のふちから持ち上がって傾き、
+//   上の奥へ持ち去られて消える（手は描かない。動き終わりは、ふたのないせいろ）
+// ・湯気（時間で揺れる）は、奥の列のしゅうまいの上から立ちのぼる。ふたが少し浮いた間だけ、手前のすき間からも2本もれる
 // ・部品ごとに g でまとめる：本体（seiro-body）・敷き紙（seiro-paper）・しゅうまい（seiro-shumai）・
-//   ふた（seiro-lid-move）・湯気（seiro-steam）。重なりの順もこのとおり。
+//   ふた（seiro-lid-move）・もれる湯気と湯気（seiro-steam）。重なりの順もこのとおり。
 //   湯気より前の4つは、まとめて1つの g（seiro-set）に入れる
 // ・動きの順番：
 //   1. ふたがぴったり閉まったせいろが現れる（seiro-set をまとめて薄くしてから出すので、途中もしゅうまいは透けない）
-//   2. ふたが、まっすぐ上へ LIFT だけ持ち上がりながら、すっと消えていく（scenes.css の seiro-lid-lift）
-//   3. ふたが開くと、もともとふたの下にあるしゅうまいが見える。皮とあんの水彩は、見えてからじわっと出る
-//   4. 湯気が立ちのぼる
+//   2. 手前のふちから持ち上がる（奥のふちを支点に、手前だけが少し浮いて傾く。奥のふちはせいろに付いたまま）
+//   3. 手前のすき間から、湯気が2本ふわっともれる（2〜3 の「少し浮いた状態」は、全体の動きの2割あまり）
+//   4. さらに傾けながら持ち上げる（奥のふちもせいろから離れ、上の奥へ）
+//   5. 上の奥へ持ち去られながら、すっと消える（2〜5 は scenes.css の seiro-lid-open。形は LID_VARS）
+//   6. しゅうまいの皮とあんの水彩がじわっと出て、湯気がしっかり立ちのぼる
+//   しゅうまいは、ふたが開くにつれて手前から見えてくる（ふたが残っている奥の部分は、ふたに隠れたまま）
 //   （動きの名前と範囲は anim(...)、@keyframes は scenes.css）。何も動かさないときの形が、動き終わった形
 //   （ふたはなく、しゅうまいと湯気が見える）。トップの場面でも同じ
 // ・見る角度はななめ上から（床の面を縦に SQ だけつぶす。pr()）。胴の側面と、内側の奥の壁が帯として見える角度
-// ・絵は viewBox を 356 の幅に切り出して大きく見せる（上へ消えていくふたの上の端〈y 約 74〉まで入る。
+// ・絵は viewBox を 356 の幅に切り出して大きく見せる（上の奥へ持ち去られるふたの上の端まで入る。
 //   線の太さは --scene-z で 400 の幅の絵とそろえる。scenes.css）
 //
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
@@ -174,10 +178,28 @@ const SHUMAI: Shumai[] = SHUMAI_AT.map(([u0, v0], i) => {
 const LC_Z = RIM_Z + 14; // ふたの上の面の高さ
 const LC_R = RO + 3; // ふたの半径（せいろの上のふちにかぶさる）
 const LC_BOTTOM = RIM_Z - 2; // ふたの下のふちの高さ（ふたの高さ ＝ LC_Z − LC_BOTTOM ＝ 16）
-// 開くときに、まっすぐ上へ持ち上がる量（ふたの高さ 16 の約 1.9 倍）。
-// 消える直前のふたの上の端は y 約 74 で、viewBox の上の端（30）まで余裕がある（切れて見えない）
-const LIFT = 30;
-const LID_VARS = { "--lift": `${-LIFT}px` };
+
+// ── ふたを手で開ける動き（手は描かない。ふたの動きだけで、人が手前のふちを持って開けた感じを出す） ──
+// 支点は、ふたの奥のふち（下のふちの、いちばん奥の点 HINGE）。ななめ上から見たふたが開いていく形を、2Dの変形で表す：
+// ・縦の伸び縮み（scaleY。支点のまわり）… 手前が浮いてふたが傾くほど、ふたの面は奥へ倒れて細く見え、手前のふちが上がる
+// ・支点のまわりの小さな回転 … 右手で持ち上げたように、右の手前が少し先に上がる（左回り）
+// ・支点ごとの移動 … 奥のふちも、せいろのふちから離れて、上の奥（上・少し右）へ持ち去られる
+// 5つの形を、同じ並びの関数（translate・rotate・scale・translate）で書き、scenes.css の @keyframes seiro-lid-open が順につなぐ
+//   0. 閉じた形
+//   1. 手前が少し浮いた形（傾き約 12° のつもり。手前のふちが約 27 上がり、すき間から手前のしゅうまいがのぞく。奥のふちは付いたまま）
+//   2. 少し浮いたまま、ほんの少し傾きが増した形（ここまでの 1〜2 が、ゆっくり見せる「少し浮いた状態」）
+//   3. 大きく傾けた形（傾き約 35° のつもり。ふたの面はかなり細くなり、奥のふちも上の奥へ離れる）
+//   4. 上の奥へ持ち去られた形（ここで消えきる）
+const HINGE: P = pr(0, -LC_R, LC_BOTTOM);
+const lidTransform = (dx: number, dy: number, rot: number, sy: number) =>
+  `translate(${r1(HINGE[0] + dx)}px, ${r1(HINGE[1] + dy)}px) rotate(${rot}deg) scale(1, ${sy}) translate(${r1(-HINGE[0])}px, ${r1(-HINGE[1])}px)`;
+const LID_VARS = {
+  "--lid-0": lidTransform(0, 0, 0, 1),
+  "--lid-1": lidTransform(0, 0, -1.5, 0.85),
+  "--lid-2": lidTransform(0, -1, -2.5, 0.8),
+  "--lid-3": lidTransform(6, -30, -5, 0.38),
+  "--lid-4": lidTransform(10, -56, -5.5, 0.2),
+};
 
 const LID_CLOSED = (() => {
   const top = circ(0, 0, LC_R, LC_Z, 48).slice(0, 48);
@@ -209,6 +231,11 @@ const STEAM = [
   steam(255, 165, 62, 1.0, 8, 2560),
 ];
 const STEAM_SWAY = [sway(4.8, 0), sway(5.6, -1.8), sway(4.2, -3.1), sway(6.1, -0.9)];
+// すき間からもれる湯気（2本）。手前が浮いた所（ふたの手前のふちと、せいろの手前のふちの間）から、ふわっと出て、
+// ふたが持ち去られるころに消える（scenes.css の seiro-leak。動き終わりは見えない）。
+// 出どころは、左のすき間（しゅうまいとせいろの内のふちの間）と、手前の2つのしゅうまいの間。ふたの手前のふちを越えて立ちのぼる
+const LEAK = [steam(104, 288, 192, 1.3, 11, 2600), steam(199, 292, 204, 3.4, 10, 2620)];
+const LEAK_SWAY = [sway(5.2, -0.6), sway(4.6, -2.2)];
 
 export default function SeiroIllustration({ className = "" }: { className?: string }) {
   return (
@@ -228,6 +255,12 @@ export default function SeiroIllustration({ className = "" }: { className?: stri
         <linearGradient id="seiro-steam-fade" gradientUnits="userSpaceOnUse" x1="0" y1="230" x2="0" y2="40">
           <stop offset="0" stopColor="currentColor" stopOpacity="0.95" />
           <stop offset="0.55" stopColor="currentColor" stopOpacity="0.75" />
+          <stop offset="1" stopColor="currentColor" stopOpacity="0" />
+        </linearGradient>
+        {/* すき間からもれる湯気は、出どころ（下）から上へ、すぐ薄くなる */}
+        <linearGradient id="seiro-leak-fade" gradientUnits="userSpaceOnUse" x1="0" y1="292" x2="0" y2="190">
+          <stop offset="0" stopColor="currentColor" stopOpacity="0.85" />
+          <stop offset="0.5" stopColor="currentColor" stopOpacity="0.6" />
           <stop offset="1" stopColor="currentColor" stopOpacity="0" />
         </linearGradient>
         {/* 水彩のにじみ（塗りにだけ。絵の中で使い回す） */}
@@ -267,7 +300,7 @@ export default function SeiroIllustration({ className = "" }: { className?: stri
             <g key={i}>
               {/* 後ろの線を隠す紙の色 → 皮とあんの水彩（ふたが開いて、しゅうまいが見えてから、じわっと出る）→ ひだ → 口のふち → 輪郭 */}
               <path d={p.body} className="scene-paper" stroke="none" />
-              <g className="scene-anim" style={anim("scene-fade-up", 32 + i, 40 + i, { "--dy": "0px" })}>
+              <g className="scene-anim" style={anim("scene-fade-up", 40 + i, 48 + i, { "--dy": "0px" })}>
                 <Wash filter="seiro-wash" d={p.body} tone="food-wash-skin" id={`seiro-w-skin-${i}`} shift={[1.1, 0.9]} holes={[p.skinHole]} />
                 <Wash filter="seiro-wash" d={p.meat} tone="food-wash-meat" id={`seiro-w-meat-${i}`} shift={[0.9, 0.75]} holes={[p.meatHole]} />
               </g>
@@ -280,8 +313,9 @@ export default function SeiroIllustration({ className = "" }: { className?: stri
           ))}
         </g>
 
-        {/* 2. ふた（せいろにぴったりかぶさった形から、まっすぐ上へ LIFT だけ持ち上がりながら消える。動き終わりは見えない） */}
-        <g className="seiro-lid-move scene-anim" style={anim("seiro-lid-lift", 16, 38, LID_VARS)}>
+        {/* 2. ふた（手前のふちから持ち上がり、奥のふちを支点に傾いて、上の奥へ持ち去られて消える。動き終わりは見えない。
+            transform は LID_VARS。ふたが残っている奥の部分は、しゅうまいを隠したまま） */}
+        <g className="seiro-lid-move scene-anim" style={anim("seiro-lid-open", 14, 48, LID_VARS)}>
           {LID_CLOSED.fill.map((d, i) => (
             <path key={`f${i}`} d={d} className="scene-paper" stroke="none" />
           ))}
@@ -294,7 +328,21 @@ export default function SeiroIllustration({ className = "" }: { className?: stri
         </g>
       </g>
 
-      {/* 3. 湯気（奥の列のしゅうまいの上から立ちのぼる。時間でゆっくり揺れる） */}
+      {/* 3. すき間からもれる湯気（手前が浮いた所から、ふわっと出て、ふたが持ち去られるころに消える） */}
+      <g className="seiro-steam" stroke="url(#seiro-leak-fade)">
+        {LEAK.map((d, i) => (
+          <g key={`l${i}`} className="scene-sway" style={LEAK_SWAY[i]}>
+            <path
+              d={d}
+              pathLength={1}
+              className="scene-fine scene-stroke-draw seiro-leak scene-anim"
+              style={anim("seiro-leak", 21 + i * 2, 40 + i)}
+            />
+          </g>
+        ))}
+      </g>
+
+      {/* 4. 湯気（奥の列のしゅうまいの上から立ちのぼる。時間でゆっくり揺れる） */}
       <g className="seiro-steam" stroke="url(#seiro-steam-fade)">
         {STEAM.map((d, i) => (
           <g key={i} className="scene-sway" style={STEAM_SWAY[i]}>
@@ -302,7 +350,7 @@ export default function SeiroIllustration({ className = "" }: { className?: stri
               d={d}
               pathLength={1}
               className="scene-line scene-stroke-draw scene-anim"
-              style={anim("scene-draw", 42 + i * 2, [52, 55, 57, 59][i])}
+              style={anim("scene-draw", 46 + i * 2, [54, 56, 58, 60][i])}
             />
           </g>
         ))}
