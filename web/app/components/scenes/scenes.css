@@ -219,10 +219,9 @@
   transform-origin: 50% 100%;
 }
 
-/* せいろの動くふた（SeiroIllustration.tsx）：動き終わりは見えない（opacity 0。同じ位置の立てかけたふた .seiro-lid が見える）。
-   transform は絵の座標で書くので、中心は絵の座標の原点（view-box の 0 0） */
+/* せいろのふた（SeiroIllustration.tsx）：動き終わりは見えない（opacity 0。ふたのないせいろ）。
+   prefers-reduced-motion のときと、JavaScript が動かないブラウザで動き終わったあとも、この形で止まる */
 .seiro-lid-move { opacity: 0; }
-.scene-anim.seiro-lid-move { transform-box: view-box; transform-origin: 0 0; }
 
 /* 店主紹介のページの手元の絵（幅は 画面の幅の 70%、広い画面では 390px まで）。
    絵の幅に合わせて太さを3段に分け、線を 2〜3px に保つ（320px の画面で約 2.1px、390px の絵で約 2.5px） */
@@ -278,19 +277,12 @@
   45%  { transform: scale(1.04, 1.14); }
   to   { transform: none; }
 }
-/* せいろの動くふた：せいろにぴったりかぶさった形（--lid-from）から、まっすぐ持ち上がって少し右へ（--lid-up。40%）、
-   右へ移りながら縦に起きて、せいろの右に立てかけた形（--lid-to。92%）になる。最後に消えて、同じ位置の .seiro-lid と入れ替わる。
-   3つの形は、同じ並びの関数（translate・rotate・scale・rotate・translate）で書く（SeiroIllustration.tsx の LID_VARS） */
-@keyframes seiro-lid-open {
-  from { opacity: 1; transform: var(--lid-from); }
-  40%  { opacity: 1; transform: var(--lid-up); }
-  92%  { opacity: 1; transform: var(--lid-to); }
-  to   { opacity: 0; transform: var(--lid-to); }
-}
-/* せいろの立てかけたふた：動くふたが立てかけた形に着く少し前（88%）から出て、動くふたの下で入れ替わる */
-@keyframes seiro-lid-settle {
-  from, 88% { opacity: 0; }
-  to        { opacity: 1; }
+/* せいろのふた：せいろにぴったりかぶさった形から、まっすぐ上へ --lift（SeiroIllustration.tsx の LIFT）だけ持ち上がりながら、
+   すっと消えていく。持ち上がりの 4 割（40%）までは濃いまま（中のしゅうまいが透けない）、そこから上がりながら薄くなり、上がりきった所で消える */
+@keyframes seiro-lid-lift {
+  from { opacity: 1; transform: none; }
+  40%  { opacity: 1; transform: translateY(calc(var(--lift, -30px) * 0.4)); }
+  to   { opacity: 0; transform: translateY(var(--lift, -30px)); }
 }
 /* しゅうまいの皮が、ひだを寄せるようにすぼまる（下を支点に、広く平たい形から。OwnerHandsIllustration.tsx） */
 @keyframes owner-gather {

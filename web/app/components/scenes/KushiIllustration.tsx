@@ -12,10 +12,12 @@
 // ・ぼんじり：からあげと同じ色の水彩（.food-wash-karaage）。つやの白い抜けを1つ
 // ・鶏ハラミ：赤みのある濃い茶色の水彩（.food-wash-harami）
 // ・鶏皮：淡いきつね色の水彩で、ふちを濃く（.food-wash-kawa）
-// ・焼き目：3本とも、濃い茶色の小さな水彩を 2〜3か所ずつ重ねる（.food-wash-koge）
+// ・焼き目：6本とも、濃い茶色の小さな水彩を 3か所ずつ重ねる（.food-wash-koge）
 // ・中の線は、1本の串に 5本まで（ぼんじりのふくらみ・ハラミの折り目・皮のうねりのしわ）
-// ・部品ごとに g でまとめる：お皿（kushi-plate）・串3本（kushi-skewers。1本ずつ g）
-// ・串は、奥から ぼんじり・鶏ハラミ・鶏皮。持ち手を右、先を左に、少し左上がりに、奥ほど右へずらして並べる。持ち手は串の長さの約3割
+// ・部品ごとに g でまとめる：お皿（kushi-plate）・串6本（kushi-skewers。1本ずつ g）
+// ・串は 3種類を2本ずつ、6本。奥から ぼんじり2本 → 鶏ハラミ2本 → 鶏皮2本（同じ種類の2本を隣り合わせに）。
+//   持ち手を右、先を左に、少し左上がりに、奥ほど右へずらして並べる。持ち手は串の長さの約3割。
+//   具は3本のときの 0.87 倍（S）。手前の串が奥の串に少し重なる。同じ種類の2本は、具の大きさ・傾き・焼き目の位置を少しずつ変える
 //   （串の形は、持ち手を左にした向きで計算し、at() の中で、お皿のまん中の縦の線 x = CX について左右を折り返す。
 //   絵全体を CSS で反転しないので、水彩の塗りのずれ〈右下へ〉と白い抜けの考え方〈光は左上から〉は、ほかの絵と同じ向きのまま）
 // ・動きの順番：お皿のふち（外 → 内）が描かれる → 串が1本ずつ（奥から手前へ）上から置かれる → 水彩の塗りがじわっと出る
@@ -32,22 +34,24 @@ import { Wash, WashFilter, type Hole } from "./Wash";
 // お皿の長い向き（u）が串の向き（右の持ち手から左の先へ、少し左上がり ＝ 傾き 0.15）にそろうように、床の面で TH だけ回す
 const CX = 200; // 串を左右に折り返す縦の線（at()）
 const PX = 198; // お皿のまん中
-const PY = 279;
+const PY = 272;
 const SQ = 0.58;
 const TH = Math.atan(0.15 / SQ);
 const COS = Math.cos(TH);
 const SIN = Math.sin(TH);
 const pr = (u: number, v: number, z = 0): P => [PX + u * COS - v * SIN, PY + (u * SIN + v * COS) * SQ - z];
 const PLATE_HL = 168; // 半分の長さ
-const PLATE_HW = 130; // 半分の幅（串3本と具が、内の底のふちの中に入る幅）
+const PLATE_HW = 162; // 半分の幅（串6本と具が、内の底のふちの中に入る幅）
 const PLATE_R = 40; // 角の丸み
 const PLATE_PTS = roundRectPts(pr, PLATE_HL, PLATE_HW, PLATE_R, 0, 9000, 0.9);
 const PLATE_FILL = polygon(PLATE_PTS);
 const PLATE_OUTER = smooth(PLATE_PTS);
 const PLATE_INNER = smooth(roundRectPts(pr, PLATE_HL - 13, PLATE_HW - 12, PLATE_R - 8, -3, 9030, 0.7)); // 内の底のふち（少し低い）
 
-// ── 串（3本）。持ち手の端 from から長さ L。具は串の長さの U0〜U1 のあいだ ──
-// 点は、持ち手を左にした向き（from から右上がり）で計算し、at() で左右を折り返して、持ち手を右・先を左にする
+// ── 串（6本）。持ち手の端 from から長さ L。具は串の長さの U0〜U1 のあいだ ──
+// 点は、持ち手を左にした向き（from から右上がり）で計算し、at() で左右を折り返して、持ち手を右・先を左にする。
+// 奥から ぼんじり2本 → 鶏ハラミ2本 → 鶏皮2本。同じ種類の2本は間を詰め（24）、種類の境目は少し空ける（30）。
+// 具の高さ（約 33）より間が狭いので、手前の串が奥の串に少し重なる
 const L = 318;
 const DIR: P = (() => {
   const dx = 1;
@@ -57,14 +61,19 @@ const DIR: P = (() => {
 })();
 const NRM: P = [DIR[1], -DIR[0]]; // 串に直角で、上向き
 const FROM: readonly P[] = [
-  [16, 262], // 奥：ぼんじり
-  [30, 304], // まん中：鶏ハラミ
-  [44, 346], // 手前：鶏皮
+  [20, 238], // 奥：ぼんじり
+  [27, 262], //     ぼんじり
+  [34, 292], // 鶏ハラミ
+  [41, 316], //     鶏ハラミ
+  [48, 346], // 手前：鶏皮
+  [55, 370], //     鶏皮
 ];
 // 串の上の点（u … 持ち手の端からの長さ、v … 串から上へ）。x は x = CX について折り返す（持ち手が右に来る）
 const at = (k: number, u: number, v: number): P => [2 * CX - (FROM[k][0] + DIR[0] * u + NRM[0] * v), FROM[k][1] + DIR[1] * u + NRM[1] * v];
 const U0 = 0.3 * L; // 具の始まり（ここまでが持ち手）
 const U1 = 0.93 * L; // 具の終わり（ここから先に、竹串の先が少し出る）
+// 具の大きさ（3本のときの形に対する倍率）。6本がお皿に収まるよう少し小さくする
+const S = 0.87;
 
 // 竹串（太さ 5。持ち手の端は丸く、先はとがる）
 function stick(k: number) {
@@ -97,94 +106,130 @@ function lump(k: number, u: number, v: number, ru: number, rv: number, rot: numb
 }
 // 串の座標の点を曲線に
 const curve = (k: number, uv: readonly (readonly [number, number])[]) => smooth(uv.map(([u, v]) => at(k, u, v)));
-// 焼き目（小さなでこぼこの丸）
-const koge = (k: number, u: number, v: number, r: number, seed: number) => polygon(lump(k, u, v, r, r * 0.7, 0.3, seed, 0.15, 10));
+// 焼き目（小さなでこぼこの丸。r は 3本のときの大きさで、S を掛けて小さくする）
+const koge = (k: number, u: number, v: number, r: number, seed: number) => polygon(lump(k, u, v, r * S, r * S * 0.7, 0.3, seed, 0.15, 10));
 
 type Part = { fill: string; outline: string };
 type Kushi = { parts: Part[]; lines: string[]; tone: string; holes: Hole[]; koge: string[] };
 
-// ── ぼんじり（奥）：まるっとしたかたまり 5個 ──
-const BONJIRI: Kushi = (() => {
-  const k = 0;
+// 同じ種類の2本（n = 0・1）は、まったく同じ形にしない：
+// 具の大きさ（g）・傾き・並びの位置（具の始まりを少しずらす）・揺らぎの種・焼き目の位置を、1本目と2本目で変える（乱数は使わない）
+
+// ── ぼんじり（奥の2本）：まるっとしたかたまり 5個 ──
+function bonjiri(k: number, n: number): Kushi {
+  const g = S * (n === 0 ? 1 : 0.95);
+  const z = n * 500; // 揺らぎの種をずらす
   const step = (U1 - U0) / 5;
+  const u = (i: number) => U0 + step * (i + 0.5) + (n === 0 ? 0 : 4);
   const parts = Array.from({ length: 5 }, (_, i) => {
-    const u = U0 + step * (i + 0.5);
-    const pts = lump(k, u + jitter(9200 + i) * 3, jitter(9210 + i) * 3, step * (0.6 + jitter(9240 + i) * 0.06), 19 + jitter(9220 + i) * 3, jitter(9250 + i) * 0.5, 9230 + i * 30, 0.11, 18);
+    const pts = lump(
+      k,
+      u(i) + jitter(9200 + z + i) * 3,
+      jitter(9210 + z + i) * 3,
+      step * (0.6 + jitter(9240 + z + i) * 0.06) * (g / S) * 0.98,
+      (19 + jitter(9220 + z + i) * 3) * g,
+      jitter(9250 + z + i) * 0.5 + (n === 0 ? 0 : 0.15),
+      9230 + z + i * 30,
+      0.11,
+      18,
+    );
     return { fill: polygon(pts), outline: smooth(pts) };
   });
-  const u = (i: number) => U0 + step * (i + 0.5);
   // ふくらみの線（かたまりの左上の、まるい弧。3本）
-  const lines = [0, 2, 4].map((i) => curve(k, [[u(i) - 13, 4], [u(i) - 9, 11], [u(i) - 1, 15]]));
+  const lines = (n === 0 ? [0, 2, 4] : [1, 2, 4]).map((i) =>
+    curve(k, [
+      [u(i) - 13 * g, 4 * g],
+      [u(i) - 9 * g, 11 * g],
+      [u(i) - 1 * g, 15 * g],
+    ]),
+  );
+  const kg: [number, number, number][] = n === 0 ? [[1, 8, -11], [3, 4, 12], [4, 10, -6]] : [[0, 6, 10], [2, -6, -11], [3, 8, 9]];
   return {
     parts,
     lines,
     tone: "food-wash-karaage",
-    holes: [[...at(k, u(2) + 2, 11), 4.6, 2.6] as const],
-    koge: [koge(k, u(1) + 8, -11, 7.5, 9300), koge(k, u(3) + 4, 12, 6.75, 9310), koge(k, u(4) + 10, -6, 6, 9320)],
+    holes: [[...at(k, u(2) + 2, 11 * g), 4.6 * g, 2.6 * g] as const],
+    koge: kg.map(([i, du, v], j) => koge(k, u(i) + du * g, v * g, [7.5, 6.75, 6][j], 9300 + z + j * 10)),
   };
-})();
+}
 
-// ── 鶏ハラミ（まん中）：平たい身を折りたたんだ形 4個。互い違いに傾いて重なる ──
-const HARAMI: Kushi = (() => {
-  const k = 1;
+// ── 鶏ハラミ（まん中の2本）：平たい身を折りたたんだ形 4個。互い違いに傾いて重なる ──
+function harami(k: number, n: number): Kushi {
+  const g = S * (n === 0 ? 1 : 1.04);
+  const z = n * 500;
   const step = (U1 - U0) / 4;
-  const u = (i: number) => U0 + step * (i + 0.5);
+  const u = (i: number) => U0 + step * (i + 0.5) + (n === 0 ? 0 : -5);
+  // 1本目は 1つ目が上に、2本目は 1つ目が下に傾く
+  const tilt = (i: number) => ((i + n) % 2 === 0 ? 0.22 : -0.2);
   const parts = Array.from({ length: 4 }, (_, i) => {
-    const pts = lump(k, u(i), jitter(9400 + i) * 1.5, step * 0.62, 19, i % 2 === 0 ? 0.22 : -0.2, 9410 + i * 30, 0.09, 16);
+    const pts = lump(k, u(i), jitter(9400 + z + i) * 1.5, step * 0.62 * (g / S) * 0.98, 19 * g, tilt(i), 9410 + z + i * 30, 0.09, 16);
     return { fill: polygon(pts), outline: smooth(pts) };
   });
   // 折り目（身の上から下へ、くの字に。4本）
   const lines = [0, 1, 2, 3].map((i) => {
-    const d = i % 2 === 0 ? 1 : -1;
-    return curve(k, [[u(i) - 4 * d, 15], [u(i) + 4 * d, 2], [u(i) - 2 * d, -12]]);
+    const d = (i + n) % 2 === 0 ? 1 : -1;
+    return curve(k, [
+      [u(i) - 4 * d * g, 15 * g],
+      [u(i) + 4 * d * g, 2 * g],
+      [u(i) - 2 * d * g, -12 * g],
+    ]);
   });
+  const kg: [number, number, number][] = n === 0 ? [[0, 10, 10], [2, -8, -10], [3, 6, 8]] : [[1, -6, 9], [2, 9, 8], [3, -4, -10]];
   return {
     parts,
     lines,
     tone: "food-wash-harami",
     holes: [],
-    koge: [koge(k, u(0) + 10, 10, 7.5, 9500), koge(k, u(2) - 8, -10, 7.5, 9510), koge(k, u(3) + 6, 8, 6, 9520)],
+    koge: kg.map(([i, du, v], j) => koge(k, u(i) + du * g, v * g, [7.5, 7.5, 6][j], 9500 + z + j * 10)),
   };
-})();
+}
 
-// ── 鶏皮（手前）：皮を波のようにくねらせた、1本の長いうねり ──
-const KAWA: Kushi = (() => {
-  const k = 2;
-  const folds = 9;
-  const step = (U1 - U0) / folds;
+// ── 鶏皮（手前の2本）：皮を波のようにくねらせた、1本の長いうねり ──
+function kawa(k: number, n: number): Kushi {
+  const g = S * (n === 0 ? 1 : 0.94);
+  const z = n * 500;
+  const folds = n === 0 ? 9 : 8; // 2本目は折り目を1つ少なく（うねりが少し大きい）
+  const u0 = U0 + (n === 0 ? 0 : 6);
+  const step = (U1 - u0) / folds;
   // 上のふち（左 → 右）。折り目ごとにふくらむ。下のふちは半分ずらして互い違いに
   const top: [number, number][] = [];
   const bottom: [number, number][] = [];
   for (let i = 0; i <= folds * 2; i++) {
-    const uu = U0 + (step / 2) * i;
+    const uu = u0 + (step / 2) * i;
     const peak = i % 2 === 1;
     // 山は高さを不ぞろいに、谷は深く（皮が細かく折り重なって見えるように）
-    top.push([uu + jitter(9660 + i) * 2, peak ? 21 + jitter(9600 + i) * 3.5 : 9 + jitter(9600 + i) * 1.5]);
-    bottom.push([uu + step / 2 + jitter(9680 + i) * 2, peak ? -9 + jitter(9640 + i) * 1.5 : -20 + jitter(9640 + i) * 3.5]);
+    top.push([uu + jitter(9660 + z + i) * 2, (peak ? 21 + jitter(9600 + z + i) * 3.5 : 9 + jitter(9600 + z + i) * 1.5) * g]);
+    bottom.push([uu + step / 2 + jitter(9680 + z + i) * 2, (peak ? -9 + jitter(9640 + z + i) * 1.5 : -20 + jitter(9640 + z + i) * 3.5) * g]);
   }
   bottom.pop();
-  const uv: [number, number][] = [[U0 - 3, 0], ...top, [U1 + 3, -2], ...bottom.reverse(), [U0 - 3, 0]];
+  const uv: [number, number][] = [[u0 - 3, 0], ...top, [U1 + 3, -2 * g], ...bottom.reverse(), [u0 - 3, 0]];
   const pts = uv.map(([uu, v]) => at(k, uu, v));
   const outline = smooth([...pts, pts[1]]);
   // うねりのしわ（上のふちのくぼみから、ななめ下へ。折り重なりの境目。5本）
-  const lines = [1, 3, 4, 6, 8].map((i) => {
-    const uu = U0 + step * i;
-    return curve(k, [[uu, 9], [uu + 4, 0], [uu + 7, -8]]);
+  const lines = (n === 0 ? [1, 3, 4, 6, 8] : [1, 2, 4, 5, 7]).map((i) => {
+    const uu = u0 + step * i;
+    return curve(k, [
+      [uu, 9 * g],
+      [uu + 4 * g, 0],
+      [uu + 7 * g, -8 * g],
+    ]);
   });
+  const kg: [number, number][] = n === 0 ? [[1.5, 16], [5, -15], [7.5, 16]] : [[0.8, -15], [3.5, 16], [6.2, -14]];
   return {
     parts: [{ fill: polygon(pts), outline }],
     lines,
     tone: "food-wash-kawa",
     holes: [],
-    koge: [koge(k, U0 + step * 1.5, 16, 7.5, 9700), koge(k, U0 + step * 5, -15, 7.5, 9710), koge(k, U0 + step * 7.5, 16, 7, 9720)],
+    koge: kg.map(([f, v], j) => koge(k, u0 + step * f, v * g, [7.5, 7.5, 7][j], 9700 + z + j * 10)),
   };
-})();
+}
 
-const KUSHI = [BONJIRI, HARAMI, KAWA];
+// 奥から ぼんじり2本 → 鶏ハラミ2本 → 鶏皮2本
+const KUSHI = [bonjiri(0, 0), bonjiri(1, 1), harami(2, 0), harami(3, 1), kawa(4, 0), kawa(5, 1)];
 const STICKS = KUSHI.map((_, k) => stick(k));
 
 // 水彩がじわっと出る動き（いちばん最後。串ごとに少しずつずらす）
-const washAnim = (i: number) => anim("scene-fade-up", 50 + i * 2, 57 + i, { "--dy": "0px" });
+const washAnim = (i: number) => anim("scene-fade-up", 50 + i, 55 + i, { "--dy": "0px" });
 
 export default function KushiIllustration({ className = "" }: { className?: string }) {
   return (
@@ -211,11 +256,11 @@ export default function KushiIllustration({ className = "" }: { className?: stri
         <path d={PLATE_INNER} pathLength={1} className="scene-fine scene-stroke-draw scene-anim" style={anim("scene-draw", 8, 17)} />
       </g>
 
-      {/* 2. 串（奥から1本ずつ、上から置かれる）。
+      {/* 2. 串（6本。奥から1本ずつ、上から置かれる。手前の串が奥の串に重なる）。
           1本ごとに：竹串 → 具の後ろを隠す紙の色 → 水彩（いちばん最後にじわっと出る）→ 具の輪郭と中の線 */}
       <g className="kushi-skewers">
         {KUSHI.map((ku, i) => (
-          <g key={i} className="scene-anim" style={anim("scene-fade-up", 18 + i * 9, 28 + i * 9, { "--dy": "-30px" })}>
+          <g key={i} className="scene-anim" style={anim("scene-fade-up", 18 + i * 5, 26 + i * 5, { "--dy": "-30px" })}>
             <path d={STICKS[i].fill} className="scene-paper" stroke="none" />
             {STICKS[i].lines.map((d, k) => (
               <path key={k} d={d} className="scene-fine" />
