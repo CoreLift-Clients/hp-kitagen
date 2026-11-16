@@ -10,17 +10,20 @@
 // ・からあげ：赤みのあるきつね色の水彩（.food-wash-karaage）。ふちは同じ色が細く濃くたまる（.wash-edge）。
 //   下のほう（右下）は、同じ色をもう1段重ねて陰に（.food-wash-karaage-dark）。山のいちばん上に白い抜けを1つ
 // ・衣のでこぼこ：中の短い曲線を、1つに 2〜3本
-// ・部品ごとに g でまとめる：鉢（karaage-bowl）・模様（karaage-pattern）・からあげ（karaage-pieces）・油の線（karaage-oil）
+// ・湯気：山のてっぺん（奥のまん中の1個）から2本。しゅうまいと同じ描き方（共通の部品 Steam.tsx）。
+//   からあげから少し浮いた所から立ち、高さはしゅうまいの奥の湯気より少し短め。時間でゆっくり揺れる
+//   （油のパチパチの線は、湯気と重なってごちゃつくので外した）
+// ・部品ごとに g でまとめる：鉢（karaage-bowl）・模様（karaage-pattern）・からあげ（karaage-pieces）・湯気（karaage-steam）
 // ・見る角度は斜め上から（鉢の丸を縦に 0.55 につぶす）
 // ・動きの順番：鉢のふちが描かれる → 模様の花びらが1つずつ描かれる → からあげが1つずつ上から積まれる（奥から手前へ）→
-//   油の短い線がパチパチと出て消える → 水彩の塗りがじわっと出る
+//   水彩の塗りがじわっと出る → 湯気が2本立ちのぼる
 //   （動きの名前と範囲は anim(...)、@keyframes は scenes.css）。何も動かさないときの形が、動き終わった形
-//   （油の線だけは、動き終わりは消えた形。動かないときは見えたまま）
-// ・絵は viewBox を 380 の幅に切り出して大きく見せる（線の太さは --scene-z で 400 の幅の絵とそろえる。scenes.css）
+// ・絵は viewBox を 380 の幅に切り出して大きく見せる（湯気の上の端まで入るよう、少し上へずらす。線の太さは --scene-z で 400 の幅の絵とそろえる。scenes.css）
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
 import type { CSSProperties } from "react";
-import { PI, anim, arc, jitter, line, polygon, ring, smooth, type P } from "./draw";
+import { PI, anim, arc, jitter, polygon, ring, smooth, sway, type P } from "./draw";
+import { SteamFades, SteamWisps, mkWisp } from "./Steam";
 import { Wash, WashFilter } from "./Wash";
 
 // ── 鉢（浅い丸鉢。中心と大きさ。SQ は縦のつぶし） ──
@@ -170,42 +173,21 @@ const PIECES = PIECE_AT.map(([cx, cy, rx, ry, rot], i) => {
 // 山のいちばん上（奥のまん中の1個）の白い抜け
 const TOP_HOLE = [[190, 200, 6, 3.4]] as const;
 
-// ── 油のパチパチ（からあげの山のまわりに短い線） ──
-const OIL: readonly [P, P][] = [
-  [
-    [96, 210],
-    [82, 198],
-  ],
-  [
-    [136, 176],
-    [128, 160],
-  ],
-  [
-    [206, 158],
-    [206, 140],
-  ],
-  [
-    [270, 174],
-    [278, 158],
-  ],
-  [
-    [314, 210],
-    [328, 199],
-  ],
-  [
-    [340, 236],
-    [355, 230],
-  ],
+// ── 湯気（2本。山のてっぺん〈奥のまん中の1個。上のふちは y 178 あたり〉から、少し浮いた所から立ちのぼる） ──
+// 描き方はしゅうまいと同じ（Steam.tsx）。高さは、しゅうまいの奥の湯気（カードの高さの約 3割）より少し短め（約 2割強）
+const STEAM = [
+  mkWisp(191, 178, 90, -3, 0.6, 6.5, 8700, 0.42),
+  mkWisp(221, 182, 102, 3, 3.4, 6.5, 8720, 0.42),
 ];
-const OIL_LINES = OIL.map(([a, b], i) => line(a, b, 8600 + i * 5, 0.3, 1));
+const STEAM_SWAY = [sway(5.0, -0.7), sway(5.7, -2.3)];
 
-// 水彩がじわっと出る動き（いちばん最後。からあげごとに少しずつずらす）
+// 水彩がじわっと出る動き（からあげごとに少しずつずらす。このあとに湯気が立ちのぼる）
 const washAnim = (i: number) => anim("scene-fade-up", 50 + i, 56 + i * 0.7, { "--dy": "0px" });
 
 export default function KaraageIllustration({ className = "" }: { className?: string }) {
   return (
     <svg
-      viewBox="10 84 380 380"
+      viewBox="10 64 380 380"
       aria-hidden="true"
       focusable="false"
       className={`scene-svg ${className}`}
@@ -218,6 +200,8 @@ export default function KaraageIllustration({ className = "" }: { className?: st
       <defs>
         {/* 水彩のにじみ（塗りにだけ。からあげで1つを使い回す） */}
         <WashFilter id="karaage-wash" seed={11} />
+        {/* 湯気の濃さ（1本ずつ。根元と上の端は透明） */}
+        <SteamFades id="karaage-steam-fade" wisps={STEAM} />
         {PIECES.map((p, i) => (
           <clipPath key={i} id={`karaage-clip-${i}`}>
             <path d={p.fill} />
@@ -275,14 +259,8 @@ export default function KaraageIllustration({ className = "" }: { className?: st
         ))}
       </g>
 
-      {/* 4. 油のパチパチ */}
-      <g className="karaage-oil">
-        {OIL_LINES.map((d, i) => (
-          <g key={i} className="scene-anim" style={anim("scene-flicker", 44 + (i % 3) * 2, 52 + (i % 3) * 2)}>
-            <path d={d} className="scene-fine" />
-          </g>
-        ))}
-      </g>
+      {/* 4. 湯気（水彩がじわっと出たあと、山のてっぺんから2本立ちのぼる。時間でゆっくり揺れる） */}
+      <SteamWisps className="karaage-steam" id="karaage-steam-fade" wisps={STEAM} sways={STEAM_SWAY} timing={[[54, 59], [56, 60]]} />
     </svg>
   );
 }

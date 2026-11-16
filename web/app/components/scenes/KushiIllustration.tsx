@@ -14,19 +14,22 @@
 // ・鶏皮：淡いきつね色の水彩で、ふちを濃く（.food-wash-kawa）
 // ・焼き目：6本とも、濃い茶色の小さな水彩を 3か所ずつ重ねる（.food-wash-koge）
 // ・中の線は、1本の串に 5本まで（ぼんじりのふくらみ・ハラミの折り目・皮のうねりのしわ）
-// ・部品ごとに g でまとめる：お皿（kushi-plate）・串6本（kushi-skewers。1本ずつ g）
+// ・湯気：串の具のあたり（いちばん奥の串の具の上）から3本、具の上に散らす（持ち手の上には立てない）。
+//   しゅうまいと同じ描き方（共通の部品 Steam.tsx）。具から少し浮いた所から立ち、高さはからあげより少し短め。時間でゆっくり揺れる
+// ・部品ごとに g でまとめる：お皿（kushi-plate）・串6本（kushi-skewers。1本ずつ g）・湯気（kushi-steam）
 // ・串は 3種類を2本ずつ、6本。奥から ぼんじり2本 → 鶏ハラミ2本 → 鶏皮2本（同じ種類の2本を隣り合わせに）。
 //   持ち手を右、先を左に、少し左上がりに、奥ほど右へずらして並べる。持ち手は串の長さの約3割。
 //   具は3本のときの 0.87 倍（S）。手前の串が奥の串に少し重なる。同じ種類の2本は、具の大きさ・傾き・焼き目の位置を少しずつ変える
 //   （串の形は、持ち手を左にした向きで計算し、at() の中で、お皿のまん中の縦の線 x = CX について左右を折り返す。
 //   絵全体を CSS で反転しないので、水彩の塗りのずれ〈右下へ〉と白い抜けの考え方〈光は左上から〉は、ほかの絵と同じ向きのまま）
-// ・動きの順番：お皿のふち（外 → 内）が描かれる → 串が1本ずつ（奥から手前へ）上から置かれる → 水彩の塗りがじわっと出る
+// ・動きの順番：お皿のふち（外 → 内）が描かれる → 串が1本ずつ（奥から手前へ）上から置かれる → 水彩の塗りがじわっと出る → 湯気が3本立ちのぼる
 //   （動きの名前と範囲は anim(...)、@keyframes は scenes.css）。何も動かさないときの形が、動き終わった形
 // ・絵は viewBox を 430 の幅にする（お皿と、少し出た持ち手の端まで入る幅。線の太さは --scene-z で 400 の幅の絵とそろえる。scenes.css）
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
 import type { CSSProperties } from "react";
-import { PI, anim, jitter, polygon, roundRectPts, smooth, type P } from "./draw";
+import { PI, anim, jitter, polygon, roundRectPts, smooth, sway, type P } from "./draw";
+import { SteamFades, SteamWisps, mkWisp } from "./Steam";
 import { Wash, WashFilter, type Hole } from "./Wash";
 
 // ── お皿（肉みそ冷奴と同じ、横長の角の丸い長方形のお皿。ふちが少し立った形を、外のふちと内の底のふちの2本で描く） ──
@@ -228,7 +231,16 @@ function kawa(k: number, n: number): Kushi {
 const KUSHI = [bonjiri(0, 0), bonjiri(1, 1), harami(2, 0), harami(3, 1), kawa(4, 0), kawa(5, 1)];
 const STICKS = KUSHI.map((_, k) => stick(k));
 
-// 水彩がじわっと出る動き（いちばん最後。串ごとに少しずつずらす）
+// ── 湯気（3本。いちばん奥の串〈ぼんじり〉の具の上から、少し浮いた所から立ちのぼる。持ち手〈右〉の上には立てない） ──
+// 描き方はしゅうまいと同じ（Steam.tsx）。高さは、からあげより少し短め
+const STEAM = [
+  mkWisp(118, 182, 104, -3, 1.2, 6.5, 9500, 0.4),
+  mkWisp(178, 192, 116, 2, 3.9, 6, 9520, 0.4),
+  mkWisp(238, 200, 124, 3, 0.4, 6.5, 9540, 0.4),
+];
+const STEAM_SWAY = [sway(5.3, -1.1), sway(4.7, -2.6), sway(5.9, -0.3)];
+
+// 水彩がじわっと出る動き（串ごとに少しずつずらす。このあとに湯気が立ちのぼる）
 const washAnim = (i: number) => anim("scene-fade-up", 50 + i, 55 + i, { "--dy": "0px" });
 
 export default function KushiIllustration({ className = "" }: { className?: string }) {
@@ -247,6 +259,8 @@ export default function KushiIllustration({ className = "" }: { className?: stri
       <defs>
         {/* 水彩のにじみ（塗りにだけ。串で1つを使い回す） */}
         <WashFilter id="kushi-wash" seed={13} />
+        {/* 湯気の濃さ（1本ずつ。根元と上の端は透明） */}
+        <SteamFades id="kushi-steam-fade" wisps={STEAM} />
       </defs>
 
       {/* 1. お皿（線だけ。ふちの外 → 厚み → 内の順に描かれる） */}
@@ -291,6 +305,9 @@ export default function KushiIllustration({ className = "" }: { className?: stri
           </g>
         ))}
       </g>
+
+      {/* 3. 湯気（水彩がじわっと出たあと、具の上から3本立ちのぼる。時間でゆっくり揺れる） */}
+      <SteamWisps className="kushi-steam" id="kushi-steam-fade" wisps={STEAM} sways={STEAM_SWAY} timing={[[53, 58], [55, 59], [56, 60]]} />
     </svg>
   );
 }

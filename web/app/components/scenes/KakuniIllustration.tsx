@@ -15,16 +15,16 @@
 // ・味玉：たて長の楕円（半分に切った卵の形）を少し斜めに。白身はほぼ紙の色の水彩（.food-wash-white）、
 //   黄身は淡いオレンジの水彩（.food-wash-yolk）。表面に小さなつやの白い点
 // ・部品ごとに g でまとめる：お皿（kakuni-dish）・千切りキャベツ（kakuni-cabbage）・角煮4枚（kakuni-pieces）・
-//   味玉（kakuni-egg）・湯気（kakuni-steam）
+//   味玉（kakuni-egg）。湯気は描かない（代表者の決め。しゅうまい・からあげ・串焼きにだけ立てる）
 // ・見る角度は斜め上から。お皿と角煮は、床の面の上で少し回してから縦につぶして描く（pr()）
 // ・動きの順番：お皿が現れる → キャベツの山（水彩の面が出て、千切りの線がふわっと描かれる）→ 角煮が奥の列から1枚ずつ置かれる
-//   → 味玉が置かれる → つやが光り、湯気が2本立つ
+//   → 味玉が置かれる → つやが光る
 //   （動きの名前と範囲は anim(...)、@keyframes は scenes.css）。何も動かさないときの形が、動き終わった形
-// ・絵は viewBox を 332 の幅に切り出して大きく見せる（線の太さは --scene-z で 400 の幅の絵とそろえる。scenes.css）
+// ・絵は viewBox を 332 の幅に切り出して大きく見せる（湯気を外したので、お皿が上下のまん中に来るよう、上の余白を詰める。線の太さは --scene-z で 400 の幅の絵とそろえる。scenes.css）
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
 import type { CSSProperties } from "react";
-import { PI, anim, jitter, polygon, r1, smooth, steam, sway, type P } from "./draw";
+import { PI, anim, jitter, polygon, r1, smooth, type P } from "./draw";
 import { Wash, WashFilter } from "./Wash";
 
 // ── 見る角度（床の面の点 u・v を、絵の座標にする） ──
@@ -268,14 +268,10 @@ const ellD = (cx: number, cy: number, rx: number, ry: number) =>
 const EGG_D = ellD(EX, EY, ER, EH);
 const YOLK_D = ellD(EX + 1.5, EY + 0.5, ER * 0.6, EH * 0.62);
 
-// ── 湯気（2本。角煮の上から） ──
-const STEAM = [steam(198, 225, 124, 0.8, 10, 10900), steam(262, 229, 136, 3.2, 11, 10920)];
-const STEAM_SWAY = [sway(5.1, -0.4), sway(5.8, -2.0)];
-
 export default function KakuniIllustration({ className = "" }: { className?: string }) {
   return (
     <svg
-      viewBox="34 76 332 332"
+      viewBox="34 111 332 332"
       aria-hidden="true"
       focusable="false"
       className={`scene-svg ${className}`}
@@ -286,12 +282,6 @@ export default function KakuniIllustration({ className = "" }: { className?: str
       strokeLinejoin="round"
     >
       <defs>
-        {/* 湯気は上のほうで薄くなる（線の色は同じ foreground のまま、濃さだけ変える） */}
-        <linearGradient id="kakuni-steam-fade" gradientUnits="userSpaceOnUse" x1="0" y1="229" x2="0" y2="124">
-          <stop offset="0" stopColor="currentColor" stopOpacity="0.95" />
-          <stop offset="0.55" stopColor="currentColor" stopOpacity="0.8" />
-          <stop offset="1" stopColor="currentColor" stopOpacity="0" />
-        </linearGradient>
         {/* 水彩のにじみ（塗りにだけ。絵の中で使い回す） */}
         <WashFilter id="kakuni-wash" seed={5} />
         {/* 角煮の薄切りの上の面の形（しま模様をこの形で切り取る） */}
@@ -327,20 +317,6 @@ export default function KakuniIllustration({ className = "" }: { className?: str
             className={`${st.hi ? "kakuni-cabbage-hi" : "kakuni-cabbage-strand"} scene-stroke-draw scene-anim`}
             style={anim("scene-draw", 13 + (k % 12) * 0.35, 17 + (k % 12) * 0.35)}
           />
-        ))}
-      </g>
-
-      {/* 湯気は角煮の後ろから立つ */}
-      <g className="kakuni-steam" stroke="url(#kakuni-steam-fade)">
-        {STEAM.map((d, i) => (
-          <g key={i} className="scene-sway" style={STEAM_SWAY[i]}>
-            <path
-              d={d}
-              pathLength={1}
-              className="scene-line scene-stroke-draw scene-anim"
-              style={anim("scene-draw", 50 + i * 3, 59 + i * 1)}
-            />
-          </g>
         ))}
       </g>
 
