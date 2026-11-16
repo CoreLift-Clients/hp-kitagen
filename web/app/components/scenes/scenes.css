@@ -18,7 +18,8 @@
      形はメニューの写真を見て描いた串（持ち手の出た竹串を3本）を、肉みそ冷奴と同じ横長の角の丸い長方形のお皿
      （ふちが少し立った形。draw.ts の roundRectPts）に、お皿の長い向きに沿わせて並べた形
    ・肉みそ冷奴 … 豆腐・肉みそ・ねぎ・たれ（水彩。.food-wash-*）。形は写真を見て描いた形（ab2dae6）
-   ・生ビール … ビールと泡（水彩。.food-wash-beer・.food-wash-foam）、ジョッキのガラス（.food-wash-glass）、注ぎ口（.food-wash-tap）
+   ・生ビール … ビールと泡（水彩。.food-wash-beer・.food-wash-foam）、注がれる流れ（.food-wash-beer の帯。輪郭は細い線）、
+     ジョッキのガラス（.food-wash-glass）、注ぎ口とレバー（.food-wash-tap）
    ・焼酎・日本酒 … 徳利とお猪口（焼き物の色 .food-wash-yakimono）、お猪口の中のお酒（.food-wash-sake）、
      ロックグラス（.food-wash-glass）、氷（.food-wash-ice）、焼酎（.food-wash-shochu）
    ・ソフトドリンク … グラス（.food-wash-glass）、ウーロン茶（.food-wash-tea）、氷（.food-wash-ice）、ストロー（.food-wash-straw）
@@ -68,7 +69,7 @@
      スクロールで進めるときは、この 4〜60 を「絵が画面の中に全部入ったところ」〜「絵の真ん中が画面の真ん中に来たところ」
      に割り当てる（下の 1)）。画面に入る前の絵は、動く前の形（せいろはまだ何も出ていない など）で見える
    ・動かすのは transform・opacity・stroke-dashoffset だけ
-   ・時間で揺れ続ける動き（scene-sway）は、場面が画面の外にあるあいだ止める（data-inview="false"）
+   ・時間で揺れ続ける動き（scene-sway・生ビールの流れの筋 beer-flow）は、場面が画面の外にあるあいだ止める（data-inview="false"）
    ・--scene-paper … 後ろの線を隠す塗り。場面の背景（section-*）と同じ色（下で背景ごとに決める） */
 
 .scene.section-light { --scene-paper: #F7F3EB; }
@@ -257,6 +258,28 @@
 /* ふたのすき間からもれる湯気：動き終わりは見えない（ふたが持ち去られるころに消える） */
 .seiro-leak { opacity: 0; }
 
+/* 生ビールの注がれる流れ（BeerIllustration.tsx）。
+   ・帯は幅 6〜9 ほどと細いので、小さい絵（--scene-k が大きい）でも輪郭の線が帯を埋めないよう、
+     帯の中だけ線の太さの倍率を 1.6 までにする（--scene-z で割り戻す。輪郭の線・水彩の切り抜き・明るい筋に効く）
+   ・明るい筋（.beer-flow）：白をうすく。破線を、時間でずっと上から下へ流す（下の @media の中。場面が画面の外にあるあいだは止める）。
+     prefers-reduced-motion のときは、破線のまま止まって見える
+   ・レバー：根元（管の上、絵の座標 331・20）を中心に、まっすぐ立った形から手前（左）へ少し倒れる */
+.beer-pour { --scene-z: calc(min(var(--scene-k), 1.6) / var(--scene-k)); }
+.beer-flow {
+  fill: none;
+  stroke: #fff;
+  stroke-opacity: 0.7;
+  stroke-width: calc(1.8px * var(--scene-k) * var(--scene-z, 1));
+  stroke-dasharray: 0.16 0.22;
+}
+.beer-flow-2 {
+  stroke-opacity: 0.55;
+  stroke-width: calc(1.3px * var(--scene-k) * var(--scene-z, 1));
+  stroke-dasharray: 0.1 0.28;
+  stroke-dashoffset: 0.19;
+}
+.scene-anim.beer-lever-move { transform-box: view-box; transform-origin: 331px 20px; }
+
 /* 店主紹介のページの手元の絵（幅は 画面の幅の 70%、広い画面では 390px まで）。
    絵の幅に合わせて太さを3段に分け、線を 2〜3px に保つ（320px の画面で約 2.1px、390px の絵で約 2.5px） */
 .scene-svg.owner-hands-svg { --scene-k: 1; }
@@ -369,6 +392,28 @@
   40%  { opacity: 1; transform: scale(1.1); }
   to   { opacity: 0.7; transform: none; }
 }
+/* 生ビール：注ぐ流れが上から下へ伸びる（上の端を支点に、縦に伸びる） */
+@keyframes beer-pour {
+  from { opacity: 0; transform: scaleY(0); }
+  8%   { opacity: 1; }
+  to   { opacity: 1; transform: none; }
+}
+/* 生ビールのレバー：まっすぐ立った形から、手前へ少し倒れる */
+@keyframes beer-lever {
+  from { transform: rotate(var(--rot, 15deg)); }
+  to   { transform: none; }
+}
+/* 生ビールの泡の粒：流れが当たる所（--sx・--sy だけ戻った位置）から、外へはねて出る */
+@keyframes beer-splash {
+  from { opacity: 0; transform: translate(var(--sx, 0px), var(--sy, 0px)) scale(0.4); }
+  55%  { opacity: 1; transform: translate(calc(var(--sx, 0px) * -0.15), calc(var(--sy, 0px) * -0.15)); }
+  to   { opacity: 1; transform: none; }
+}
+/* 生ビールの流れの中の明るい筋：破線を上から下へ流す（破線ひと組の長さ 0.38 だけずらして、つなぎ目なく繰り返す） */
+@keyframes beer-flow {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: -0.38; }
+}
 /* 湯気の揺れ（時間で、ずっとゆっくり。スクロールとは別） */
 @keyframes scene-sway {
   from { transform: translateX(-2.5px) rotate(-1.6deg); }
@@ -380,6 +425,9 @@
     animation: scene-sway var(--sway-dur, 5s) ease-in-out var(--sway-delay, 0s) infinite alternate;
   }
   .scene-art[data-inview="false"] .scene-sway { animation-play-state: paused; }
+  .beer-flow { animation: beer-flow 0.9s linear infinite; }
+  .beer-flow-2 { animation-duration: 1.2s; animation-delay: -0.6s; }
+  .scene-art[data-inview="false"] .beer-flow { animation-play-state: paused; }
 
   /* 1) スクロールの位置で進める
      動きの範囲は、絵（.scene-art）が「画面の中に全部入ったところ」から「絵の真ん中が画面の真ん中に来たところ」まで。
