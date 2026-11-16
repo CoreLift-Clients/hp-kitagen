@@ -10,11 +10,12 @@
 //   注ぎ口（サーバー）は淡い灰色を1段（.food-wash-tap）。焼酎・日本酒、ソフトドリンクのカードと塗り方をそろえる。
 //   ビールと泡の水彩は、泡が盛り上がったあと、最後にじわっと出る
 // ・注がれるビールは、琥珀色の水彩の帯（.food-wash-beer。輪郭は細い線）。下へ行くほど少し細く、ほんの少しよじれる。
-//   帯の中に白をうすくした明るい筋を2本入れ、時間でずっと上から下へ流す（scenes.css の beer-flow。画面の外では止まる）
+//   帯の中に白をうすくした明るい筋を2本入れ、時間でずっと上から下へ流す（scenes.css の pour-flow。画面の外では止まる）
+//   流れの描き方は、焼酎・日本酒の絵と共通の部品（Pour.tsx）
 // ・流れが泡に当たる所は、泡がこんもり盛り上がった山。そのまわりに小さな泡の粒を4つ、はねるように置く
 //   （泡の粒は、ほかの線と同じ foreground の色）
 // ・注ぎ口の上に、上へ伸びる太いレバー（先は丸い玉）。注ぎ口とレバーは淡い灰色の水彩
-// ・部品ごとに g でまとめる：注ぎ口（beer-tap）・レバー（beer-lever）・注がれる流れ（beer-pour）・ジョッキ（beer-mug）・
+// ・部品ごとに g でまとめる：注ぎ口（beer-tap）・レバー（beer-lever）・注がれる流れ（Pour。class は pour）・ジョッキ（beer-mug）・
 //   ビールの線（beer-level）・泡（beer-foam）・泡の粒（beer-bubbles）
 // ・動きの順番：注ぎ口が上から現れる → レバーが手前へ少し倒れる → 流れが上から下へ伸びる →
 //   ジョッキの中のビールの線が下から上がる → 泡がふわっと盛り上がる → 泡の粒がはねる → 流れの中の筋が流れ続ける
@@ -22,6 +23,7 @@
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
 import { PI, anim, arcPts, jitter, line, polygon, ring, smooth, type P } from "./draw";
+import { Pour, pourShape } from "./Pour";
 import { Wash, WashFilter } from "./Wash";
 
 // ── 注ぎ口（サーバーの口。右から伸びる管と、下向きの口） ──
@@ -78,35 +80,9 @@ const KNOB: readonly [number, number, number, number] = [323, -5, 8, 7.5];
 const LEVER_KNOB = ring(KNOB[0], KNOB[1], KNOB[2], KNOB[3], 5060, 0.3);
 const LEVER_KNOB_FILL = polygon(arcPts(KNOB[0], KNOB[1], KNOB[2], KNOB[3], 0, PI * 2, 24, 0, 0));
 
-// ── 注がれるビールの流れ（口の先から、泡の山の中まで。琥珀色の水彩の帯） ──
+// ── 注がれるビールの流れ（口の先から、泡の山の中まで。琥珀色の水彩の帯。部品は Pour.tsx） ──
 // 幅は口のすぐ下で約 9、泡に入る所（y 121 あたり）で約 6。下へ行くほど少し細く、ほんの少しよじれて揺らぐ（乱数なし）
-const POUR_Y0 = 84.5;
-const POUR_Y1 = 132;
-const POUR_STEPS = 8;
-const pourAt = (t: number) => {
-  const cx = 243 + Math.sin(t * PI * 1.6 + 0.3) * 0.9 - 0.3;
-  const w = 9 - 3.4 * t + Math.sin(t * PI * 3.2) * 0.45;
-  const twist = Math.sin(t * PI * 2.4) * 0.35;
-  return { y: POUR_Y0 + (POUR_Y1 - POUR_Y0) * t, cx, w, twist };
-};
-const POUR_L: P[] = [];
-const POUR_R: P[] = [];
-const POUR_C: P[] = [];
-for (let i = 0; i <= POUR_STEPS; i++) {
-  const { y, cx, w, twist } = pourAt(i / POUR_STEPS);
-  POUR_L.push([cx - w / 2 + twist, y]);
-  POUR_R.push([cx + w / 2 + Math.sin((i / POUR_STEPS) * PI * 2.4 + 1.4) * 0.35, y]);
-  POUR_C.push([cx + twist * 0.5, y]);
-}
-// 帯の輪郭（左右の細い線。上は口の先、下は泡の中へ入るので、どちらも閉じない）
-const POUR_EDGES = [smooth(POUR_L), smooth(POUR_R)];
-// 帯の面（ビールの水彩を塗る形）
-const POUR_FILL = polygon([...POUR_L, ...[...POUR_R].reverse()]);
-// 流れの中の明るい筋（白をうすく。上から下へ流れ続ける）。中心から左右へ少しずらした2本
-const POUR_STREAKS = [
-  smooth(POUR_C.slice(0, -1).map(([x, y]) => [x - 1.2, y + 2] as const)),
-  smooth(POUR_C.slice(1).map(([x, y]) => [x + 1.4, y] as const)),
-];
+const POUR = pourShape({ from: [243, 84.5], ctrl: [243, 108.25], to: [243, 132], w0: 9, w1: 5.6 });
 
 // ── ジョッキ（取っ手は左。注ぎ口が右上にあるので） ──
 const MUG_OUTLINE: readonly P[] = [
@@ -234,17 +210,9 @@ export default function BeerIllustration({ className = "" }: { className?: strin
         <WashFilter id="beer-wash" seed={3} />
       </defs>
       {/* 注がれるビールの流れは、ジョッキと泡の後ろ（泡の山の中へ入っていくように見せる）。
-          上から下へ伸びる（beer-pour）。帯の水彩は、流れそのものなので、流れと一緒に出る */}
-      <g className="beer-pour scene-anim" style={anim("beer-pour", 13, 20, { "--o": "50% 0%" })}>
-        <Wash filter="beer-wash" d={POUR_FILL} tone="food-wash-beer" id="beer-w-pour" shift={[0.4, 0.3]} line={2.1} />
-        {/* 明るい筋（時間でずっと上から下へ流れる。scenes.css の beer-flow） */}
-        {POUR_STREAKS.map((d, i) => (
-          <path key={i} d={d} pathLength={1} className={`beer-flow beer-flow-${i + 1}`} />
-        ))}
-        {POUR_EDGES.map((d, i) => (
-          <path key={i} d={d} className="scene-fine" />
-        ))}
-      </g>
+          上から下へ伸びる（pour-grow）。帯の水彩は、流れそのものなので、流れと一緒に出る。
+          明るい筋は、時間でずっと上から下へ流れる（scenes.css の pour-flow） */}
+      <Pour shape={POUR} tone="food-wash-beer" filter="beer-wash" id="beer-w-pour" grow={[13, 20]} />
 
       <g className="beer-mug">
         <path d={MUG_FILL} className="scene-paper" stroke="none" />
@@ -309,13 +277,13 @@ export default function BeerIllustration({ className = "" }: { className?: strin
         ))}
       </g>
 
-      {/* 泡の粒（流れが当たる所から、はねて出る。scenes.css の beer-splash） */}
+      {/* 泡の粒（流れが当たる所から、はねて出る。scenes.css の pour-splash） */}
       <g className="beer-bubbles">
         {BUBBLES.map(([x, y, r], i) => (
           <g
             key={i}
             className="scene-anim"
-            style={anim("beer-splash", 36 + (i % 2) * 2, 44 + (i % 2) * 2, {
+            style={anim("pour-splash", 36 + (i % 2) * 2, 44 + (i % 2) * 2, {
               "--sx": `${SPLASH_AT[0] - x}px`,
               "--sy": `${SPLASH_AT[1] - y}px`,
             })}

@@ -21,7 +21,8 @@
    ・生ビール … ビールと泡（水彩。.food-wash-beer・.food-wash-foam）、注がれる流れ（.food-wash-beer の帯。輪郭は細い線）、
      ジョッキのガラス（.food-wash-glass）、注ぎ口とレバー（.food-wash-tap）
    ・焼酎・日本酒 … 徳利とお猪口（焼き物の色 .food-wash-yakimono）、お猪口の中のお酒（.food-wash-sake）、
-     ロックグラス（.food-wash-glass）、氷（.food-wash-ice）、焼酎（.food-wash-shochu）
+     注がれる日本酒（.food-wash-sake の帯）、タンブラーと水差し（.food-wash-glass）、氷と注がれる水（.food-wash-ice）、
+     焼酎の水割り（.food-wash-shochu）
    ・ソフトドリンク … グラス（.food-wash-glass）、ウーロン茶（.food-wash-tea）、氷（.food-wash-ice）、ストロー（.food-wash-straw）
 
    水彩の塗り方（9枚すべて。鉄鍋餃子だけは焼き目のべた。部品は Wash.tsx）：
@@ -69,7 +70,7 @@
      スクロールで進めるときは、この 4〜60 を「絵が画面の中に全部入ったところ」〜「絵の真ん中が画面の真ん中に来たところ」
      に割り当てる（下の 1)）。画面に入る前の絵は、動く前の形（せいろはまだ何も出ていない など）で見える
    ・動かすのは transform・opacity・stroke-dashoffset だけ
-   ・時間で揺れ続ける動き（scene-sway・生ビールの流れの筋 beer-flow）は、場面が画面の外にあるあいだ止める（data-inview="false"）
+   ・時間で揺れ続ける動き（scene-sway・注がれる流れの筋 pour-flow）は、場面が画面の外にあるあいだ止める（data-inview="false"）
    ・--scene-paper … 後ろの線を隠す塗り。場面の背景（section-*）と同じ色（下で背景ごとに決める） */
 
 .scene.section-light { --scene-paper: #F7F3EB; }
@@ -155,12 +156,12 @@
    ・.seiro-wash-shade … せいろの陰（入れ物の例外。foreground をうすく 0.16。ふちはさらにうすく）
    ・.karaage-wash-shade … からあげの器のふちの帯の奥側の陰（入れ物の例外。foreground をうすく 0.12。ふちはさらにうすく）
    飲み物（入れ物にも塗る。「料理の絵の決まり」の「飲み物の塗り方」）
-   ・.food-wash-glass … ガラス（ジョッキ・グラス・ロックグラス）。ほぼ紙の色（塗り 0.12）で、ふちだけうすく（0.4）。
+   ・.food-wash-glass … ガラス（ジョッキ・グラス・タンブラー・水差し）。ほぼ紙の色（塗り 0.12）で、ふちだけうすく（0.4）。
      色は氷の色に foreground を 30% 混ぜた、ごく淡い青灰色
-   ・.food-wash-ice … 氷（ほんのり水色がかった白 #D6E7EC。新しく足した色）
+   ・.food-wash-ice … 氷（ほんのり水色がかった白 #D6E7EC。新しく足した色）。水差しから注がれる水の帯と、水差しの中の水も同じ色
    ・.food-wash-yakimono … 徳利とお猪口の焼き物（濃いこげ茶〜黒っぽい色。accent 28% に foreground）
    ・.food-wash-sake … お猪口の中の日本酒（ほぼ透明に近い、淡いクリーム色。白に accent 20%）
-   ・.food-wash-shochu … ロックグラスの焼酎（淡い琥珀色。白に accent 62%）
+   ・.food-wash-shochu … タンブラーの焼酎の水割り（ほぼ透明に近い、ごく淡い琥珀色。白に accent 24% を、うすめ 0.4 で）
    ・.food-wash-tea … ウーロン茶（淡い茶色。accent 78% に foreground を、うすめ 0.55 で）
    ・.food-wash-straw … ソフトドリンクのストロー（淡い accent。白に accent 45%）
    ・.food-wash-tap … ビールの注ぎ口（淡い灰色を1段。白に foreground 30%） */
@@ -189,7 +190,7 @@
 .food-wash-ice { --wash: #D6E7EC; --wash-a: 0.8; --wash-edge: 0.55; }
 .food-wash-yakimono { --wash: color-mix(in srgb, var(--accent) 28%, currentColor); --wash-a: 0.88; --wash-edge: 0.45; }
 .food-wash-sake { --wash: color-mix(in srgb, var(--accent) 20%, #fff); --wash-a: 0.7; --wash-edge: 0.45; }
-.food-wash-shochu { --wash: color-mix(in srgb, var(--accent) 62%, #fff); --wash-a: 0.6; --wash-edge: 0.42; }
+.food-wash-shochu { --wash: color-mix(in srgb, var(--accent) 24%, #fff); --wash-a: 0.4; --wash-edge: 0.36; }
 .food-wash-tea { --wash: color-mix(in srgb, var(--accent) 78%, currentColor); --wash-a: 0.55; --wash-edge: 0.42; }
 .food-wash-straw { --wash: color-mix(in srgb, var(--accent) 45%, #fff); --wash-a: 0.7; --wash-edge: 0.45; }
 .food-wash-tap { --wash: color-mix(in srgb, currentColor 30%, #fff); --wash-a: 0.35; --wash-edge: 0.4; }
@@ -258,27 +259,31 @@
 /* ふたのすき間からもれる湯気：動き終わりは見えない（ふたが持ち去られるころに消える） */
 .seiro-leak { opacity: 0; }
 
-/* 生ビールの注がれる流れ（BeerIllustration.tsx）。
-   ・帯は幅 6〜9 ほどと細いので、小さい絵（--scene-k が大きい）でも輪郭の線が帯を埋めないよう、
+/* 注がれる流れ（部品は Pour.tsx。生ビール BeerIllustration.tsx と、焼酎・日本酒 SakeIllustration.tsx で使い回す）。
+   ・帯は幅 3.5〜9 ほどと細いので、小さい絵（--scene-k が大きい）でも輪郭の線が帯を埋めないよう、
      帯の中だけ線の太さの倍率を 1.6 までにする（--scene-z で割り戻す。輪郭の線・水彩の切り抜き・明るい筋に効く）
-   ・明るい筋（.beer-flow）：白をうすく。破線を、時間でずっと上から下へ流す（下の @media の中。場面が画面の外にあるあいだは止める）。
-     prefers-reduced-motion のときは、破線のまま止まって見える
-   ・レバー：根元（管の上、絵の座標 331・20）を中心に、まっすぐ立った形から手前（左）へ少し倒れる */
-.beer-pour { --scene-z: calc(min(var(--scene-k), 1.6) / var(--scene-k)); }
-.beer-flow {
+   ・明るい筋（.pour-flow）：白をうすく。破線を、時間でずっと上から下へ流す（下の @media の中。場面が画面の外にあるあいだは止める）。
+     prefers-reduced-motion のときは、破線のまま止まって見える。破線の長さは pathLength で流れの長さによらずそろえる（Pour.tsx）
+   ・生ビールのレバー：根元（管の上、絵の座標 331・20）を中心に、まっすぐ立った形から手前（左）へ少し倒れる */
+.pour { --scene-z: calc(min(var(--scene-k), 1.6) / var(--scene-k)); }
+/* 日本酒・水の流れ（幅 3.5〜6 と、ビールより細い）は、輪郭の線をさらに 0.6 倍に（中の色と筋が見えるように） */
+.pour.pour-thin { --scene-z: calc(min(var(--scene-k), 1.6) / var(--scene-k) * 0.6); }
+.pour-flow {
   fill: none;
   stroke: #fff;
   stroke-opacity: 0.7;
   stroke-width: calc(1.8px * var(--scene-k) * var(--scene-z, 1));
   stroke-dasharray: 0.16 0.22;
 }
-.beer-flow-2 {
+.pour-flow-2 {
   stroke-opacity: 0.55;
   stroke-width: calc(1.3px * var(--scene-k) * var(--scene-z, 1));
   stroke-dasharray: 0.1 0.28;
   stroke-dashoffset: 0.19;
 }
 .scene-anim.beer-lever-move { transform-box: view-box; transform-origin: 331px 20px; }
+/* 水差し（SakeIllustration.tsx）の傾き：支点（--o。絵の座標の px）を中心に、まっすぐ立った形から傾く */
+.scene-anim.sake-pitcher-tilt { transform-box: view-box; }
 
 /* 店主紹介のページの手元の絵（幅は 画面の幅の 70%、広い画面では 390px まで）。
    絵の幅に合わせて太さを3段に分け、線を 2〜3px に保つ（320px の画面で約 2.1px、390px の絵で約 2.5px） */
@@ -392,8 +397,8 @@
   40%  { opacity: 1; transform: scale(1.1); }
   to   { opacity: 0.7; transform: none; }
 }
-/* 生ビール：注ぐ流れが上から下へ伸びる（上の端を支点に、縦に伸びる） */
-@keyframes beer-pour {
+/* 注がれる流れ（Pour.tsx）：上から下へ伸びる（上の端を支点に、縦に伸びる） */
+@keyframes pour-grow {
   from { opacity: 0; transform: scaleY(0); }
   8%   { opacity: 1; }
   to   { opacity: 1; transform: none; }
@@ -403,14 +408,14 @@
   from { transform: rotate(var(--rot, 15deg)); }
   to   { transform: none; }
 }
-/* 生ビールの泡の粒：流れが当たる所（--sx・--sy だけ戻った位置）から、外へはねて出る */
-@keyframes beer-splash {
+/* 流れが当たる所の粒（生ビールの泡の粒、日本酒・水割りのしずく）：当たる所（--sx・--sy だけ戻った位置）から、外へはねて出る */
+@keyframes pour-splash {
   from { opacity: 0; transform: translate(var(--sx, 0px), var(--sy, 0px)) scale(0.4); }
   55%  { opacity: 1; transform: translate(calc(var(--sx, 0px) * -0.15), calc(var(--sy, 0px) * -0.15)); }
   to   { opacity: 1; transform: none; }
 }
-/* 生ビールの流れの中の明るい筋：破線を上から下へ流す（破線ひと組の長さ 0.38 だけずらして、つなぎ目なく繰り返す） */
-@keyframes beer-flow {
+/* 流れの中の明るい筋（Pour.tsx）：破線を上から下へ流す（破線ひと組の長さ 0.38 だけずらして、つなぎ目なく繰り返す） */
+@keyframes pour-flow {
   from { stroke-dashoffset: 0; }
   to   { stroke-dashoffset: -0.38; }
 }
@@ -425,9 +430,9 @@
     animation: scene-sway var(--sway-dur, 5s) ease-in-out var(--sway-delay, 0s) infinite alternate;
   }
   .scene-art[data-inview="false"] .scene-sway { animation-play-state: paused; }
-  .beer-flow { animation: beer-flow 0.9s linear infinite; }
-  .beer-flow-2 { animation-duration: 1.2s; animation-delay: -0.6s; }
-  .scene-art[data-inview="false"] .beer-flow { animation-play-state: paused; }
+  .pour-flow { animation: pour-flow 0.9s linear infinite; }
+  .pour-flow-2 { animation-duration: 1.2s; animation-delay: -0.6s; }
+  .scene-art[data-inview="false"] .pour-flow { animation-play-state: paused; }
 
   /* 1) スクロールの位置で進める
      動きの範囲は、絵（.scene-art）が「画面の中に全部入ったところ」から「絵の真ん中が画面の真ん中に来たところ」まで。
