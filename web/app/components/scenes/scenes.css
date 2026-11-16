@@ -17,17 +17,23 @@
      形はメニューの写真を見て描いた串（持ち手の出た竹串を3本）を、肉みそ冷奴と同じ横長の角の丸い長方形のお皿
      （ふちが少し立った形。draw.ts の roundRectPts）に、お皿の長い向きに沿わせて並べた形
    ・肉みそ冷奴 … 豆腐・肉みそ・ねぎ・たれ（水彩。.food-wash-*）。形は写真を見て描いた形（ab2dae6）
-   ・生ビール … ビールと泡（水彩。.food-wash-beer・.food-wash-foam）
-   ・焼酎・日本酒 … お猪口の中のお酒（.food-sake）
-   ・ソフトドリンク … グラスの中の飲み物（.food-tea）
+   ・生ビール … ビールと泡（水彩。.food-wash-beer・.food-wash-foam）、ジョッキのガラス（.food-wash-glass）、注ぎ口（.food-wash-tap）
+   ・焼酎・日本酒 … 徳利とお猪口（焼き物の色 .food-wash-yakimono）、お猪口の中のお酒（.food-wash-sake）、
+     ロックグラス（.food-wash-glass）、氷（.food-wash-ice）、焼酎（.food-wash-shochu）
+   ・ソフトドリンク … グラス（.food-wash-glass）、ウーロン茶（.food-wash-tea）、氷（.food-wash-ice）、ストロー（.food-wash-straw）
 
-   水彩の塗り方（しゅうまい・からあげ・豚の角煮・串焼き・生ビール・肉みそ冷奴の6枚。部品は Wash.tsx）：
+   水彩の塗り方（9枚すべて。鉄鍋餃子だけは焼き目のべた。部品は Wash.tsx）：
    線画に、うすく絵の具で塗ったように見せる。上の 1.〜5. のうち、塗りについては、この決まりを優先する
    ・塗るのは食材だけ。お皿・せいろ・鍋・グラス・ジョッキなどの入れ物は線だけ（塗りは後ろを隠す紙の色だけ）
      例外：せいろだけは、深さが分かるよう、ごく淡い水彩の陰を1段だけ付けてよい（.seiro-wash-shade）。
      付ける所は、内側の奥の壁の1か所だけ（光は左上から。陰の下のふちが、奥の壁と底の境目になる）。
      外側の胴には付けない（斜めの帯に見えて目立つため）。色は foreground をうすく（不透明度 0.12〜0.2）。
      塗り方（ずれ・ふちの濃さ・にじみ）は、ほかの水彩と同じ
+   ・飲み物の塗り方（生ビール・焼酎・日本酒・ソフトドリンクの3枚）：飲み物は、入れ物そのものが主役なので、
+     入れ物にも水彩の色を付けてよい（上の「入れ物は線だけ」は、飲み物には当てない）。
+     塗り方は料理と同じ水彩の決まり（線の内側だけ・ふちの濃さ・白い抜け・にじみ・ムラ）。3枚でそろえるため、
+     ガラス（ジョッキ・グラス）はどれも .food-wash-glass（ごく淡い色。ほぼ紙の色で、ふちだけうすく）、
+     氷はどれも .food-wash-ice（ほんのり水色がかった白）。中の飲み物は、その飲み物の色（ふつうの水彩の濃さ）
    ・色：その食材の色を、水で薄めた色（くすみすぎない、やさしい色）。不透明度 0.6〜0.75 くらい（--wash-a。泡だけ 0.25）
    ・線から少しずれる：塗りの形を、線の形から右下へ 0.75〜1.5 ずらす（ふつうは 1・0.75。小さな具は 0.4〜0.75）。
      内側に寄って紙の色が残る所ができる。形のわずかなゆがみは、下のにじみのフィルタで出す（乱数なし。seed を決めておく）
@@ -112,13 +118,9 @@
    水彩の塗り（.food-wash-*）は、色 --wash と、塗りの不透明度 --wash-a、ふちの濃さ --wash-edge を決める。
    しゅうまいのあんだけは、小豆あんに見えないよう、少し赤み寄りの肉の色（#C98A74）
    ・.food-yaki … 焼き目・揚げ色（きつね色。白に accent 62%）
-   ・.food-tare … たれ（accent 70% に foreground。今はどの絵でも使っていない）
-   ・.food-sake … お酒（淡い色。白に accent 36%）
-   ・.food-tea … ウーロン茶（淡い茶色。白に accent 46%） */
+   ・.food-tare … たれ（accent 70% に foreground。今はどの絵でも使っていない） */
 .food-yaki { fill: color-mix(in srgb, var(--accent) 62%, #fff); }
 .food-tare { fill: color-mix(in srgb, var(--accent) 70%, currentColor); }
-.food-sake { fill: color-mix(in srgb, var(--accent) 36%, #fff); }
-.food-tea { fill: color-mix(in srgb, var(--accent) 46%, #fff); }
 /* 水彩の塗り（Wash.tsx）。塗り・ふちの濃い所・紙の色の抜け */
 .wash { fill: var(--wash); fill-opacity: var(--wash-a, 0.45); }
 .wash-edge { fill: none; stroke: var(--wash); stroke-opacity: var(--wash-edge, 0.25); stroke-width: 4px; }
@@ -143,7 +145,17 @@
    ・.food-wash-harami … 串焼きの鶏ハラミ（赤みのある濃い茶色。accent 62% に こげ茶 #5E2414）
    ・.food-wash-kawa … 串焼きの鶏皮（淡いきつね色。白に accent 74%。カリッと焼けたふちを濃く ＝ --wash-edge を高め）
    ・.food-wash-koge … 串焼きの焼き目（濃い茶色。accent 45% に foreground。小さな塗りを具の上に重ねる）
-   ・.seiro-wash-shade … せいろの陰（入れ物の例外。foreground をうすく 0.16。ふちはさらにうすく） */
+   ・.seiro-wash-shade … せいろの陰（入れ物の例外。foreground をうすく 0.16。ふちはさらにうすく）
+   飲み物（入れ物にも塗る。「料理の絵の決まり」の「飲み物の塗り方」）
+   ・.food-wash-glass … ガラス（ジョッキ・グラス・ロックグラス）。ほぼ紙の色（塗り 0.12）で、ふちだけうすく（0.4）。
+     色は氷の色に foreground を 30% 混ぜた、ごく淡い青灰色
+   ・.food-wash-ice … 氷（ほんのり水色がかった白 #D6E7EC。新しく足した色）
+   ・.food-wash-yakimono … 徳利とお猪口の焼き物（濃いこげ茶〜黒っぽい色。accent 28% に foreground）
+   ・.food-wash-sake … お猪口の中の日本酒（ほぼ透明に近い、淡いクリーム色。白に accent 20%）
+   ・.food-wash-shochu … ロックグラスの焼酎（淡い琥珀色。白に accent 62%）
+   ・.food-wash-tea … ウーロン茶（淡い茶色。accent 78% に foreground を、うすめ 0.55 で）
+   ・.food-wash-straw … ソフトドリンクのストロー（淡い accent。白に accent 45%）
+   ・.food-wash-tap … ビールの注ぎ口（淡い灰色を1段。白に foreground 30%） */
 .food-wash-meat { --wash: #C98A74; --wash-a: 0.75; --wash-edge: 0.44; }
 .food-wash-skin { --wash: color-mix(in srgb, var(--accent) 30%, #fff); --wash-a: 0.62; --wash-edge: 0.4; }
 .food-wash-kakuni { --wash: color-mix(in srgb, var(--accent) 72%, currentColor); --wash-a: 0.75; --wash-edge: 0.42; }
@@ -164,6 +176,15 @@
 .food-wash-harami { --wash: color-mix(in srgb, var(--accent) 62%, #5E2414); --wash-a: 0.72; --wash-edge: 0.44; }
 .food-wash-kawa { --wash: color-mix(in srgb, var(--accent) 74%, #fff); --wash-a: 0.7; --wash-edge: 0.7; }
 .food-wash-koge { --wash: color-mix(in srgb, var(--accent) 45%, currentColor); --wash-a: 0.62; --wash-edge: 0.42; }
+/* 飲み物（入れ物も主役なので、入れ物にも塗る。上の「料理の絵の決まり」の「飲み物の塗り方」） */
+.food-wash-glass { --wash: color-mix(in srgb, #D6E7EC 70%, currentColor); --wash-a: 0.12; --wash-edge: 0.4; }
+.food-wash-ice { --wash: #D6E7EC; --wash-a: 0.8; --wash-edge: 0.55; }
+.food-wash-yakimono { --wash: color-mix(in srgb, var(--accent) 28%, currentColor); --wash-a: 0.88; --wash-edge: 0.45; }
+.food-wash-sake { --wash: color-mix(in srgb, var(--accent) 20%, #fff); --wash-a: 0.7; --wash-edge: 0.45; }
+.food-wash-shochu { --wash: color-mix(in srgb, var(--accent) 62%, #fff); --wash-a: 0.6; --wash-edge: 0.42; }
+.food-wash-tea { --wash: color-mix(in srgb, var(--accent) 78%, currentColor); --wash-a: 0.55; --wash-edge: 0.42; }
+.food-wash-straw { --wash: color-mix(in srgb, var(--accent) 45%, #fff); --wash-a: 0.7; --wash-edge: 0.45; }
+.food-wash-tap { --wash: color-mix(in srgb, currentColor 30%, #fff); --wash-a: 0.35; --wash-edge: 0.4; }
 .seiro-wash-shade { --wash: currentColor; --wash-a: 0.16; --wash-edge: 0.1; }
 /* からあげの鉢の模様の、花びらのあいだの小さな点（線と同じ色） */
 .karaage-dot { fill: currentColor; fill-opacity: 0.7; }

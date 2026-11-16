@@ -4,8 +4,11 @@
 //   （ジョッキと泡にだけ、後ろの線を隠すための塗り --scene-paper を付ける）
 // ・色を塗るのは食材だけ：ビール（淡い琥珀色 .food-wash-beer）と泡（ほぼ紙の色、ふちだけうすいクリーム .food-wash-foam）。
 //   料理の絵の決まり（scenes.css の先頭）の「水彩の塗り方」で、線画にうすく絵の具で塗ったように付ける
-//   （部品は Wash.tsx。にじみのフィルタは beer-wash の1つを使い回す）。ジョッキは線だけ。
-//   水彩の塗りは、泡が盛り上がったあと、最後にじわっと出る
+//   （部品は Wash.tsx。にじみのフィルタは beer-wash の1つを使い回す）。
+//   飲み物は入れ物そのものが主役なので、入れ物にも水彩の色を付ける（料理の絵の決まり、scenes.css の先頭）：
+//   ジョッキのガラス（胴と取っ手）はごく淡い色（ほぼ紙の色、ふちだけうすく .food-wash-glass）、
+//   注ぎ口（サーバー）は淡い灰色を1段（.food-wash-tap）。焼酎・日本酒、ソフトドリンクのカードと塗り方をそろえる。
+//   ビールと泡の水彩は、泡が盛り上がったあと、最後にじわっと出る
 // ・泡の上に上がる小さな粒は、ほかの線と同じ foreground の色
 // ・部品ごとに g でまとめる：注ぎ口（beer-tap）・注がれるビールの線（beer-pour）・ジョッキ（beer-mug）・
 //   ビールの線（beer-level）・泡（beer-foam）・泡の粒（beer-bubbles）
@@ -33,6 +36,19 @@ const TAP = [
   line([330, 34], [342, 0], 5050, 0.5, 1), // レバー
 ];
 const TAP_FINE = [ring(343, -4, 6, 5, 5060, 0.3), line([300, 40], [300, 48], 5070, 0.2, 1)];
+
+// 注ぎ口の面（管と下向きの口。淡い灰色の水彩）
+const TAP_FILL = polygon([
+  [400, 34],
+  [236, 34],
+  [228, 38],
+  [226, 48],
+  [228, 60],
+  [229, 97],
+  [257, 97],
+  [256, 54],
+  [400, 54],
+]);
 
 // 注がれるビールの線（口の先から、ジョッキの泡の中まで。上から下へ描く）
 const POUR = smooth([
@@ -75,6 +91,21 @@ const MUG = [
     [132, 307],
   ]),
 ];
+// 取っ手の面（外と内の線のあいだ。ガラスの水彩）
+const HANDLE_FILL = polygon([
+  [129, 212],
+  [96, 214],
+  [82, 244],
+  [84, 300],
+  [98, 326],
+  [132, 328],
+  [132, 307],
+  [111, 306],
+  [103, 292],
+  [101, 256],
+  [108, 234],
+  [130, 232],
+]);
 const MUG_FINE = [
   line([136, 346], [276, 346], 5150, 0.6, 2), // 底の厚み
   // ガラスの面（縦の筋）
@@ -159,6 +190,9 @@ export default function BeerIllustration({ className = "" }: { className?: strin
 
       <g className="beer-mug">
         <path d={MUG_FILL} className="scene-paper" stroke="none" />
+        {/* ジョッキのガラス（ごく淡い色。ふちだけうすく） */}
+        <Wash filter="beer-wash" d={MUG_FILL} tone="food-wash-glass" id="beer-w-glass" shift={[1, 0.75]} />
+        <Wash filter="beer-wash" d={HANDLE_FILL} tone="food-wash-glass" id="beer-w-handle" shift={[0.8, 0.6]} />
       </g>
 
       {/* ビールの水彩（最後にじわっと出る） */}
@@ -196,6 +230,8 @@ export default function BeerIllustration({ className = "" }: { className?: strin
       </g>
 
       <g className="beer-tap">
+        <path d={TAP_FILL} className="scene-paper" stroke="none" />
+        <Wash filter="beer-wash" d={TAP_FILL} tone="food-wash-tap" id="beer-w-tap" shift={[1, 0.75]} holes={[[300, 40, 14, 1.6]]} />
         {TAP.map((d, i) => (
           <path key={i} d={d} className="scene-line" />
         ))}
