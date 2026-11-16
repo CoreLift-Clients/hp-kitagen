@@ -216,8 +216,8 @@ export default function KushiIllustration({ className = "" }: { className?: stri
               <g key={k}>
                 <path d={p.fill} className="scene-paper" stroke="none" />
                 <g className="scene-anim" style={washAnim(i)}>
-                  <g filter="url(#kushi-wash)">
-                    <Wash d={p.fill} tone={ku.tone} id={`kushi-w-${i}-${k}`} shift={[2, 1.5]} holes={k === 2 ? ku.holes : []} />
+                  <g>
+                    <Wash filter="kushi-wash" d={p.fill} tone={ku.tone} id={`kushi-w-${i}-${k}`} shift={[1, 0.75]} holes={k === 2 ? ku.holes : []} />
                   </g>
                 </g>
                 <path d={p.outline} className="scene-line" />
@@ -225,9 +225,9 @@ export default function KushiIllustration({ className = "" }: { className?: stri
             ))}
             {/* 焼き目（濃い茶色の小さな水彩を重ねる） */}
             <g className="scene-anim" style={washAnim(i)}>
-              <g filter="url(#kushi-wash)">
+              <g>
                 {ku.koge.map((d, k) => (
-                  <Wash key={k} d={d} tone="food-wash-koge" id={`kushi-w-koge-${i}-${k}`} shift={[1, 0.8]} />
+                  <Wash filter="kushi-wash" key={k} d={d} tone="food-wash-koge" id={`kushi-w-koge-${i}-${k}`} shift={[0.5, 0.4]} />
                 ))}
               </g>
             </g>

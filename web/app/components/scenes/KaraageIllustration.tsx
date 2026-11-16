@@ -260,10 +260,10 @@ export default function KaraageIllustration({ className = "" }: { className?: st
           <g key={i} className="scene-anim" style={anim("scene-fade-up", 21 + i * 4, 28 + i * 4, { "--dy": "-44px" })}>
             <path d={p.fill} className="scene-paper" stroke="none" />
             <g className="scene-anim" style={washAnim(i)}>
-              <g filter="url(#karaage-wash)">
-                <Wash d={p.fill} tone="food-wash-karaage" id={`karaage-w-${i}`} shift={[2, 1.5]} holes={i === 0 ? TOP_HOLE : []} />
+              <g>
+                <Wash filter="karaage-wash" d={p.fill} tone="food-wash-karaage" id={`karaage-w-${i}`} shift={[1, 0.75]} holes={i === 0 ? TOP_HOLE : []} />
                 <g clipPath={`url(#karaage-clip-${i})`}>
-                  <Wash d={p.shade} tone="food-wash-karaage-dark" id={`karaage-w-shade-${i}`} shift={[1.5, 1.5]} />
+                  <Wash filter="karaage-wash" d={p.shade} tone="food-wash-karaage-dark" id={`karaage-w-shade-${i}`} shift={[0.75, 0.75]} />
                 </g>
               </g>
             </g>

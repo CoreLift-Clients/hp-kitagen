@@ -162,8 +162,8 @@ export default function BeerIllustration({ className = "" }: { className?: strin
       </g>
 
       {/* ビールの水彩（最後にじわっと出る） */}
-      <g className="beer-liquid scene-anim" filter="url(#beer-wash)" style={anim("scene-fade-up", 40, 50, { "--dy": "0px" })}>
-        <Wash d={BEER_WASH} tone="food-wash-beer" id="beer-w-beer" shift={[3, 2]} holes={[[150, 300, 3, 10], [262, 226, 2.6, 6]]} />
+      <g className="beer-liquid scene-anim" style={anim("scene-fade-up", 40, 50, { "--dy": "0px" })}>
+        <Wash filter="beer-wash" d={BEER_WASH} tone="food-wash-beer" id="beer-w-beer" shift={[1.5, 1]} holes={[[150, 300, 3, 10], [262, 226, 2.6, 6]]} />
       </g>
       <g className="beer-level scene-anim" style={anim("scene-fade-up", 12, 28, { "--dy": "136px" })}>
         <path d={LEVEL} className="scene-fine" />
@@ -184,8 +184,8 @@ export default function BeerIllustration({ className = "" }: { className?: strin
       <g className="beer-foam scene-anim" style={anim("scene-swell", 26, 38, { "--o": "50% 100%" })}>
         <path d={FOAM_FILL} className="scene-paper" stroke="none" />
         {/* 泡の水彩（ほぼ紙の色。ふちだけうすいクリーム。最後にじわっと出る） */}
-        <g className="scene-anim" filter="url(#beer-wash)" style={anim("scene-fade-up", 42, 50, { "--dy": "0px" })}>
-          <Wash d={FOAM_FILL} tone="food-wash-foam" id="beer-w-foam" shift={[2, 2]} holes={[[180, 160, 7, 3]]} />
+        <g className="scene-anim" style={anim("scene-fade-up", 42, 50, { "--dy": "0px" })}>
+          <Wash filter="beer-wash" d={FOAM_FILL} tone="food-wash-foam" id="beer-w-foam" shift={[1, 1]} holes={[[180, 160, 7, 3]]} />
         </g>
         {FOAM.map((d, i) => (
           <path key={i} d={d} className="scene-line" />

@@ -314,9 +314,9 @@ export default function KakuniIllustration({ className = "" }: { className?: str
       {/* 2. 千切りキャベツの山（水彩の面が出て、千切りの線がふわっと描かれる） */}
       <g className="kakuni-cabbage">
         <g className="scene-anim" style={anim("scene-fade-up", 12, 16, { "--dy": "-6px" })}>
-          <g filter="url(#kakuni-wash)">
-            <Wash d={CABBAGE} tone="food-wash-cabbage" id="kakuni-w-cab" shift={[2.5, 2]} holes={[[118, 252, 5, 2.5], [292, 244, 4.5, 2.2]]} />
-            <Wash d={CABBAGE_UNDER} tone="food-wash-cabbage" id="kakuni-w-cab2" shift={[2, 1.5]} />
+          <g>
+            <Wash filter="kakuni-wash" d={CABBAGE} tone="food-wash-cabbage" id="kakuni-w-cab" shift={[1.25, 1]} holes={[[118, 252, 5, 2.5], [292, 244, 4.5, 2.2]]} />
+            <Wash filter="kakuni-wash" d={CABBAGE_UNDER} tone="food-wash-cabbage" id="kakuni-w-cab2" shift={[1, 0.75]} />
           </g>
         </g>
         {CABBAGE_STRANDS.map((st, k) => (
@@ -351,15 +351,15 @@ export default function KakuniIllustration({ className = "" }: { className?: str
             {/* 後ろの線を隠す紙の色 → 水彩（厚みのふち・切り口のこげ茶・皮をもう1段・脂の層）→ しまの線 → 輪郭 */}
             <path d={p.body[0]} className="scene-paper" stroke="none" />
             <path d={p.top} className="scene-paper" stroke="none" />
-            <g filter="url(#kakuni-wash)">
-              <Wash d={p.body[0]} tone="food-wash-kakuni-dark" id={`kakuni-w-body-${i}`} shift={[2, 2]} />
-              <Wash d={p.top} tone="food-wash-kakuni" id={`kakuni-w-top-${i}`} shift={[2, 1.5]} />
+            <g>
+              <Wash filter="kakuni-wash" d={p.body[0]} tone="food-wash-kakuni-dark" id={`kakuni-w-body-${i}`} shift={[1, 1]} />
+              <Wash filter="kakuni-wash" d={p.top} tone="food-wash-kakuni" id={`kakuni-w-top-${i}`} shift={[1, 0.75]} />
               <g clipPath={`url(#kakuni-top-${i})`}>
-                <Wash d={p.bands[0].d} tone="food-wash-kakuni-dark" id={`kakuni-w-skin-${i}`} shift={[1.5, 1]} />
+                <Wash filter="kakuni-wash" d={p.bands[0].d} tone="food-wash-kakuni-dark" id={`kakuni-w-skin-${i}`} shift={[0.75, 0.5]} />
                 {[1, 3].map((k) => (
                   <g key={k}>
                     <path d={p.bands[k].d} className="scene-paper" stroke="none" />
-                    <Wash d={p.bands[k].d} tone="food-wash-skin" id={`kakuni-w-fat-${i}-${k}`} shift={[1.5, 1]} />
+                    <Wash filter="kakuni-wash" d={p.bands[k].d} tone="food-wash-skin" id={`kakuni-w-fat-${i}-${k}`} shift={[0.75, 0.5]} />
                   </g>
                 ))}
               </g>
@@ -385,9 +385,9 @@ export default function KakuniIllustration({ className = "" }: { className?: str
       <g className="kakuni-egg scene-anim" style={anim("scene-fade-up", 42, 48, { "--dy": "-20px" })}>
         <g transform={`rotate(${EA} ${EX.toFixed(1)} ${EY.toFixed(1)})`}>
           <ellipse cx={EX} cy={EY} rx={ER} ry={EH} className="scene-paper" stroke="none" />
-          <g filter="url(#kakuni-wash)">
-            <Wash d={EGG_D} tone="food-wash-white" id="kakuni-w-white" shift={[2, 1.5]} />
-            <Wash d={YOLK_D} tone="food-wash-yolk" id="kakuni-w-yolk" shift={[1.8, 1.4]} holes={[[EX + 10, EY + 6, 2.4, 1.5]]} />
+          <g>
+            <Wash filter="kakuni-wash" d={EGG_D} tone="food-wash-white" id="kakuni-w-white" shift={[1, 0.75]} />
+            <Wash filter="kakuni-wash" d={YOLK_D} tone="food-wash-yolk" id="kakuni-w-yolk" shift={[0.9, 0.7]} holes={[[EX + 10, EY + 6, 2.4, 1.5]]} />
           </g>
           <ellipse cx={EX + 1.5} cy={EY + 0.5} rx={ER * 0.6} ry={EH * 0.62} className="kakuni-yolk-line" />
           <ellipse cx={EX} cy={EY} rx={ER} ry={EH} className="kakuni-outline" />

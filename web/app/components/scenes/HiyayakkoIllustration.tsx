@@ -248,13 +248,13 @@ export default function HiyayakkoIllustration({ className = "" }: { className?: 
       </g>
 
       {/* 5. たれ（お皿の上の水彩。いちばん最後にじわっと出る。豆腐の後ろに置く） */}
-      <g className="hiyayakko-tare" filter="url(#hiyayakko-wash)">
+      <g className="hiyayakko-tare">
         <g className="scene-anim" style={tareAnim(0)}>
-          <Wash d={TARE_POOL} tone="food-wash-tare" id="hiyayakko-w-pool" shift={[2.5, 2]} holes={TARE_HOLES} />
+          <Wash filter="hiyayakko-wash" d={TARE_POOL} tone="food-wash-tare" id="hiyayakko-w-pool" shift={[1.25, 1]} holes={TARE_HOLES} />
         </g>
         {TARE_DEEP.map((d, k) => (
           <g key={k} className="scene-anim" style={tareAnim(1 + k)}>
-            <Wash d={d} tone="food-wash-tare-pale" id={`hiyayakko-w-deep-${k}`} shift={[1.5, 1]} />
+            <Wash filter="hiyayakko-wash" d={d} tone="food-wash-tare-pale" id={`hiyayakko-w-deep-${k}`} shift={[0.75, 0.5]} />
           </g>
         ))}
       </g>
@@ -268,9 +268,9 @@ export default function HiyayakkoIllustration({ className = "" }: { className?: 
             <path d={t.topFace} className="scene-paper" stroke="none" />
             <path d={t.front} className="scene-paper" stroke="none" />
             <path d={t.right} className="scene-paper" stroke="none" />
-            <g filter="url(#hiyayakko-wash)">
-              <Wash d={t.whole} tone="food-wash-tofu" id={`hiyayakko-w-tofu-${i}`} shift={[2, 1.5]} holes={[t.hole]} />
-              <Wash d={t.sides} tone="food-wash-tofu" id={`hiyayakko-w-side-${i}`} shift={[1.5, 1.5]} />
+            <g>
+              <Wash filter="hiyayakko-wash" d={t.whole} tone="food-wash-tofu" id={`hiyayakko-w-tofu-${i}`} shift={[1, 0.75]} holes={[t.hole]} />
+              <Wash filter="hiyayakko-wash" d={t.sides} tone="food-wash-tofu" id={`hiyayakko-w-side-${i}`} shift={[0.75, 0.75]} />
             </g>
             {t.side.map((d, k) => (
               <path key={k} d={d} className="scene-fine" />
@@ -281,15 +281,15 @@ export default function HiyayakkoIllustration({ className = "" }: { className?: 
           </g>
 
           {/* 5. たれ（豆腐の上の面の、肉みそのまわり。うすいほうの水彩） */}
-          <g className="hiyayakko-tare scene-anim" filter="url(#hiyayakko-wash)" style={tareAnim(5 + i)}>
-            <Wash d={TARE_TOP[i]} tone="food-wash-tare-pale" id={`hiyayakko-w-top-${i}`} shift={[1.5, 1]} />
+          <g className="hiyayakko-tare scene-anim" style={tareAnim(5 + i)}>
+            <Wash filter="hiyayakko-wash" d={TARE_TOP[i]} tone="food-wash-tare-pale" id={`hiyayakko-w-top-${i}`} shift={[0.75, 0.5]} />
           </g>
 
           {/* 3. 肉みそ（茶色の山 → ひき肉のかたまりを同じ色でうすく重ねる → てかり）。少し上からふわっとのる */}
           <g className="hiyayakko-miso scene-anim" stroke="none" style={anim("scene-fade-up", 33 + i * 3, 39 + i * 3, { "--dy": "-10px" })}>
-            <g filter="url(#hiyayakko-wash)">
-              <Wash d={MISO[i].base} tone="food-wash-kakuni" id={`hiyayakko-w-miso-${i}`} shift={[1.5, 1.2]} />
-              <g className="food-wash-miso-crumb" transform="translate(1.2 1)">
+            <g>
+              <Wash filter="hiyayakko-wash" d={MISO[i].base} tone="food-wash-kakuni" id={`hiyayakko-w-miso-${i}`} shift={[0.75, 0.6]} />
+              <g className="food-wash-miso-crumb" transform="translate(0.6 0.5)" filter="url(#hiyayakko-wash)">
                 {MISO[i].crumbs.map((c, k) => (
                   <path key={k} d={c.d} className={c.dark ? "wash wash-crumb-dark" : "wash"} />
                 ))}
@@ -302,10 +302,10 @@ export default function HiyayakkoIllustration({ className = "" }: { className?: 
 
           {/* 4. ねぎ（肉みその上に 5個ずつ。中の水彩 → 緑の輪） */}
           <g className="hiyayakko-negi">
-            <g filter="url(#hiyayakko-wash)">
+            <g>
               {NEGI_TOP[i].map((n, k) => (
                 <g key={k} className="scene-anim" style={negiAnim(i * 5 + k)}>
-                  <Wash d={n.fill} tone="food-wash-negi" id={`hiyayakko-w-negi-${i}-${k}`} shift={[0.8, 0.6]} />
+                  <Wash filter="hiyayakko-wash" d={n.fill} tone="food-wash-negi" id={`hiyayakko-w-negi-${i}-${k}`} shift={[0.4, 0.3]} />
                 </g>
               ))}
             </g>
@@ -320,10 +320,10 @@ export default function HiyayakkoIllustration({ className = "" }: { className?: 
 
       {/* 4. こぼれたねぎ（豆腐の上の面のすみと、お皿の上） */}
       <g className="hiyayakko-negi">
-        <g filter="url(#hiyayakko-wash)">
+        <g>
           {NEGI_SPILL.map((n, k) => (
             <g key={k} className="scene-anim" style={negiAnim(20 + k)}>
-              <Wash d={n.fill} tone="food-wash-negi" id={`hiyayakko-w-spill-${k}`} shift={[0.8, 0.6]} />
+              <Wash filter="hiyayakko-wash" d={n.fill} tone="food-wash-negi" id={`hiyayakko-w-spill-${k}`} shift={[0.4, 0.3]} />
             </g>
           ))}
         </g>

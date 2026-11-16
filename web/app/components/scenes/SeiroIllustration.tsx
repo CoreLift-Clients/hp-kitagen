@@ -269,9 +269,9 @@ export default function SeiroIllustration({ className = "" }: { className?: stri
         <path d={FLOOR} className="scene-paper" stroke="none" />
         <path d={RIM_FACE} className="scene-paper" fillRule="evenodd" stroke="none" />
         {/* ごく淡い水彩の陰（せいろだけの例外）：内側の奥の壁と、外側の胴の右側 */}
-        <g filter="url(#seiro-wash)">
-          <Wash d={SHADE_WALL} tone="seiro-wash-shade" id="seiro-w-wall" shift={[2, 1.5]} />
-          <Wash d={SHADE_SIDE} tone="seiro-wash-shade" id="seiro-w-side" shift={[2, 1.5]} />
+        <g>
+          <Wash filter="seiro-wash" d={SHADE_WALL} tone="seiro-wash-shade" id="seiro-w-wall" shift={[1, 0.75]} />
+          <Wash filter="seiro-wash" d={SHADE_SIDE} tone="seiro-wash-shade" id="seiro-w-side" shift={[1, 0.75]} />
         </g>
         {BODY_IN.map((d, i) => (
           <path key={`i${i}`} d={d} className="scene-fine" />
@@ -292,9 +292,9 @@ export default function SeiroIllustration({ className = "" }: { className?: stri
           <g key={i} className="scene-anim" style={anim("scene-fade-up", 14 + i * 5, 20 + i * 5, { "--dy": "-18px" })}>
             {/* 後ろの線を隠す紙の色 → 皮とあんの水彩 → ひだ → 口のふち → 輪郭 */}
             <path d={p.body} className="scene-paper" stroke="none" />
-            <g filter="url(#seiro-wash)">
-              <Wash d={p.body} tone="food-wash-skin" id={`seiro-w-skin-${i}`} shift={[2.2, 1.8]} holes={[p.skinHole]} />
-              <Wash d={p.meat} tone="food-wash-meat" id={`seiro-w-meat-${i}`} shift={[1.8, 1.5]} holes={[p.meatHole]} />
+            <g>
+              <Wash filter="seiro-wash" d={p.body} tone="food-wash-skin" id={`seiro-w-skin-${i}`} shift={[1.1, 0.9]} holes={[p.skinHole]} />
+              <Wash filter="seiro-wash" d={p.meat} tone="food-wash-meat" id={`seiro-w-meat-${i}`} shift={[0.9, 0.75]} holes={[p.meatHole]} />
             </g>
             {p.creases.map((d, k) => (
               <path key={`c${k}`} d={d} className="scene-fine" />
