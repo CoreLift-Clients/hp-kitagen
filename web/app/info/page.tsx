@@ -30,7 +30,8 @@ export const metadata = pageMetadata({
 // ランチ再開〈LUNCH_SUSPENDED = false〉で、ランチのある曜日とない曜日の行に自動で分かれる）。
 // 「ランチは、しばらくお休みしています。」の行は LUNCH_SUSPENDED が true のときだけ出す。
 
-const ADDRESS = "〒544-0033　大阪府大阪市生野区勝山北1丁目2-13";
+// 住所は、狭い画面で「勝山北／1丁目」のように番地の途中で折れないよう、前と後ろに分けて後ろを折り返さない
+const ADDRESS = ["〒544-0033　大阪府大阪市生野区", "勝山北1丁目2-13"] as const;
 
 // Google マップの埋め込み（2回目で、手描きの道案内の地図に替える予定）
 const MAP_EMBED_URL =
@@ -48,6 +49,17 @@ const MAP_EMBED_URL =
 //   md より狭い画面は横書きで項目の上に
 // ・営業時間の時間は、ページでいちばん大きな字（明朝体 700。看板のように）。L.O. は小さく添える
 // ・本文は今までの本文の字（ゴシック体）のまま
+// ・和紙の幅：md より狭い画面は左右の余白を除いた幅いっぱい、md〜lg も幅いっぱい、lg 以上は 1040px まで。
+//   広い画面で広がった分は、紙のふちの左右の余白（md 48px・lg 96px）と、縦書きの項目名と本文のあいだ
+//   （md 48px・lg 80px）に回す。本文の1行は 38em（約 38 字）まで。地図の枠も本文の幅に合わせる。
+//   区切りの線は紙の内側の幅いっぱい
+// ・折り返しは語の切れ目で（auto-phrase。メニューのページのテイクアウトのご案内と同じ）。
+//   それでも語の途中で折れてしまう所（Chrome の語の切れ目の判定が外れる所）は、NoBreak で語のかたまりを折り返さない
+
+// 語のかたまりを折り返さない（狭い画面で、語の途中で折れてしまう所だけに使う。かたまりは短く、390px の本文の幅に収まる長さまで）
+function NoBreak({ children }: { children: ReactNode }) {
+  return <span className="whitespace-nowrap">{children}</span>;
+}
 
 // 区切りの線（筆で引いたような細い横線）。seed を変えると揺らぎ方が変わる（乱数なし）。
 // viewBox は横 100・縦 6 で描き、幅いっぱいに伸ばす（線の太さは scenes.css の .info-rule-line で変わらない）
@@ -83,11 +95,11 @@ function BrushRule({ seed }: { seed: number }) {
 // 項目（左に縦書きの項目名、右に中身。md より狭い画面は項目名が上）
 function Item({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <section className="py-9 md:py-12 md:grid md:grid-cols-[2.5rem_1fr] md:gap-x-10 lg:gap-x-14">
-      <h2 className="mb-4 md:mb-0 font-serif text-lg md:text-xl font-bold text-foreground tracking-[0.18em] md:[writing-mode:vertical-rl] md:leading-[1.7]">
+    <section className="py-9 md:py-12 lg:py-14 md:grid md:grid-cols-[2.5rem_1fr] lg:grid-cols-[3rem_1fr] md:gap-x-12 lg:gap-x-20">
+      <h2 className="mb-4 md:mb-0 font-serif text-lg md:text-xl lg:text-[1.375rem] font-bold text-foreground tracking-[0.18em] md:[writing-mode:vertical-rl] md:leading-[1.7]">
         {label}
       </h2>
-      <div className="min-w-0 space-y-2 text-base text-foreground leading-[1.95] [word-break:auto-phrase]">{children}</div>
+      <div className="min-w-0 max-w-[38em] space-y-2 text-base text-foreground leading-[1.95] [word-break:auto-phrase] text-pretty">{children}</div>
     </section>
   );
 }
@@ -123,7 +135,7 @@ export default function InfoPage() {
           </div>
           <p className="font-semibold">{REGULAR_CLOSED}はお休みです。</p>
           {LUNCH_SUSPENDED && <p>ランチは、しばらくお休みしています。</p>}
-          <p className="text-muted">急にお休みや時間を変えるときは、Instagramでお知らせすることがあります。</p>
+          <p className="text-muted">急にお休みや時間を変える<NoBreak>ときは、Instagramで</NoBreak><NoBreak>お知らせすることがあります。</NoBreak></p>
         </>
       ),
     },
@@ -131,7 +143,10 @@ export default function InfoPage() {
       label: "場所",
       body: (
         <>
-          <p className="font-medium">{ADDRESS}</p>
+          <p className="font-medium">
+            {ADDRESS[0]}
+            <NoBreak>{ADDRESS[1]}</NoBreak>
+          </p>
           <p>JR環状線「桃谷駅」から、歩いて2分。</p>
           <p className="text-muted">駐車場はありません。お車の方は、近くのコインパーキングをご利用ください。</p>
           <ActionRow>
@@ -193,7 +208,7 @@ export default function InfoPage() {
       label: "お知らせ",
       body: (
         <>
-          <p>料理やお店の様子を、Instagramにのせています。</p>
+          <p>料理やお店の様子を、<NoBreak>Instagramにのせています。</NoBreak></p>
           <p>お休みのお知らせも、こちらから。</p>
           <ActionRow>
             <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className={`${LINK} text-base md:text-lg`}>
@@ -217,7 +232,7 @@ export default function InfoPage() {
 
       {/* ── ページヘッダー（メニューのページと同じ帯）と、店の入口の線画 ──────────
           絵は components/scenes/StorefrontIllustration.tsx（飾りなので aria-hidden）。
-          幅は 600px まで（狭い画面は左右の余白を除いた幅いっぱい）。真ん中に置く。
+          幅は 680px まで（狭い画面は左右の余白を除いた幅いっぱい）。真ん中に置く。
           class の scene は、絵の中の「後ろの線を隠す塗り」をこの帯の背景（section-warm）の色にするため（scenes.css）。
           ページのいちばん上なので、開いたときにはもうスクロールの範囲（絵の真ん中が画面の真ん中に来たところ）を
           過ぎている。そのため、店主紹介のページの手元の絵と同じく、画面に入ったときに1回だけ時間で動かす（playOnce） */}
@@ -225,7 +240,7 @@ export default function InfoPage() {
         <SectionInner>
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">店舗情報</h1>
           <p className="text-sm md:text-base text-muted">桃谷駅から、歩いて2分。</p>
-          <ScenePlayOnView playOnce className="mx-auto mt-10 md:mt-12 w-full max-w-[600px]">
+          <ScenePlayOnView playOnce className="mx-auto mt-10 md:mt-12 w-full max-w-[680px]">
             <StorefrontIllustration className="storefront-svg block w-full h-auto text-foreground" />
           </ScenePlayOnView>
         </SectionInner>
@@ -234,7 +249,7 @@ export default function InfoPage() {
       {/* ── 1枚の和紙（店先の貼り紙）──────────────────────────── */}
       <div className="section-deep py-14 md:py-24">
         <SectionInner>
-          <article className="section-light mx-auto w-full max-w-[760px] px-5 py-3 md:px-14 md:py-6 shadow-[0_1px_6px_rgba(47,36,28,0.08)]">
+          <article className="section-light mx-auto w-full max-w-[1040px] px-5 py-3 md:px-12 md:py-6 lg:px-24 lg:py-8 shadow-[0_1px_6px_rgba(47,36,28,0.08)]">
             {items.map((it, i) => (
               <div key={it.label}>
                 {i > 0 && <BrushRule seed={20000 + i * 97} />}
