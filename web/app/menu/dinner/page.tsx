@@ -47,7 +47,7 @@ export default async function DinnerMenuPage() {
           {/* ── ランチ営業のご案内 ───────────────────────────────
                ランチは NAV から統合。営業状況は Instagram に集約して案内する。
                再開時は lib/businessHours.ts の LUNCH_SUSPENDED を false に。 */}
-          <div className="max-w-md mx-auto rounded-lg border border-border bg-background/70 px-6 py-5 text-left">
+          <div className="max-w-md md:max-w-2xl mx-auto rounded-lg border border-border bg-background/70 px-6 py-5 text-left">
             <p className="text-sm text-muted leading-[2.0]">
               {LUNCH_SUSPENDED
                 ? "ランチ営業は、ただいま臨時休業とさせていただいております。再開の時期やその日の営業状況は、"

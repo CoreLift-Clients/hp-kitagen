@@ -6,6 +6,7 @@ import { PHONE } from "../lib/contact";
 // /takeout に来た人は next.config.ts の redirects で /menu/dinner#takeout（この囲み）へ転送する。
 // ・id="takeout"：転送とリンクの飛び先。scroll-mt はヘッダーの高さの分（名物の欄と同じ）
 // ・見せ方：名物のカードと同じ和紙（section-light）の、小さな横長の囲み。ふちは細い線だけにして、カードより目立たせない
+//   幅は、md〜lg は 720px まで（2列のカードと同じ）、lg 以上はカード3列の幅いっぱい（サイト共通の幅 max-w-page-wide）
 //   - md 以上：左に見出しと本文、右に電話のボタン
 //   - md より狭い画面：上から見出し → 本文 → 電話のボタン（1列）
 // ・電話のボタン：トップの宴の場面の「電話で相談する」（app/page.tsx の CALL_BUTTON_CLASS）と同じ形（アイコン・文字・番号）。
@@ -20,7 +21,7 @@ export default function TakeoutNote() {
   return (
     <div
       id="takeout"
-      className="section-light scroll-mt-32 mx-auto w-full md:max-w-[720px] rounded-sm border border-border px-5 py-6 md:px-8 md:py-7 shadow-[0_1px_3px_rgba(47,36,28,0.04)]"
+      className="section-light scroll-mt-32 mx-auto w-full md:max-w-[720px] lg:max-w-page-wide rounded-sm border border-border px-5 py-6 md:px-8 md:py-7 shadow-[0_1px_3px_rgba(47,36,28,0.04)]"
     >
       <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between md:gap-8">
         <div className="min-w-0">

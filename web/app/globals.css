@@ -44,6 +44,15 @@
   --font-brush:       var(--font-yuji-boku);
 }
 
+/* ─── サイト共通の幅 ───
+   ページの中身の最大幅（lg 以上で 1040px まで。画面の左右には SectionInner の余白 px-6 md:px-8 が残る）。
+   Tailwind の max-w-page-wide で使う（CSS からは var(--container-page-wide)）。
+   使っている所：店舗情報の和紙（app/info/page.tsx）、メニューのページの名物の欄とテイクアウトのご案内
+   （components/scenes/Specialties.tsx・components/TakeoutNote.tsx）。ほかのページも、あとでこの幅にそろえる */
+@theme {
+  --container-page-wide: 1040px;
+}
+
 body {
   background-color: var(--background);
   /* 和紙テクスチャ（サイト全体のベース）

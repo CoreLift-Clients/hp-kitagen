@@ -49,7 +49,8 @@ const MAP_EMBED_URL =
 //   md より狭い画面は横書きで項目の上に
 // ・営業時間の時間は、ページでいちばん大きな字（明朝体 700。看板のように）。L.O. は小さく添える
 // ・本文は今までの本文の字（ゴシック体）のまま
-// ・和紙の幅：md より狭い画面は左右の余白を除いた幅いっぱい、md〜lg も幅いっぱい、lg 以上は 1040px まで。
+// ・和紙の幅：md より狭い画面は左右の余白を除いた幅いっぱい、md〜lg も幅いっぱい、lg 以上は 1040px まで
+//   （サイト共通の幅 max-w-page-wide。globals.css の --container-page-wide）。
 //   広い画面で広がった分は、紙のふちの左右の余白（md 48px・lg 96px）と、縦書きの項目名と本文のあいだ
 //   （md 48px・lg 80px）に回す。本文の1行は 38em（約 38 字）まで。地図の枠も本文の幅に合わせる。
 //   区切りの線は紙の内側の幅いっぱい
@@ -249,7 +250,7 @@ export default function InfoPage() {
       {/* ── 1枚の和紙（店先の貼り紙）──────────────────────────── */}
       <div className="section-deep py-14 md:py-24">
         <SectionInner>
-          <article className="section-light mx-auto w-full max-w-[1040px] px-5 py-3 md:px-12 md:py-6 lg:px-24 lg:py-8 shadow-[0_1px_6px_rgba(47,36,28,0.08)]">
+          <article className="section-light mx-auto w-full max-w-page-wide px-5 py-3 md:px-12 md:py-6 lg:px-24 lg:py-8 shadow-[0_1px_6px_rgba(47,36,28,0.08)]">
             {items.map((it, i) => (
               <div key={it.label}>
                 {i > 0 && <BrushRule seed={20000 + i * 97} />}

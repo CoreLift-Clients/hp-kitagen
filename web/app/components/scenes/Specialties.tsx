@@ -29,9 +29,14 @@ import "./scenes.css";
 //   - 料理：lg（1024px）以上は 3つずつ2段、lg より狭い画面は 2つずつ3段
 //   - お飲みもの：lg 以上は 3つを1段、lg より狭い画面は 2つと1つ（最後の1つは真ん中）
 //   - flex-wrap と justify-center で並べるので、段の最後の1つは自然に真ん中に来る
-//   - 欄の幅：lg 以上は 960px まで、md〜lg は 720px まで（カードが大きくなりすぎないように）
-//   - カードの幅：(欄の幅 − 間) ÷ 列の数。lg の 1024px の画面で約 299px、md の 768px の画面で約 336px、
-//     320px の画面で 124px（中の幅 108px）
+//   - 欄の幅：lg 以上はサイト共通の幅 1040px まで（max-w-page-wide。globals.css）、md〜lg は 720px まで（2列のカードが大きくなりすぎないように）
+//   - カードの幅：(欄の幅 − 間) ÷ 列の数。lg の 1024px の画面で約 299px、1104px 以上の画面で約 325px、
+//     md の 768px の画面で約 336px、320px の画面で 124px（中の幅 108px）
+//   - カードの縦横の比（md 以上）：幅 1 に高さ 1.2 くらい（どっしり見せるため、縦に長くしすぎない）。
+//     絵の場所は今までどおりカードの中の幅いっぱいの正方形（絵によっては上下いっぱいまで線があるので、切り詰めない）。
+//     そのかわり、カードの左右の余白を少し広げ（md 28px・lg 24px）、上下の余白と、絵・品名・ひとこと・値段の間を詰める。
+//     1440px の画面で 約 325 × 380（1:1.17。絵 277px）、1024px で 約 299 × 354（1:1.18。絵 251px）、768px で 約 336 × 379（1:1.13。絵 280px）。
+//     番号は左上の角の余白に小さく置く（行の高さ 1。絵の線とは重ならない）。md より狭い画面は今までどおり
 // ・カードの中身（上から）：
 //   番号（漢数字。左上の角、明朝体 700、accent）→ 動く線画（カードの幅いっぱいの正方形の場所。絵はその中に収める）→
 //   品名（横書き、佑字 朴。1行。スマホ 18px まで（長い品名だけカードの幅に合わせて縮める）・md 22px・lg 24px）→
@@ -107,12 +112,12 @@ function SpecialtyCard({ item, index, seed }: { item: SpecialtyItem; index: numb
   const Art = ART[item.art];
   return (
     <li
-      className={`scene-card section-light relative w-[calc((100%-1.5rem)/2)] md:w-[calc((100%-2rem)/2)] lg:w-[calc((100%-4rem)/3)] px-2 min-[400px]:px-2.5 pt-7 pb-4 md:px-5 md:pt-9 md:pb-6 shadow-[0_1px_4px_rgba(47,36,28,0.06)]`}
+      className={`scene-card section-light relative w-[calc((100%-1.5rem)/2)] md:w-[calc((100%-2rem)/2)] lg:w-[calc((100%-4rem)/3)] px-2 min-[400px]:px-2.5 pt-7 pb-4 md:px-7 lg:px-6 md:pt-6 md:pb-4 shadow-[0_1px_4px_rgba(47,36,28,0.06)]`}
     >
       <CardFrame seed={seed} />
 
       {/* 番号（左上の角） */}
-      <span className="absolute left-2.5 top-1.5 md:left-4 md:top-3 font-serif font-bold text-[13px] md:text-[15px] leading-none md:leading-normal text-accent">
+      <span className="absolute left-2.5 top-1.5 md:left-3.5 md:top-3 font-serif font-bold text-[13px] md:text-[15px] leading-none text-accent">
         {KANJI_NUM[index]}
       </span>
 
@@ -122,7 +127,7 @@ function SpecialtyCard({ item, index, seed }: { item: SpecialtyItem; index: numb
       </ScenePlayOnView>
 
       {/* @container：品名の字の大きさを、この入れ物の幅（cqw）から決めるため */}
-      <div className="@container mt-2 md:mt-4 text-center">
+      <div className="@container mt-2 text-center">
         {/* 品名：佑字 朴（font-brush。太さは 400 しかないので font-normal。太字にすると字が作られてつぶれる）。
             ひとことより、はっきり大きく。どの画面でも1行に収める（2行に折れると「自家製しゅ／うまい」のように語の途中で切れるため）
             ・仮名は CardName で span に分け、漢字との大きさ・太さをそろえる（下の KANA_* と scenes.css の .card-name-kana）
@@ -135,11 +140,11 @@ function SpecialtyCard({ item, index, seed }: { item: SpecialtyItem; index: numb
           <CardName name={item.name} />
         </h4>
         {/* ひとこと：品名を引き立てるよう、小さく・少しうすく。md より狭い画面では今までどおり出さない（カードの幅に1行で入らない） */}
-        <p className="mt-2 md:mt-2.5 hidden md:block whitespace-nowrap text-[12px] lg:text-[13px] text-muted/80 leading-relaxed">
+        <p className="mt-2 md:mt-1 hidden md:block whitespace-nowrap text-[12px] lg:text-[13px] text-muted/80 leading-relaxed md:leading-snug">
           {item.tagline}
         </p>
         {item.price !== undefined && (
-          <p className="mt-1.5 md:mt-2 text-[12px] md:text-[14px] tracking-wider text-foreground tabular-nums">
+          <p className="mt-1.5 md:mt-1 text-[12px] md:text-[14px] md:leading-snug tracking-wider text-foreground tabular-nums">
             {formatSpecialtyPrice(item.price, item.priceFrom)}
           </p>
         )}
@@ -151,7 +156,7 @@ function SpecialtyCard({ item, index, seed }: { item: SpecialtyItem; index: numb
 // ─── 料理・お飲みものの、それぞれの組 ───
 function CardGroup({ heading, items, seedBase }: { heading: string; items: readonly SpecialtyItem[]; seedBase: number }) {
   return (
-    <div className="mx-auto w-full md:max-w-[720px] lg:max-w-[960px]">
+    <div className="mx-auto w-full md:max-w-[720px] lg:max-w-page-wide">
       {/* 小見出し（dinner/page.tsx の SubHeading と同じ大きさ・色・下線。字は明朝体） */}
       <h3 className="font-serif text-base md:text-lg font-bold text-accent-dark mb-6 md:mb-8 pb-2 border-b border-accent/25">
         {heading}
