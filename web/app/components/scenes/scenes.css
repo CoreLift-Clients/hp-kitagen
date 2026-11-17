@@ -22,7 +22,7 @@
    ・肉みそ冷奴 … 豆腐・肉みそ・ねぎ・たれ（水彩。.food-wash-*）。形は写真を見て描いた形（ab2dae6）
    ・生ビール … ビールと泡（水彩。.food-wash-beer・.food-wash-foam）、注がれる流れ（.food-wash-beer の帯。輪郭は細い線）、
      ジョッキのガラス（.food-wash-glass）、注ぎ口とレバー（.food-wash-tap）
-   ・焼酎・日本酒 … 徳利とお猪口（焼き物の色 .food-wash-yakimono）、お猪口の中のお酒（.food-wash-sake）、
+   ・日本酒・焼酎 … 徳利とお猪口（焼き物の色 .food-wash-yakimono）、お猪口の中のお酒（.food-wash-sake）、
      注がれる日本酒（.food-wash-sake の帯）、タンブラーと水差し（.food-wash-glass）、氷と注がれる水（.food-wash-ice）、
      焼酎の水割り（.food-wash-shochu）
    ・ソフトドリンク … グラス（.food-wash-glass）、ウーロン茶（.food-wash-tea）、氷（.food-wash-ice）、ストロー（.food-wash-straw）
@@ -36,7 +36,7 @@
      塗り方（ずれ・ふちの濃さ・にじみ）は、ほかの水彩と同じ
      例外：からあげの器（無地の白い平鉢）だけは、浅さと広いふちが分かるよう、ふちの帯の奥側（内の線のすぐ外の、
      奥の半分）に、ごく淡い陰を1段だけ付けてよい（.karaage-wash-shade。foreground をうすく 0.12。塗り方はほかの水彩と同じ）
-   ・飲み物の塗り方（生ビール・焼酎・日本酒・ソフトドリンクの3枚）：飲み物は、入れ物そのものが主役なので、
+   ・飲み物の塗り方（生ビール・日本酒・焼酎・ソフトドリンクの3枚）：飲み物は、入れ物そのものが主役なので、
      入れ物にも水彩の色を付けてよい（上の「入れ物は線だけ」は、飲み物には当てない）。
      塗り方は料理と同じ水彩の決まり（線の内側だけ・ふちの濃さ・白い抜け・にじみ・ムラ）。3枚でそろえるため、
      ガラス（ジョッキ・グラス）はどれも .food-wash-glass（ごく淡い色。ほぼ紙の色で、ふちだけうすく）、
@@ -154,11 +154,11 @@
    ・.food-wash-harami … 串焼きの鶏ハラミ（赤みのある濃い茶色。accent 62% に こげ茶 #5E2414）
    ・.food-wash-kawa … 串焼きの鶏皮（淡いきつね色。白に accent 74%。カリッと焼けたふちを濃く ＝ --wash-edge を高め）
    ・.food-wash-koge … 串焼きの焼き目（濃い茶色。accent 45% に foreground。小さな塗りを具の上に重ねる）
-   ・.food-wash-yaki … 鉄鍋餃子の焼き色（黄色寄りの明るいきつね色。accent 45% に 黄土色 #E3C068。
-     写真の焼き色に合わせて、オレンジに寄せない）。餃子の皮は .food-wash-skin
+   ・.food-wash-yaki … 鉄鍋餃子の焼き色（黄色寄りの、こんがりしたきつね色。accent 52% に 黄土色 #E0B458 を、しっかり 0.84 で。
+     写真の焼き色に合わせて、オレンジに寄せない。ひだの帯以外の上の面の全部）。餃子の皮は .food-wash-skin
    ・.food-wash-yaki-dark … 鉄鍋餃子の濃い焼き色（こげ茶。accent 55% に こげ茶 #5A2A0E）。
      きつね色の上に、腹の側（ひだと反対の側）に寄せたまだらで重ねる（大きめの塊 1〜2 つと、小さな不揃いな形を数個）
-   ・.food-wash-hane … 鉄鍋餃子の羽根（.food-wash-yaki-dark と同じ色を 0.55 で。外側の輪と餃子のすき間だけ。不揃いな穴を空ける）
+   ・.food-wash-hane … 鉄鍋餃子の羽根（.food-wash-yaki-dark と同じ色を 0.65 で。外側の輪と餃子のすき間だけ。不揃いな穴を空ける）
    ・.seiro-wash-shade … せいろの陰（入れ物の例外。foreground をうすく 0.16。ふちはさらにうすく）
    ・.karaage-wash-shade … からあげの器のふちの帯の奥側の陰（入れ物の例外。foreground をうすく 0.12。ふちはさらにうすく）
    飲み物（入れ物にも塗る。「料理の絵の決まり」の「飲み物の塗り方」）
@@ -191,9 +191,9 @@
 .food-wash-harami { --wash: color-mix(in srgb, var(--accent) 62%, #5E2414); --wash-a: 0.72; --wash-edge: 0.44; }
 .food-wash-kawa { --wash: color-mix(in srgb, var(--accent) 74%, #fff); --wash-a: 0.7; --wash-edge: 0.7; }
 .food-wash-koge { --wash: color-mix(in srgb, var(--accent) 45%, currentColor); --wash-a: 0.62; --wash-edge: 0.42; }
-.food-wash-yaki { --wash: color-mix(in srgb, var(--accent) 45%, #E3C068); --wash-a: 0.66; --wash-edge: 0.42; }
-.food-wash-yaki-dark { --wash: color-mix(in srgb, var(--accent) 55%, #5A2A0E); --wash-a: 0.7; --wash-edge: 0.4; }
-.food-wash-hane { --wash: color-mix(in srgb, var(--accent) 55%, #5A2A0E); --wash-a: 0.55; --wash-edge: 0.4; }
+.food-wash-yaki { --wash: color-mix(in srgb, var(--accent) 52%, #E0B458); --wash-a: 0.84; --wash-edge: 0.5; }
+.food-wash-yaki-dark { --wash: color-mix(in srgb, var(--accent) 55%, #5A2A0E); --wash-a: 0.68; --wash-edge: 0.42; }
+.food-wash-hane { --wash: color-mix(in srgb, var(--accent) 55%, #5A2A0E); --wash-a: 0.65; --wash-edge: 0.45; }
 /* 飲み物（入れ物も主役なので、入れ物にも塗る。上の「料理の絵の決まり」の「飲み物の塗り方」） */
 .food-wash-glass { --wash: color-mix(in srgb, #D6E7EC 70%, currentColor); --wash-a: 0.12; --wash-edge: 0.4; }
 .food-wash-ice { --wash: #D6E7EC; --wash-a: 0.8; --wash-edge: 0.55; }
@@ -271,7 +271,7 @@
 /* ふたのすき間からもれる湯気：動き終わりは見えない（ふたが持ち去られるころに消える） */
 .seiro-leak { opacity: 0; }
 
-/* 注がれる流れ（部品は Pour.tsx。生ビール BeerIllustration.tsx と、焼酎・日本酒 SakeIllustration.tsx で使い回す）。
+/* 注がれる流れ（部品は Pour.tsx。生ビール BeerIllustration.tsx と、日本酒・焼酎 SakeIllustration.tsx で使い回す）。
    ・帯は幅 3.5〜9 ほどと細いので、小さい絵（--scene-k が大きい）でも輪郭の線が帯を埋めないよう、
      帯の中だけ線の太さの倍率を 1.6 までにする（--scene-z で割り戻す。輪郭の線・水彩の切り抜き・明るい筋に効く）
    ・明るい筋（.pour-flow）：白をうすく。破線を、時間でずっと上から下へ流す（下の @media の中。場面が画面の外にあるあいだは止める）。
@@ -298,7 +298,7 @@
   stroke-dashoffset: 0.19;
 }
 .scene-anim.beer-lever-move { transform-box: view-box; transform-origin: 331px 20px; }
-/* 焼酎・日本酒（SakeIllustration.tsx）
+/* 日本酒・焼酎（SakeIllustration.tsx）
    ・徳利・水差しの傾き、マドラーの混ぜる動き：支点（--o。絵の座標の px）を中心に回る
    ・.sake-gone … 動き終わりは見えない部品（注いでいる流れ・波紋・しずく・泡粒・水差し・マドラー・混ぜる前の濃い焼酎）。
      prefers-reduced-motion のときと、JavaScript が動かないブラウザで動き終わったあとも、見えない（完成の形で止まる）。
@@ -437,7 +437,7 @@
   55%  { opacity: 1; transform: translate(calc(var(--sx, 0px) * -0.15), calc(var(--sy, 0px) * -0.15)); }
   to   { opacity: 1; transform: none; }
 }
-/* ── 「注いで、終える」動き（焼酎・日本酒 SakeIllustration.tsx、生ビール BeerIllustration.tsx） ── */
+/* ── 「注いで、終える」動き（日本酒・焼酎 SakeIllustration.tsx、生ビール BeerIllustration.tsx） ── */
 /* 注ぎ終わり：流れが上から切れて、下へ吸い込まれるように縮んで消える（下の端 --o を支点に。Pour.tsx の cut） */
 @keyframes pour-cut {
   from { opacity: 1; transform: none; }
@@ -586,7 +586,7 @@
   /* 2) 使えないブラウザ：絵の 70% 以上が画面に入ったとき1回だけ、時間で同じ順に進める（data-scene は ScenePlayOnView が付ける）。
      始まる時刻は (--r0 − 4) × 0.045 秒、長さは (--r1 − --r0) × 0.05 秒（短くても 0.5 秒）。
      どちらも --scene-time 倍（名物の欄のカードの絵が、svg の style で付ける。主役の動きが 1.4 秒ほど見えるよう、絵ごとに
-     1.3〜1.45、焼酎・日本酒は 3。付けていない絵〈トップの場面〉は 1） */
+     1.3〜1.45、日本酒・焼酎は 3。付けていない絵〈トップの場面〉は 1） */
   .scene-art[data-scene="wait"] .scene-anim {
     animation: var(--a) 1s linear both paused;
   }

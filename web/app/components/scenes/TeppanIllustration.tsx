@@ -9,8 +9,9 @@
 // ・餃子は大きく、鍋の内側いっぱいに（鍋の底は、餃子のすき間と、外側の羽根の輪にしか見えない）。
 // ・餃子1つは、幅広の、ぷっくりした三日月形（背の側が大きくふくらんだ弧、腹の側がゆるい弧。両端は丸い）。
 //   手前に見える皮の側面（厚み）と、上の面の輪郭の線で、ふっくらした厚みを出す
-// ・ひだ：背の側だけ。白っぽい皮の帯（餃子の幅の約 3分の1）に、ふちから内側へ寄る、少しカーブした短い折り目の線を 4〜6 本。
-//   背の側のふちの線は、折り目の所で小さく波打つ。腹の側は、なめらかな線
+// ・ひだ：背の側だけ。白っぽい皮の細い帯（餃子の幅の約 4分の1）に、やわらかくカーブしたゆるい折り目の線を 2〜3 本
+//   （間隔と長さは不揃い）。背の側のふちは、なめらかな弧に、ごくゆるい凹凸が 1〜2 か所。腹の側は、なめらかな線
+// ・焼き色は、上の面のひだの帯以外の全部に、こんがりしたきつね色（写真では上の面の 4分の3 くらい）
 // ・色は水彩（部品は Wash.tsx。にじみのフィルタは teppan-wash、焼き色と皮の境目だけ少しぼかした teppan-wash-soft）：
 //   皮 … 餃子の上の面全体に、ごく淡いクリーム（.food-wash-skin。しゅうまいの皮と同じ色）
 //   焼き色 … ひだの帯を残した上の面に、きつね色（.food-wash-yaki）。皮との境目は少しぼかす。
@@ -132,8 +133,8 @@ const GWB = 52; // 背〈ひだ〉の側のふくらみ（真ん中の線から�
 const GWA = 18; // 腹の側のふくらみ
 const GBOW = 16; // 弓なりの反り（両端で、腹の側へ）
 const GR = 57; // 餃子のまん中の、鍋の中心からの距離（外側の先は、羽根の輪を残して鍋の内側のふちの近くまで）
-const PLEAT = 23; // ひだの帯の幅（背の側のふちから内側へ。餃子の幅の約 3分の1。両端ほど細い）
-const PLEAT_DIP = 2.6; // ひだのふちの小さな波（折り目の所で、ふちが内側へへこむ深さ）
+const PLEAT = 17; // ひだの帯の幅（背の側のふちから内側へ。餃子の幅の約 4分の1 の細い帯。両端ほど細い）
+const PLEAT_BUMP = 1.3; // ひだの側のふちの、ごくゆるい凹凸の深さ（1つの餃子に 1〜2 か所）
 
 // [置く向き（度。-90 が奥、時計回りに増える）, 放射からの傾き（度。時計回り。渦の向き）, 大きさ, 中心からの距離のずれ]
 const GYOZA_AT: readonly [number, number, number, number][] = [
@@ -173,7 +174,7 @@ type Gyoza = {
   mottles: string[]; // 濃い焼き色のまだら
   folds: string[]; // ひだの折り目
   pleat: string; // ひだの帯（背の側のふち → 帯の内側のふち）
-  pleatLine: string; // 背の側のふちの線（ひだの波）
+  pleatLine: string; // 背の側のふちの線
   hole: Hole; // 白い抜け
   depth: number; // 奥ほど小さい（重ねる順に使う）
 };
@@ -190,11 +191,16 @@ function gyoza([deg, tilt, k, dr]: readonly [number, number, number, number], i:
   const at = (x: number, y: number, z = GZ): P => pr(cu + k * (x * ax + y * nx), cv + k * (x * ay + y * ny), z);
   const s = 8000 + i * 60;
 
-  // ひだの折り目の位置（4〜6本。8個とも少しずつ違う）
-  const nf = 4 + (i % 3);
-  const foldT = Array.from({ length: nf }, (_, j) => -0.66 + (1.32 * (j + 0.5)) / nf + jitter(s + 700 + j) * 0.04);
-  // 背の側のふち：折り目の所で、小さく内側へへこむ（ひだの波）
-  const yBackW = (t: number) => yBack(t) - foldT.reduce((a, ft) => a + PLEAT_DIP * Math.exp(-(((t - ft) / 0.05) ** 2)), 0);
+  // ひだの折り目の位置（2〜3本。間隔は不揃いに。8個とも違う）
+  const nf = 2 + (i % 2);
+  const foldT: number[] = [];
+  for (let j = 0, t = -0.55 + jitter(s + 700) * 0.12; j < nf; j++) {
+    foldT.push(t);
+    t += 0.32 + 0.3 * ((jitter(s + 704 + j) + 1) / 2); // 間隔 0.32〜0.62
+  }
+  // 背の側のふち：なめらかな弧に、ごくゆるい凹凸を 1〜2 か所（幅の広い、浅いへこみ）
+  const bumpT = Array.from({ length: 1 + ((i + 1) % 2) }, (_, j) => -0.3 + 0.6 * j + jitter(s + 740 + j) * 0.15);
+  const yBackW = (t: number) => yBack(t) - bumpT.reduce((a, bt) => a + PLEAT_BUMP * Math.exp(-(((t - bt) / 0.16) ** 2)), 0);
   // 形のまわり：背の側を外側の先から中心側の先へ、腹の側を戻る
   const boat: [number, number][] = [
     ...Array.from({ length: NB / 2 }, (_, j): [number, number] => {
@@ -229,14 +235,16 @@ function gyoza([deg, tilt, k, dr]: readonly [number, number, number, number], i:
   const run: P[] = [];
   for (let j = 0; j < n && below[(start + j) % n]; j++) run.push(low[(start + j) % n]);
 
-  // ひだの折り目：背の側のふちのへこみから、帯の内側へ向かう、少しカーブした短い線。
-  // 内側の端は、帯のまん中のほうへ寄せる（ぎゅっと寄った感じ）
+  // ひだの折り目：背の側のふちの少し内側から、帯の内側へ向かう、やわらかくカーブしたゆるい線。
+  // 長さ（帯の幅の 5〜9 割）・曲がり方・流れる向きを1本ずつ変える（等間隔に並べない）
   const folds = foldT.map((t, j) => {
     const x = t * GLEN;
-    const y0 = yBackW(t) - 0.5;
-    const y1 = yPleat(t) + 3 + jitter(s + 720 + j) * 1.5;
-    const x1 = x * 0.72 + 4; // 帯のまん中（少し外側の先寄り）へ寄る
-    return smooth([at(x, y0), at(x * 0.88 + 2.5, y0 - (y0 - y1) * 0.5 + 0.8), at(x1, y1)]);
+    const w = PLEAT * Math.pow(base(t), 0.5);
+    const y0 = yBackW(t) - 1.5;
+    const y1 = y0 - w * (0.5 + 0.4 * ((jitter(s + 720 + j) + 1) / 2));
+    const lean = 4 + 5 * ((jitter(s + 730 + j) + 1) / 2); // 外側の先のほうへ流れる
+    const bend = 1.5 + 2 * ((jitter(s + 735 + j) + 1) / 2); // まん中のふくらみ
+    return smooth([at(x, y0), at(x + lean * 0.35 + bend, (y0 + y1) / 2), at(x + lean, y1)]);
   });
 
   // 濃い焼き色のまだら：見えている焼き色の帯の、ひだと反対寄りに置く（腹の側の半分は、となりの餃子のひだの下に入るので、
@@ -252,11 +260,11 @@ function gyoza([deg, tilt, k, dr]: readonly [number, number, number, number], i:
   const mottles = [
     ...Array.from({ length: nBig }, (_, j) => {
       const t = (nBig === 1 ? -0.05 : -0.38 + 0.7 * j) + jitter(s + 800 + j) * 0.12;
-      return mottle(t, 0.56 + 0.1 * ((jitter(s + 810 + j) + 1) / 2), 19 + 6 * ((jitter(s + 820 + j) + 1) / 2), 9.5, s + 830 + j * 7);
+      return mottle(t, 0.5 + 0.12 * ((jitter(s + 810 + j) + 1) / 2), 21 + 6 * ((jitter(s + 820 + j) + 1) / 2), 10.5, s + 830 + j * 7);
     }),
     ...Array.from({ length: nSmall }, (_, j) => {
       const t = -0.7 + (1.4 * (j + 0.5)) / nSmall + jitter(s + 850 + j) * 0.1;
-      const r = 3.5 + 3.5 * ((jitter(s + 860 + j) + 1) / 2);
+      const r = 4.5 + 4 * ((jitter(s + 860 + j) + 1) / 2);
       return mottle(t, 0.5 + 0.3 * ((jitter(s + 870 + j) + 1) / 2), r * (1.2 + 0.6 * ((jitter(s + 880 + j) + 1) / 2)), r * 0.8, s + 890 + j * 7);
     }),
   ];
@@ -297,7 +305,8 @@ const HANE_N = 72;
 const haneR = (j: number) => {
   const a = (PI * 2 * j) / HANE_N;
   const dip = 0.5 + 0.5 * Math.sin(5 * a + 1.3);
-  return R_IN - 2 - 8 * dip * (0.6 + 0.4 * Math.sin(3 * a + 0.4)) - Math.abs(jitter(9100 + j)) * 3;
+  const wob = 0.5 + 0.5 * Math.sin(11 * a + 2.1); // こまかい出入り
+  return R_IN - 2 - 11 * dip * (0.55 + 0.45 * Math.sin(3 * a + 0.4)) - 4 * wob * dip - Math.abs(jitter(9100 + j)) * 5;
 };
 const haneIn = (j: number) => R_IN - 46 + jitter(9150 + j) * 4;
 const hanePt = (a: number, r: number) => pr(PU + r * Math.cos(a), PV + r * Math.sin(a), HANE_Z);
@@ -363,7 +372,7 @@ function GyozaPiece({ g, i, rank }: { g: Gyoza; i: number; rank: number }) {
           ))}
         </g>
       </g>
-      {/* 側面の下のふち・上の面の輪郭（ひだの側は小さく波打つ） */}
+      {/* 側面の下のふち・上の面の輪郭 */}
       <path d={g.underLine} className="scene-fine" />
       <path d={g.line} className="scene-line" />
     </g>
@@ -372,7 +381,7 @@ function GyozaPiece({ g, i, rank }: { g: Gyoza; i: number; rank: number }) {
 
 // ひだの帯（いちばん高い所なので、8個を置いたあと、帯だけをもう一度上に重ねる。
 // 餃子は手前が奥に重なる順のままで、どの餃子も白いひだがとなりの餃子の上にのぞく）。
-// 紙の色 → 皮の水彩 → 折り目（ふちから内側へ寄る短い線）→ 背の側のふちの線
+// 紙の色 → 皮の水彩 → 折り目（2〜3 本のゆるい線）→ 背の側のふちの線
 function PleatPiece({ g, i, rank }: { g: Gyoza; i: number; rank: number }) {
   return (
     <g className="scene-anim" style={animAt("scene-fade-up", T.gyoza, { "--dy": "-12px" }, rank * GYOZA_STEP)}>

@@ -37,7 +37,7 @@ export type SpecialtyArt =
   | "kushi" // 串焼き（ぼんじり・鶏ハラミ・鶏皮）
   | "hiyayakko" // 肉みそ冷奴
   | "beer" // 生ビール
-  | "sake" // 一升瓶とお猪口（焼酎・日本酒）
+  | "sake" // 一升瓶とお猪口（日本酒・焼酎）
   | "soft"; // 背の高いグラス（ソフトドリンク）
 
 export interface SpecialtyItem {
@@ -66,7 +66,7 @@ export const SPECIALTY_FOOD: SpecialtyItem[] = [
 /** お飲みもの（3つ。並ぶ順：壱〜参） */
 export const SPECIALTY_DRINKS: SpecialtyItem[] = [
   { name: "ビール", tagline: "まずは、よく冷えた一杯。", price: undefined, priceFrom: true, art: "beer" },
-  { name: "焼酎・日本酒", tagline: "料理に合わせて、ゆっくりと。", price: undefined, priceFrom: true, art: "sake" },
+  { name: "日本酒・焼酎", tagline: "料理に合わせて、ゆっくりと。", price: undefined, priceFrom: true, art: "sake" },
   { name: "ソフトドリンク", tagline: "お酒が苦手な方も、ご一緒に。", price: undefined, priceFrom: true, art: "soft" },
 ];
 
