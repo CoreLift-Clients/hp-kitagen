@@ -64,6 +64,44 @@ const KANJI_NUM = ["壱", "弐", "参", "肆", "伍", "陸", "漆", "捌", "玖"
 
 // カードのふち（筆ペンで描いた四角い枠）は CardFrame.tsx（店舗情報のページの囲みでも使う）
 
+// ─── 品名の仮名と漢字のつり合い ───
+// 佑字 朴は、漢字が大きく太く、仮名が小さく細い（字の形の高さ：漢字 約 0.85〜0.92em、仮名 約 0.55〜0.76em）。
+// そのままだと「自家製しゅうまい」は漢字だけが目立ち、「からあげ」のような仮名だけの品名は細く弱く見える。
+// そこで、品名を「仮名（ひらがな・カタカナ・長音）の続き」と「それ以外（漢字・・など）の続き」に分け、
+// 仮名の続きだけを span（.card-name-kana。scenes.css）で包んで、
+// ・KANA_SCALE 倍に大きくする（行の高さ・ベースラインは変えない）
+// ・KANA_TRACK だけ字の間を詰める（佑字 朴には詰めの情報 palt が無いので、負の字間で詰める）
+// ・ごく薄い同じ色のふち（-webkit-text-stroke。KANA_STROKE。字の大きさに比例）で、少しだけ太くする
+// 品名のデータ（content/specialty-prices.ts）は変えない。分けるのは表示のときだけ。
+const KANA_SCALE = 1.15;
+const KANA_TRACK = -0.1; // em（仮名の span の字の大きさに対して）
+const KANA_STROKE = 0.016; // em（18px の品名で約 0.33px、24px で約 0.44px）
+const KANA_VARS = {
+  "--kana-scale": KANA_SCALE,
+  "--kana-track": `${KANA_TRACK}em`,
+  "--kana-stroke": `${KANA_STROKE}em`,
+};
+
+// 仮名：ひらがな（ぁ〜ゖ・ゝゞ）・カタカナ（ァ〜ヺ・ー・ヽヾ）
+const KANA_RUN = /([ぁ-ゟァ-ヿ]+)/;
+const isKana = (s: string) => /^[ぁ-ゟァ-ヿ]+$/.test(s);
+
+function CardName({ name }: { name: string }) {
+  return (
+    <>
+      {name
+        .split(KANA_RUN)
+        .filter(Boolean)
+        .map((part, i) => (isKana(part) ? <span key={i} className="card-name-kana">{part}</span> : part))}
+    </>
+  );
+}
+
+// 品名の幅（字の大きさを 1 としたとき）。仮名は大きくして詰めた分で数える。スマホで1行に収める縮め方に使う
+function nameUnits(name: string): number {
+  return [...name].reduce((sum, ch) => sum + (isKana(ch) ? KANA_SCALE * (1 + KANA_TRACK) : 1), 0);
+}
+
 // ─── 1枚のカード ───
 function SpecialtyCard({ item, index, seed }: { item: SpecialtyItem; index: number; seed: number }) {
   const Art = ART[item.art];
@@ -87,14 +125,14 @@ function SpecialtyCard({ item, index, seed }: { item: SpecialtyItem; index: numb
       <div className="@container mt-2 md:mt-4 text-center">
         {/* 品名：佑字 朴（font-brush。太さは 400 しかないので font-normal。太字にすると字が作られてつぶれる）。
             ひとことより、はっきり大きく。どの画面でも1行に収める（2行に折れると「自家製しゅ／うまい」のように語の途中で切れるため）
-            ・md より狭い画面：18px まで。入れ物の幅に入らない長い品名だけ、その字数（--name-len）に合わせて縮める
-              （390px の画面で「自家製しゅうまい」約 17px、ほかは 18px。320px の画面で「自家製しゅうまい」約 13px）
+            ・仮名は CardName で span に分け、漢字との大きさ・太さをそろえる（下の KANA_* と scenes.css の .card-name-kana）
+            ・md より狭い画面：18px まで。入れ物の幅に入らない長い品名だけ、その幅（--name-len。仮名の大きさと詰めを入れた字数）に合わせて縮める
             ・md 22px、lg 24px（どの品名も1行に入る） */}
         <h4
-          style={{ "--name-len": [...item.name].length } as CSSProperties}
-          className="font-brush font-normal text-foreground text-[length:min(18px,calc(100cqw/(var(--name-len)_+_0.4)))] md:text-[22px] lg:text-[24px] leading-snug whitespace-nowrap md:tracking-wider"
+          style={{ "--name-len": nameUnits(item.name), ...KANA_VARS } as CSSProperties}
+          className="font-brush font-normal text-foreground text-[length:min(18px,calc(100cqw/(var(--name-len)_+_0.4)))] md:text-[22px] lg:text-[24px] leading-snug whitespace-nowrap md:tracking-wide"
         >
-          {item.name}
+          <CardName name={item.name} />
         </h4>
         {/* ひとこと：品名を引き立てるよう、小さく・少しうすく。md より狭い画面では今までどおり出さない（カードの幅に1行で入らない） */}
         <p className="mt-2 md:mt-2.5 hidden md:block whitespace-nowrap text-[12px] lg:text-[13px] text-muted/80 leading-relaxed">

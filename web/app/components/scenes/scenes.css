@@ -117,6 +117,15 @@
 }
 /* 名物の欄の和紙のカード。絵の中の「後ろの線を隠す塗り」をカードの色（section-light と同じ）にする */
 .scene-card { --scene-paper: #F7F3EB; }
+/* 名物のカードの品名の仮名（Specialties.tsx の CardName。倍率・字間・ふちの太さは同じファイルの KANA_* から --kana-* で来る）
+   ・大きくしても行の高さが変わらないよう line-height: 1（品名の行の高さ leading-snug の中に収まる）。ベースラインはそのまま
+   ・ふちは字と同じ色（currentColor）。漢字には付けない */
+.card-name-kana {
+  font-size: calc(var(--kana-scale, 1) * 1em);
+  letter-spacing: var(--kana-track, 0);
+  line-height: 1;
+  -webkit-text-stroke: var(--kana-stroke, 0) currentColor;
+}
 /* カードのふち（伸ばしても線の太さが変わらないようにする） */
 .scene-card-frame {
   vector-effect: non-scaling-stroke;
