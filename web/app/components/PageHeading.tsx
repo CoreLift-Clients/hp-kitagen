@@ -5,8 +5,8 @@ import SectionInner from "./SectionInner";
 // ・帯の色は section-warm、下に細い線。上の余白はスマホ 64px・md 以上 80px（固定ヘッダーの下で窮屈にならないように）、
 //   下の余白はスマホ 48px・md 以上 64px
 // ・見出し（h1）：スマホ 30px・md 以上 36px、太字。そのすぐ下に添え書き（1行。スマホ 14px・md 以上 16px、muted）
-// ・children：添え書きの下に置くもの（店舗情報の入口の絵、お品書きの小さな注意書きなど）
-// ・className：帯に足すクラス（店舗情報は、入口の絵の「後ろの線を隠す塗り」を帯の色にするため scene を足す）
+// ・children：添え書きの下に置くもの（お品書きの小さな注意書きなど）
+// ・className：帯に足すクラス（今はどのページも使っていない）
 export default function PageHeading({
   title,
   lead,

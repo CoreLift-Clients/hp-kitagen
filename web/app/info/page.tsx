@@ -3,15 +3,13 @@ import { ExternalLink, Phone } from "lucide-react";
 import SectionInner from "../components/SectionInner";
 import PageHeading from "../components/PageHeading";
 import CardFrame from "../components/scenes/CardFrame";
-import ScenePlayOnView from "../components/scenes/ScenePlayOnView";
-import StorefrontIllustration from "../components/scenes/StorefrontIllustration";
 import { jitter, smooth, type P } from "../components/scenes/draw";
 import { PHONE, INSTAGRAM_URL, MAP_URL } from "../lib/contact";
 import { businessHoursNow, REGULAR_CLOSED, LUNCH_SUSPENDED } from "../lib/businessHours";
 import { pageMetadata } from "../lib/seo";
 import BreadcrumbJsonLd from "../components/BreadcrumbJsonLd";
 
-// 明朝体（Noto Serif JP）。項目名（縦書き）・営業時間の大きな数字・入口の絵の「営業中」の札のために、
+// 明朝体（Noto Serif JP）。項目名（縦書き）・営業時間の大きな数字のために、
 // このページでも読み込む（メニューのページと同じ 500・700）
 import "@fontsource/noto-serif-jp/500.css";
 import "@fontsource/noto-serif-jp/700.css";
@@ -41,8 +39,8 @@ const MAP_EMBED_URL =
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 // ─── ページの作り：店先の貼り紙 ───
-// ・ページの見出しの帯（section-warm。メニューのページと同じ形）の、見出しのすぐ下に、店の入口の線画
-//   （components/scenes/StorefrontIllustration.tsx。以前ここにあった店の写真の代わり）
+// ・ページの見出しの帯（section-warm。メニューのページと同じ形）は、見出しと添え書きだけ
+//   （以前は見出しの下に店の入口の絵を置いていたが、料理の絵と雰囲気が離れていたので外した）
 // ・その下の地（section-deep。メニューのページの名物の欄と同じ）に、縦に長い1枚の和紙（section-light。
 //   名物のカードと同じ紙の色）を置き、項目を上から順に並べる。囲みの格子・「項目：内容」の表は使わない
 // ・項目のあいだは、筆で引いたような細い横線1本だけ（BrushRule。料理の絵の線と同じ揺らぎ・色）
@@ -232,17 +230,9 @@ export default function InfoPage() {
         ]}
       />
 
-      {/* ── ページヘッダー（お品書きのページと同じ帯。components/PageHeading.tsx）と、店の入口の線画 ──────────
-          絵は components/scenes/StorefrontIllustration.tsx（飾りなので aria-hidden）。
-          幅は 680px まで（狭い画面は左右の余白を除いた幅いっぱい）。真ん中に置く。
-          class の scene は、絵の中の「後ろの線を隠す塗り」をこの帯の背景（section-warm）の色にするため（scenes.css）。
-          ページのいちばん上なので、開いたときにはもうスクロールの範囲（絵の真ん中が画面の真ん中に来たところ）を
-          過ぎている。そのため、店主紹介のページの手元の絵と同じく、画面に入ったときに1回だけ時間で動かす（playOnce） */}
-      <PageHeading className="scene" title="店舗情報" lead="桃谷駅から、歩いて2分。">
-        <ScenePlayOnView playOnce className="mx-auto mt-10 md:mt-12 w-full max-w-[680px]">
-          <StorefrontIllustration className="storefront-svg block w-full h-auto text-foreground" />
-        </ScenePlayOnView>
-      </PageHeading>
+      {/* ── ページヘッダー（お品書きのページと同じ帯・同じ見出しの形。components/PageHeading.tsx）──────────
+          見出しと添え書きだけ（上の余白・見出しの下のあきは、お品書きのページと同じ） */}
+      <PageHeading title="店舗情報" lead="桃谷駅から、歩いて2分。" />
 
       {/* ── 1枚の和紙（店先の貼り紙）──────────────────────────── */}
       <div className="section-deep py-14 md:py-24">

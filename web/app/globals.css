@@ -73,6 +73,17 @@ html {
   scroll-behavior: smooth;
 }
 
+/* ─── フォーカスの枠（サイト全体のリンク・ボタン） ───
+   マウスで押したときは枠を出さず（:focus だけのときは消す）、キーボード（Tab）で移動したときだけ出す（:focus-visible）。
+   キーボードのときの枠は消さない。色は見出しの字の色（漆褐）、2px、要素から 2px 離す */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
+}
+
 ::selection {
   background: rgba(158, 100, 36, 0.2);
   color: var(--foreground);
