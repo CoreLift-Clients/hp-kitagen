@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { ExternalLink, Phone } from "lucide-react";
 import SectionInner from "../components/SectionInner";
+import PageHeading from "../components/PageHeading";
 import CardFrame from "../components/scenes/CardFrame";
 import ScenePlayOnView from "../components/scenes/ScenePlayOnView";
 import StorefrontIllustration from "../components/scenes/StorefrontIllustration";
@@ -231,21 +232,17 @@ export default function InfoPage() {
         ]}
       />
 
-      {/* ── ページヘッダー（メニューのページと同じ帯）と、店の入口の線画 ──────────
+      {/* ── ページヘッダー（お品書きのページと同じ帯。components/PageHeading.tsx）と、店の入口の線画 ──────────
           絵は components/scenes/StorefrontIllustration.tsx（飾りなので aria-hidden）。
           幅は 680px まで（狭い画面は左右の余白を除いた幅いっぱい）。真ん中に置く。
           class の scene は、絵の中の「後ろの線を隠す塗り」をこの帯の背景（section-warm）の色にするため（scenes.css）。
           ページのいちばん上なので、開いたときにはもうスクロールの範囲（絵の真ん中が画面の真ん中に来たところ）を
           過ぎている。そのため、店主紹介のページの手元の絵と同じく、画面に入ったときに1回だけ時間で動かす（playOnce） */}
-      <section className="scene section-warm border-b border-border pt-16 pb-12 md:pt-20 md:pb-16 text-center">
-        <SectionInner>
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">店舗情報</h1>
-          <p className="text-sm md:text-base text-muted">桃谷駅から、歩いて2分。</p>
-          <ScenePlayOnView playOnce className="mx-auto mt-10 md:mt-12 w-full max-w-[680px]">
-            <StorefrontIllustration className="storefront-svg block w-full h-auto text-foreground" />
-          </ScenePlayOnView>
-        </SectionInner>
-      </section>
+      <PageHeading className="scene" title="店舗情報" lead="桃谷駅から、歩いて2分。">
+        <ScenePlayOnView playOnce className="mx-auto mt-10 md:mt-12 w-full max-w-[680px]">
+          <StorefrontIllustration className="storefront-svg block w-full h-auto text-foreground" />
+        </ScenePlayOnView>
+      </PageHeading>
 
       {/* ── 1枚の和紙（店先の貼り紙）──────────────────────────── */}
       <div className="section-deep py-14 md:py-24">
