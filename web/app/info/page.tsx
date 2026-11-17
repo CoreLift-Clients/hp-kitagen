@@ -1,9 +1,8 @@
 import type { ReactNode } from "react";
 import { ExternalLink, Phone } from "lucide-react";
-import SectionInner from "../components/SectionInner";
 import PageHeading from "../components/PageHeading";
 import CardFrame from "../components/scenes/CardFrame";
-import { jitter, smooth, type P } from "../components/scenes/draw";
+import { WashiSheet, WashiItem, BrushRule, WASHI_LINK as LINK } from "../components/Washi";
 import { PHONE, INSTAGRAM_URL, MAP_URL } from "../lib/contact";
 import { businessHoursNow, REGULAR_CLOSED, LUNCH_SUSPENDED } from "../lib/businessHours";
 import { pageMetadata } from "../lib/seo";
@@ -39,8 +38,9 @@ const MAP_EMBED_URL =
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 // ─── ページの作り：店先の貼り紙 ───
-// ・ページの見出しの帯（section-warm。メニューのページと同じ形）は、見出しと添え書きだけ
+// ・ページの見出しの帯（section-warm。メニューのページと同じ形）は、見出しだけ
 //   （以前は見出しの下に店の入口の絵を置いていたが、料理の絵と雰囲気が離れていたので外した）
+// ・和紙・項目・区切りの線の部品は components/Washi.tsx（店主紹介のページと共通）
 // ・その下の地（section-deep。メニューのページの名物の欄と同じ）に、縦に長い1枚の和紙（section-light。
 //   名物のカードと同じ紙の色）を置き、項目を上から順に並べる。囲みの格子・「項目：内容」の表は使わない
 // ・項目のあいだは、筆で引いたような細い横線1本だけ（BrushRule。料理の絵の線と同じ揺らぎ・色）
@@ -61,55 +61,10 @@ function NoBreak({ children }: { children: ReactNode }) {
   return <span className="whitespace-nowrap">{children}</span>;
 }
 
-// 区切りの線（筆で引いたような細い横線）。seed を変えると揺らぎ方が変わる（乱数なし）。
-// viewBox は横 100・縦 6 で描き、幅いっぱいに伸ばす（線の太さは scenes.css の .info-rule-line で変わらない）
-function rulePath(seed: number): string {
-  const pts: P[] = [];
-  const n = 7;
-  for (let i = 0; i <= n; i++) {
-    const t = i / n;
-    // 引き始めは少し上から入り、終わりはわずかに下がる（筆の入りと抜け）
-    const y = 3 + (t - 0.5) * 0.5 + jitter(seed + i) * 0.55 * (i === 0 || i === n ? 0.3 : 1);
-    pts.push([0.6 + 98.8 * t, y]);
-  }
-  return smooth(pts);
-}
-
-function BrushRule({ seed }: { seed: number }) {
-  return (
-    <svg
-      viewBox="0 0 100 6"
-      preserveAspectRatio="none"
-      aria-hidden="true"
-      focusable="false"
-      className="block h-[6px] w-full overflow-visible text-foreground"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-    >
-      <path d={rulePath(seed)} className="info-rule-line" />
-    </svg>
-  );
-}
-
-// 項目（左に縦書きの項目名、右に中身。md より狭い画面は項目名が上）
-function Item({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <section className="py-9 md:py-12 lg:py-14 md:grid md:grid-cols-[2.5rem_1fr] lg:grid-cols-[3rem_1fr] md:gap-x-12 lg:gap-x-20">
-      <h2 className="mb-4 md:mb-0 font-serif text-lg md:text-xl lg:text-[1.375rem] font-bold text-foreground tracking-[0.18em] md:[writing-mode:vertical-rl] md:leading-[1.7]">
-        {label}
-      </h2>
-      <div className="min-w-0 max-w-[38em] space-y-2 text-base text-foreground leading-[1.95] [word-break:auto-phrase] text-pretty">{children}</div>
-    </section>
-  );
-}
-
 // 文の下に置くリンク・電話の行（本文との間を少しあける）
 function ActionRow({ children }: { children: ReactNode }) {
   return <div className="!mt-5">{children}</div>;
 }
-
-const LINK = "inline-flex items-center gap-1.5 text-accent hover:text-accent-dark underline underline-offset-4 decoration-accent/40 hover:decoration-accent transition-colors duration-200";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -231,22 +186,18 @@ export default function InfoPage() {
       />
 
       {/* ── ページヘッダー（お品書きのページと同じ帯・同じ見出しの形。components/PageHeading.tsx）──────────
-          見出しと添え書きだけ（上の余白・見出しの下のあきは、お品書きのページと同じ） */}
-      <PageHeading title="店舗情報" lead="桃谷駅から、歩いて2分。" />
+          見出しだけ（添え書き「桃谷駅から、歩いて2分。」は、下の「場所」と重なるので外した。上下の余白は、お品書きのページと同じ） */}
+      <PageHeading title="店舗情報" />
 
       {/* ── 1枚の和紙（店先の貼り紙）──────────────────────────── */}
-      <div className="section-deep py-14 md:py-24">
-        <SectionInner>
-          <article className="section-light mx-auto w-full max-w-page-wide px-5 py-3 md:px-12 md:py-6 lg:px-24 lg:py-8 shadow-[0_1px_6px_rgba(47,36,28,0.08)]">
-            {items.map((it, i) => (
-              <div key={it.label}>
-                {i > 0 && <BrushRule seed={20000 + i * 97} />}
-                <Item label={it.label}>{it.body}</Item>
-              </div>
-            ))}
-          </article>
-        </SectionInner>
-      </div>
+      <WashiSheet>
+        {items.map((it, i) => (
+          <div key={it.label}>
+            {i > 0 && <BrushRule seed={20000 + i * 97} />}
+            <WashiItem label={it.label}>{it.body}</WashiItem>
+          </div>
+        ))}
+      </WashiSheet>
     </div>
   );
 }
