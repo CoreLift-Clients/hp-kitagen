@@ -1,8 +1,9 @@
 // ヘッダー（デスクトップ Header・モバイル MobileNav 共通）に表示するナビ。
 // スッキリさせるため主要3項目に絞る（テイクアウトはページをやめ、メニューのページの中で案内する）。トップはロゴ（→ /）で代替し、
-// お知らせはフッター（layout.tsx の Footer）から辿れるようにしている。
+// お知らせはフッター（layout.tsx の Footer）から辿れるようにしている。フッターもこの並びを使う（前にトップ、後ろにお知らせ）。
+// メニューのページの項目名は、ページの見出しに合わせて「お品書き」。
 export const NAV_LINKS = [
-  { href: "/menu/dinner", label: "メニュー" },
+  { href: "/menu/dinner", label: "お品書き" },
   { href: "/info",        label: "店舗情報" },
   { href: "/owner",       label: "店主紹介" },
 ];

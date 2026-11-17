@@ -14,7 +14,7 @@ import "@fontsource/noto-serif-jp/700.css";
 import "@fontsource/yuji-boku/400.css";
 
 // title・description・パンくず（BreadcrumbJsonLd）は「ディナーメニュー」のまま（ページの見出しは「お品書き」）。
-// 「メニュー」で探す人が多く、ヘッダーの項目名も「メニュー」なので、検索結果とタブでは今の名前を残す
+// 「メニュー」で探す人が多いので、検索結果とタブでは今の名前を残す（ヘッダー・フッターの項目名は見出しに合わせて「お品書き」）
 export const metadata = pageMetadata({
   title: "ディナーメニュー｜きたげん",
   description: "きたげんのディナーメニュー。名物の料理とお飲みものをご覧いただけます。",

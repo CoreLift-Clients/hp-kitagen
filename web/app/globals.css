@@ -21,7 +21,8 @@
      字のファイルは @fontsource から読む（layout.tsx と page.tsx の import）。
      読み込めなかったときは、後ろに並べた端末の字で出す。
      ・ゴシック体（サイト全体）… Noto Sans JP（400・500・700）
-     ・明朝体（トップの見出しと、lg 以上の本文）… Noto Serif JP（OUR STORY の本文 500・ほかの欄の本文 600・見出し 700）。
+     ・明朝体（ヘッダーのロゴ・項目名、ページの見出し、フッターの店名、トップの見出しと、lg 以上の本文）… Noto Serif JP
+       （ヘッダーの項目名・OUR STORY の本文 500・ほかの欄の本文 600・ロゴ・見出し 700）。
        Tailwind の font-serif で使う。lg より狭い画面の本文はゴシック体
      ・筆の字（メニューのページの名物のカードの品名だけ）… 佑字 朴（Yuji Boku 400。太さはこれだけ）。
        Tailwind の font-brush で使う。字のファイルはメニューのページ（app/menu/dinner/page.tsx）だけで読む。

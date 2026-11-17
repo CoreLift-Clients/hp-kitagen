@@ -40,7 +40,7 @@ export default function MobileNav() {
       >
         {/* ヘッダー */}
         <div className="flex items-center justify-between px-6 h-[57px] border-b border-border shrink-0">
-          <span className="text-sm font-bold text-accent tracking-wider">きたげん</span>
+          <span className="font-serif text-sm font-bold text-accent tracking-wider">きたげん</span>
           <button
             onClick={() => setOpen(false)}
             className="w-9 h-9 flex items-center justify-center rounded-lg border border-border hover:border-accent transition-colors"
@@ -70,9 +70,9 @@ export default function MobileNav() {
                     className="flex items-center justify-between py-4 group"
                   >
                     <span
-                      className={`text-lg transition-colors duration-200 ${
+                      className={`font-serif text-lg transition-colors duration-200 ${
                         active
-                          ? "text-accent font-semibold"
+                          ? "text-accent font-bold"
                           : "text-foreground font-medium group-hover:text-accent"
                       }`}
                     >

@@ -34,7 +34,7 @@ export default function Header() {
             <span className="text-[8px] tracking-[0.55em] text-accent/70 font-medium">
               IZAKAYA
             </span>
-            <span className="text-xl font-bold tracking-[0.08em] text-foreground group-hover:text-accent transition-colors duration-200">
+            <span className="font-serif text-xl font-bold tracking-[0.08em] text-foreground group-hover:text-accent transition-colors duration-200">
               きたげん
             </span>
           </div>
@@ -58,8 +58,8 @@ export default function Header() {
                   <Link
                     href={href}
                     aria-current={active ? "page" : undefined}
-                    className={`relative px-3.5 lg:px-4 py-1.5 text-sm transition-colors duration-200 group whitespace-nowrap ${
-                      active ? "text-accent font-medium" : "text-muted hover:text-accent"
+                    className={`relative px-3.5 lg:px-4 py-1.5 font-serif font-medium text-sm transition-colors duration-200 group whitespace-nowrap ${
+                      active ? "text-accent" : "text-muted hover:text-accent"
                     }`}
                   >
                     {label}

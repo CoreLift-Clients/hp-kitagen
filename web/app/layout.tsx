@@ -6,8 +6,14 @@ import type { Metadata } from "next";
 import "@fontsource/noto-sans-jp/400.css";
 import "@fontsource/noto-sans-jp/500.css";
 import "@fontsource/noto-sans-jp/700.css";
+// 明朝体（Noto Serif JP。globals.css の --font-noto-serif-jp、Tailwind の font-serif）。
+// ヘッダーのロゴ（700）・項目名（500。スマホのメニューのいまのページは 700）、ページの見出し（PageHeading・700）、
+// フッターの店名（700）はどのページにも出るので、ここで読み込む
+import "@fontsource/noto-serif-jp/500.css";
+import "@fontsource/noto-serif-jp/700.css";
 import Link from "next/link";
 import Header from "./components/Header";
+import { NAV_LINKS } from "./lib/nav";
 import StructuredData from "./components/StructuredData";
 import MobileCallBar from "./components/MobileCallBar";
 import { SITE_URL, OG_IMAGE } from "./lib/seo";
@@ -58,6 +64,12 @@ export const metadata: Metadata = {
 };
 
 
+const FOOTER_LINKS = [
+  { href: "/", label: "トップ" },
+  ...NAV_LINKS,
+  { href: "/news", label: "お知らせ" },
+];
+
 function Footer() {
   const currentYear = new Date().getFullYear();
   return (
@@ -67,32 +79,19 @@ function Footer() {
       <div className="max-w-5xl mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-center md:text-left">
-            <p className="text-lg font-bold text-accent">きたげん</p>
+            <p className="font-serif text-lg font-bold text-accent">きたげん</p>
             <p className="text-sm text-muted">落ち着いて飲める、ちゃんとした居酒屋。</p>
           </div>
-          {/* ヘッダーを4タブに絞ったため、外したトップ・お知らせは
-              フッターから辿れるようにまとめる。項目が増えたら折り返す。 */}
-          <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-muted">
-            <li>
-              <Link href="/" className="hover:text-foreground transition-colors">
-                トップ
-              </Link>
-            </li>
-            <li>
-              <Link href="/menu" className="hover:text-foreground transition-colors">
-                メニュー
-              </Link>
-            </li>
-            <li>
-              <Link href="/info" className="hover:text-foreground transition-colors">
-                店舗情報
-              </Link>
-            </li>
-            <li>
-              <Link href="/news" className="hover:text-foreground transition-colors">
-                お知らせ
-              </Link>
-            </li>
+          {/* 並びは「トップ」→ ヘッダーと同じ項目（lib/nav.ts の NAV_LINKS：お品書き・店舗情報・店主紹介）→「お知らせ」。
+              ヘッダーに無いトップ・お知らせも、ここから辿れる。390px でも1行に収まるよう、あきは 20px。項目が増えたら折り返す。 */}
+          <ul className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-muted">
+            {FOOTER_LINKS.map(({ href, label }) => (
+              <li key={href}>
+                <Link href={href} className="hover:text-foreground transition-colors">
+                  {label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
         <p className="text-center text-xs text-muted mt-6">
