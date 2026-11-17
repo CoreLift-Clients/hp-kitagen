@@ -51,13 +51,13 @@ export default async function Home() {
           │ ※ 構図の見え方（顔・料理の位置）は positionPc/positionSp   │
           │    の "center 40%" の数値で上下位置を微調整できます。      │
           └──────────────────────────────────────────────────────────┘ */}
-      {/* 「幕」の動き：ヒーローは固定ヘッダー（h-16）のすぐ下（top-16）に止まり、
+      {/* 「幕」の動き：ヒーローは固定ヘッダー（--header-h。globals.css）のすぐ下（top-[var(--header-h)]）に止まり、
           下の内容（下の relative z-10 の囲み）がその上にかぶさって流れてくる。
           写真はスクロールに合わせて少しずつぼかす（HeroImage の .hero-photo-blur。globals.css）。
           sticky が効くよう、祖先（このページの div・main・body）に overflow を付けないこと。
-          高さは hero-full（globals.css）：ヘッダーの下から画面のいちばん下まで（100svh − 4rem）。
+          高さは hero-full（globals.css）：ヘッダーの下から画面のいちばん下まで（100svh − --header-h）。
           スマホ用の写真は横長で左右が大きく切れるため、入り口と看板が真ん中に来る位置（横 51%）にしている。 */}
-      <section className="hero-full sticky top-16 z-0 flex items-center justify-center overflow-hidden bg-foreground">
+      <section className="hero-full sticky top-[var(--header-h)] z-0 flex items-center justify-center overflow-hidden bg-foreground">
         <HeroImage
           srcSp={SITE_IMAGES.hero.sp}
           srcPc={SITE_IMAGES.hero.pc}

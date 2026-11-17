@@ -112,7 +112,8 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         <StructuredData />
         <Header />
-        <main className="pt-16">{children}</main>
+        {/* 固定ヘッダーの下に中身を逃がす（高さは globals.css の --header-h） */}
+        <main className="pt-[var(--header-h)]">{children}</main>
         <Footer />
         <MobileCallBar />
       </body>

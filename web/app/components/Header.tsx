@@ -26,21 +26,25 @@ export default function Header() {
           : "bg-[#FBF8F2]/90 backdrop-blur-sm border-b border-transparent"
       }`}
     >
-      <nav className="max-w-5xl mx-auto px-5 h-16 flex items-center justify-between">
+      {/* 高さは globals.css の --header-h（lg より狭い画面 64px・lg 以上 76px）。
+          中身の最大幅は lg より狭い画面 1024px（max-w-5xl）、lg 以上 1200px（xl 以上で、ロゴと電話番号が左右に広がる）。
+          lg 以上は字も大きくする（ロゴ 26px・IZAKAYA 10px・桃谷の居酒屋 12px・項目名 16px・電話番号 20px・小さな説明 11px）。
+          lg より狭い画面は今までのまま */}
+      <nav className="max-w-5xl lg:max-w-[1200px] mx-auto px-5 h-[var(--header-h)] flex items-center justify-between">
 
         {/* ── ロゴ ─────────────────────────────────────────── */}
         <Link href="/" className="group flex items-center gap-3.5 shrink-0" aria-label="きたげん トップへ">
           <div className="flex flex-col leading-none gap-1">
-            <span className="text-[8px] tracking-[0.55em] text-accent/70 font-medium">
+            <span className="text-[8px] lg:text-[10px] tracking-[0.55em] text-accent/70 font-medium">
               IZAKAYA
             </span>
-            <span className="font-serif text-xl font-bold tracking-[0.08em] text-foreground group-hover:text-accent transition-colors duration-200">
+            <span className="font-serif text-xl lg:text-[26px] font-bold tracking-[0.08em] text-foreground group-hover:text-accent transition-colors duration-200">
               きたげん
             </span>
           </div>
-          <div className="hidden sm:flex items-center gap-3 ml-0.5">
-            <div className="w-px h-7 bg-border" />
-            <span className="text-[10px] text-muted/90 tracking-wide leading-[1.7]">
+          <div className="hidden sm:flex items-center gap-3 lg:gap-4 ml-0.5">
+            <div className="w-px h-7 lg:h-9 bg-border" />
+            <span className="text-[10px] lg:text-[12px] text-muted/90 tracking-wide leading-[1.7]">
               桃谷の<br />居酒屋
             </span>
           </div>
@@ -58,13 +62,13 @@ export default function Header() {
                   <Link
                     href={href}
                     aria-current={active ? "page" : undefined}
-                    className={`relative px-3.5 lg:px-4 py-1.5 font-serif font-medium text-sm transition-colors duration-200 group whitespace-nowrap ${
+                    className={`relative px-3.5 lg:px-5 py-1.5 font-serif font-medium text-sm lg:text-base transition-colors duration-200 group whitespace-nowrap ${
                       active ? "text-accent" : "text-muted hover:text-accent"
                     }`}
                   >
                     {label}
                     <span
-                      className={`absolute bottom-0 left-3.5 right-3.5 lg:left-4 lg:right-4 h-px bg-accent transition-transform duration-200 origin-left ${
+                      className={`absolute bottom-0 left-3.5 right-3.5 lg:left-5 lg:right-5 h-px bg-accent transition-transform duration-200 origin-left ${
                         active ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
                       }`}
                     />
@@ -75,17 +79,17 @@ export default function Header() {
           </ul>
 
           {/* 電話予約 — 縦区切り線 ＋ 番号 */}
-          <div className="ml-4 pl-4 lg:ml-6 lg:pl-6 border-l border-border/60 flex flex-col justify-center">
-            <p className="text-[9px] text-muted/90 tracking-wider leading-none mb-1.5">
+          <div className="ml-4 pl-4 lg:ml-6 lg:pl-6 xl:ml-8 xl:pl-8 border-l border-border/60 flex flex-col justify-center">
+            <p className="text-[9px] lg:text-[11px] text-muted/90 tracking-wider leading-none mb-1.5">
               ご予約・お問い合わせ
             </p>
             <a
               href={`tel:${TEL}`}
-              className="text-[17px] font-bold tracking-wide text-foreground hover:text-accent transition-colors duration-200 tabular-nums leading-none whitespace-nowrap"
+              className="text-[17px] lg:text-[20px] font-bold tracking-wide text-foreground hover:text-accent transition-colors duration-200 tabular-nums leading-none whitespace-nowrap"
             >
               {TEL}
             </a>
-            <p className="text-[9px] text-muted/90 mt-1.5 leading-none whitespace-nowrap">
+            <p className="text-[9px] lg:text-[11px] text-muted/90 mt-1.5 leading-none whitespace-nowrap">
               「ホームページを見た」とお伝えください
             </p>
           </div>

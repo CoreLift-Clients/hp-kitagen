@@ -43,6 +43,8 @@ export default function ScenePlayOnView({
     if (!(typeof CSS !== "undefined" && CSS.supports("animation-timeline: view()"))) {
       el.dataset.scene = "wait";
       const PLAY_RATIO = 0.7;
+      // 固定ヘッダー（globals.css の --header-h。px で書いてある）に隠れる分は、画面に入っていないものとして数える
+      const headerH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--header-h")) || 64;
       once = new IntersectionObserver(
         (entries) => {
           const ready = entries.some((e) => {
@@ -57,7 +59,7 @@ export default function ScenePlayOnView({
             once?.disconnect();
           }
         },
-        { threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, PLAY_RATIO, 0.8, 0.9, 1], rootMargin: "-64px 0px 0px 0px" },
+        { threshold: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, PLAY_RATIO, 0.8, 0.9, 1], rootMargin: `-${headerH}px 0px 0px 0px` },
       );
       once.observe(el);
     }

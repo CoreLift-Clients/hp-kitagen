@@ -537,7 +537,7 @@
      各部品の --r0・--r1（4〜60）を、この 0%〜50% に割り当てる：contain ((r − 4) ÷ 56 × 50%)
      ・絵が画面より大きいとき：contain 0% は「絵の上の端が画面の上に来たところ」、contain 50% は「真ん中どうしが重なるところ」。
        そのあいだ絵は画面いっぱいに見えているので、動きは見える範囲で進む（entry 100% 〜 cover 50% だと順番が逆になり、動かなくなる）
-     ・画面の上の固定ヘッダー（4rem）と、md より狭い画面の下の「電話する」ボタン（52px ＋ safe-area）に隠れる分は、
+     ・画面の上の固定ヘッダー（--header-h。globals.css。lg より狭い画面 64px・lg 以上 76px）と、md より狭い画面の下の「電話する」ボタン（52px ＋ safe-area）に隠れる分は、
        画面に入っていないものとして数える（view-timeline-inset）
      ・animation の一括指定は animation-timeline・animation-range を初期値に戻すので、必ずその後ろに書く
      ・--scene-len … 4 〜 (4 + --scene-len) の数を、範囲の始まり 〜 終わりに割り当てる（付けていない絵は 56 ＝ 4〜60）
@@ -557,7 +557,7 @@
   @supports (animation-timeline: view()) {
     .scene-art {
       view-timeline: --scene block;
-      view-timeline-inset: 4rem 0px;
+      view-timeline-inset: var(--header-h) 0px;
     }
     .scene-anim {
       animation: var(--a) linear both;
@@ -581,7 +581,7 @@
   }
   @supports (animation-timeline: view()) {
     @media (max-width: 767px) {
-      .scene-art { view-timeline-inset: 4rem calc(52px + env(safe-area-inset-bottom)); }
+      .scene-art { view-timeline-inset: var(--header-h) calc(52px + env(safe-area-inset-bottom)); }
     }
   }
 
