@@ -49,7 +49,7 @@ export default function Header() {
         {/* ── デスクトップ: ナビ ＋ 電話番号 ────────────────── */}
         <div className="hidden md:flex items-center">
 
-          {/* ナビリンク（4項目に絞りゆったり配置） */}
+          {/* ナビリンク（lib/nav.ts の主要項目だけ。ゆったり配置） */}
           <ul className="flex items-center">
             {NAV_LINKS.map(({ href, label }) => {
               const active = isNavActive(pathname, href);

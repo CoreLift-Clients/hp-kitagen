@@ -1,11 +1,10 @@
-import Link from "next/link";
-import { ShoppingBag, ArrowRight } from "lucide-react";
 import { pageMetadata } from "../../lib/seo";
 import BreadcrumbJsonLd from "../../components/BreadcrumbJsonLd";
 import SectionInner from "../../components/SectionInner";
 import { INSTAGRAM_URL } from "../../lib/contact";
 import { LUNCH_SUSPENDED, dinnerTimeLabel } from "../../lib/businessHours";
 import Specialties from "../../components/scenes/Specialties";
+import TakeoutNote from "../../components/TakeoutNote";
 import { getSpecialtyCards } from "../../content";
 
 // 明朝体（Noto Serif JP）。名物の欄（縦書きの見出し・小見出し・カードの番号と品名）のために、このページでも読み込む。
@@ -71,38 +70,15 @@ export default async function DinnerMenuPage() {
            以前は、この上に目次の帯（名物・おすすめ／フード／ドリンク）と、この下に「フード」「ドリンク」の欄があったが、
            中身が空（「メニューは準備中です」）だったので外した。項目が1つになるので目次の帯も外した。
            中身と並べ方は components/scenes/Specialties.tsx。
-           背景は section-deep：上のページヘッダー（section-warm）・下のテイクアウトのご案内（section-light）と色を変える。
+           背景は section-deep：上のページヘッダー（section-warm）と色を変える。この下はフッター。
+           テイクアウトのご案内（components/TakeoutNote.tsx。id="takeout"）は、この欄の「料理」のすぐ下・「お飲みもの」の前に入れる。
+           以前は別のページ（/takeout）とこの欄の下の案内があったが、テイクアウトのメニューは店内と同じなので、ここにまとめた
+           （/takeout は next.config.ts の redirects で /menu/dinner#takeout へ転送）。
            以前ここの下にあった、写真の枠のカードの「名物・おすすめ」の欄は外した。
            カードの部品は components/RecommendCard.tsx、品の一覧は lib/recommendedMenu.ts に残している
            （料理の写真がそろったときに使えるように。今はどこからも使っていない） */}
-      <Specialties id="recommend" tone="deep" items={specialtyCards} />
+      <Specialties id="recommend" tone="deep" items={specialtyCards} afterFood={<TakeoutNote />} />
 
-      {/* ── テイクアウトのご案内（/takeout への導線）─────────────
-           以前は外した「名物・おすすめ」の欄のいちばん下にあった。欄を外したので、ここに単独で置く。
-           背景は section-light：上の名物（section-deep）と色を変える。この下はフッター */}
-      <section className="section-light py-12 md:py-16">
-        <SectionInner>
-          <Link
-            href="/takeout"
-            className="group flex items-center gap-4 md:gap-5 rounded-2xl border border-accent/40 bg-accent/[0.06] p-5 md:p-6 transition-all duration-300 hover:-translate-y-0.5 hover:border-accent/60 hover:bg-accent/10"
-          >
-            <div className="flex h-11 w-11 md:h-12 md:w-12 shrink-0 items-center justify-center rounded-xl border border-accent/30 bg-background/70">
-              <ShoppingBag size={20} strokeWidth={1.6} className="text-accent" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <h3 className="text-base md:text-lg font-bold text-foreground">お持ち帰りも承っています</h3>
-              <p className="text-xs md:text-sm text-muted mt-1 leading-relaxed">
-                人気メニューをご自宅でも。テイクアウト専用メニューをお電話でご注文いただけます。
-              </p>
-            </div>
-            <ArrowRight
-              size={18}
-              strokeWidth={1.8}
-              className="hidden sm:block shrink-0 text-accent transition-transform duration-300 group-hover:translate-x-1"
-            />
-          </Link>
-        </SectionInner>
-      </section>
     </div>
   );
 }

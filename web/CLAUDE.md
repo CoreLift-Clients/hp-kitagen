@@ -74,12 +74,10 @@ npx tsc --noEmit   # 型の確認（package.json に lint のスクリプトは�
 
 メニュー `/menu/dinner`（`/menu` は `/menu/dinner` へ転送）
 
-- 名物・おすすめ（イラストのカード）→ テイクアウトのご案内（フード・ドリンクの欄は、中身が空だったので外した）
+- 名物・おすすめ（イラストのカード。「料理」→ テイクアウトのご案内 `#takeout` →「お飲みもの」）（フード・ドリンクの欄は、中身が空だったので外した）
 - HTMLベースの見やすいメニュー
 
 ランチ `/menu/lunch`（ランチ臨時休業中。ナビ・sitemap には出さない）
-
-テイクアウト `/takeout`
 
 店舗情報 `/info`
 
@@ -96,6 +94,7 @@ npx tsc --noEmit   # 型の確認（package.json に lint のスクリプトは�
 外したページ
 
 - `/survey` … `/` へ恒久転送（next.config の redirects）
+- `/takeout` … `/menu/dinner#takeout` へ恒久転送（テイクアウトのメニューは店内と同じなので、メニューのページの中で案内する）
 - `/portal`・`/admin`（管理画面）… ページごと外した（404）
 
 ---

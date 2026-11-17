@@ -23,12 +23,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     // /menu/lunch はランチ臨時休業（lib/businessHours.ts の LUNCH_SUSPENDED）中のため、
     // クロール誘導を避ける目的で意図的に除外している。ランチ再開時に再追加を検討する。
-    {
-      url: 'https://www.kitagen-izakaya.com/takeout',
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.8,
-    },
+    // /takeout はページをやめ、/menu/dinner#takeout へ転送するだけなので載せない。
     {
       url: 'https://www.kitagen-izakaya.com/info',
       lastModified: new Date(),

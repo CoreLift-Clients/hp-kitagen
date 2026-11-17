@@ -20,6 +20,8 @@ const nextConfig: NextConfig = {
     return [
       // アンケートのページは外した。古いリンク・QR から来た人はトップへ（恒久転送）。
       { source: "/survey", destination: "/", permanent: true },
+      // テイクアウトのページはやめ、メニューのページの中の案内（components/TakeoutNote.tsx）にまとめた（恒久転送）。
+      { source: "/takeout", destination: "/menu/dinner#takeout", permanent: true },
     ];
   },
   // 画像はすべて public/ のものを使うため、外部の画像の許可（remotePatterns）は持たない。

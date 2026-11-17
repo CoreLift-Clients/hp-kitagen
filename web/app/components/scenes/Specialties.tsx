@@ -1,4 +1,4 @@
-import type { ComponentType } from "react";
+import type { ComponentType, ReactNode } from "react";
 import SectionInner from "../SectionInner";
 import ScenePlayOnView from "./ScenePlayOnView";
 import type { SceneTone } from "./Scene";
@@ -166,7 +166,18 @@ function CardGroup({ heading, items, seedBase }: { heading: string; items: reado
   );
 }
 
-export default function Specialties({ tone, items, id }: { tone: SceneTone; items: SpecialtyCards; id?: string }) {
+// afterFood：「料理」の組のすぐ下、「お飲みもの」の前に差し込むもの（ディナーメニューでは、テイクアウトのご案内 TakeoutNote）
+export default function Specialties({
+  tone,
+  items,
+  id,
+  afterFood,
+}: {
+  tone: SceneTone;
+  items: SpecialtyCards;
+  id?: string;
+  afterFood?: ReactNode;
+}) {
   return (
     <section id={id} className={`scene scroll-mt-32 py-20 md:py-24 section-${tone}`}>
       <SectionInner>
@@ -179,6 +190,7 @@ export default function Specialties({ tone, items, id }: { tone: SceneTone; item
 
         <div className="flex flex-col gap-16 md:gap-20">
           <CardGroup heading="料理" items={items.food} seedBase={7000} />
+          {afterFood}
           <CardGroup heading="お飲みもの" items={items.drinks} seedBase={9000} />
         </div>
       </SectionInner>
