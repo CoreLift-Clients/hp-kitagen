@@ -38,9 +38,9 @@ export interface HourGroup {
 export const BUSINESS_HOURS: HourGroup[] = [
   { days: "月・水・土", schemaDays: ["Monday", "Wednesday", "Saturday"], open: "11:30", close: "22:00", lo: "21:30", hasLunch: true },
   { days: "火・木・金", schemaDays: ["Tuesday", "Thursday", "Friday"],    open: "17:00", close: "22:00", lo: "21:30" },
-  // ★ 祝日の営業は代表者が確認中。決まったらこの1行だけを直す
-  //   （休みにするなら、この行を消して REGULAR_CLOSED に「祝日」を足す）。
-  { days: "祝日",       schemaDays: ["PublicHolidays"],                   open: "15:00", close: "22:00", lo: "21:30" },
+  // 祝日は月〜土の夜と同じ 17:00〜22:00（L.O. 21:30）。代表者の確認済み。
+  // （休みにするなら、この行を消して REGULAR_CLOSED に「祝日」を足す）
+  { days: "祝日",       schemaDays: ["PublicHolidays"],                   open: "17:00", close: "22:00", lo: "21:30" },
 ];
 
 /** ディナータイムの始まり（ディナーメニューの見出しに使う） */
@@ -98,10 +98,33 @@ export interface HoursNowRow {
  * すべて同じもの（月〜日の曜日のグループどうし）を1行にまとめる。
  * ・ランチ休止中：「月・水・土」と「火・木・金」がどちらも 17:00〜22:00 なので「月〜土」の1行になる
  * ・ランチ再開後（LUNCH_SUSPENDED = false）：時間が違うので、もとの2行のまま
- * ・祝日（PublicHolidays）は曜日ではないので、まとめない
+ * ・祝日（PublicHolidays）は曜日ではないので、曜日どうしのまとめには入れない。
+ *   曜日をまとめたあとで、時間がすべて同じ曜日の行があれば、その行の後ろに「・祝日」として足す
+ *   （ランチ休止中は「月〜土・祝日」の1行。ランチ再開後は、時間が同じ「火・木・金・祝日」の行になる）。
+ *   時間が同じ曜日の行がなければ、祝日は今までどおり1行で残す
  * まとめなかった行の days は BUSINESS_HOURS の書き方のまま。
+ * mergeHolidays: false … 祝日を曜日の行に足さず、いつも別の行にする（JSON-LD の PublicHolidays を別の1つにするため）
  */
-export function businessHoursNow(): HoursNowRow[] {
+export function businessHoursNow({ mergeHolidays = true }: { mergeHolidays?: boolean } = {}): HoursNowRow[] {
+  const weekdayRows = mergeWeekdays();
+  if (!mergeHolidays) return weekdayRows;
+  const out: HoursNowRow[] = [];
+  for (const r of weekdayRows) {
+    const target = isWeekdayGroup(r.schemaDays)
+      ? undefined
+      : out.find((w) => isWeekdayGroup(w.schemaDays) && w.open === r.open && w.close === r.close && w.lo === r.lo);
+    if (target) {
+      target.days = `${target.days}・${r.days}`;
+      target.schemaDays = [...target.schemaDays, ...r.schemaDays];
+    } else {
+      out.push({ ...r, schemaDays: [...r.schemaDays] });
+    }
+  }
+  return out;
+}
+
+/** 曜日のグループどうしで、時間がすべて同じものを1行にまとめる（祝日はそのまま1行） */
+function mergeWeekdays(): HoursNowRow[] {
   const rows: (HoursNowRow & { merged: boolean })[] = [];
   for (const g of BUSINESS_HOURS) {
     const open = openTimeNow(g);

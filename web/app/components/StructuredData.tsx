@@ -5,9 +5,10 @@
  * layout.tsx から全ページに出力している（1店舗のため内容は共通）。
  *
  * ── 更新のポイント ──────────────────────────────────────
- * ・営業時間は lib/businessHours.ts の businessHoursNow() から作る（/info の表と同じ行）。
+ * ・営業時間は lib/businessHours.ts の businessHoursNow() から作る（/info の表と同じ関数）。
  *   ランチ休止中（LUNCH_SUSPENDED）は、ランチの曜日もディナーの開始時刻（DINNER_START）からになり、
- *   時間が同じ月〜土は1つにまとまる。日曜（定休日）は入れない。祝日は PublicHolidays の1つ。
+ *   時間が同じ月〜土は1つにまとまる。日曜（定休日）は入れない。祝日は PublicHolidays の1つ
+ *   （/info の表では、時間が同じなら「月〜土・祝日」の1行にまとめるが、ここでは分けたまま）。
  * ・sameAs には公式・予約系アカウントのURLを入れる。分かった順に追記する。
  * ────────────────────────────────────────────────────────
  */
@@ -43,7 +44,8 @@ const restaurantJsonLd = {
     longitude: 135.5293742,
   },
   // 通常営業時間（曜日ごと）。臨時休業などの一時的な状態はここには反映しない。
-  openingHoursSpecification: businessHoursNow().map((g) => ({
+  // 祝日は、時間が同じでも曜日の行に混ぜず、PublicHolidays の1つとして出す（mergeHolidays: false）
+  openingHoursSpecification: businessHoursNow({ mergeHolidays: false }).map((g) => ({
     "@type": "OpeningHoursSpecification",
     dayOfWeek: g.schemaDays,
     opens: g.open,
