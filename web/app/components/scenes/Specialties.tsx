@@ -64,11 +64,29 @@ const KANJI_NUM = ["壱", "弐", "参", "肆", "伍", "陸", "漆", "捌", "玖"
 // カードのふち（筆ペンで描いた四角い枠）は CardFrame.tsx（店舗情報のページの囲みでも使う）
 
 // ─── 1枚のカード ───
-function SpecialtyCard({ item, index, seed }: { item: SpecialtyItem; index: number; seed: number }) {
+// 文字の見比べのページ（app/font-compare/page.tsx）でも、この本物のカードを使う。そのための口が2つある（ふだんは渡さない）
+// ・widthClass：カードの幅（ふだんはこの欄の並べ方の幅）
+// ・nameClassName：品名の字（ふだんは明朝体 700）
+const CARD_WIDTH = "w-[calc((100%-1.5rem)/2)] md:w-[calc((100%-2rem)/2)] lg:w-[calc((100%-4rem)/3)]";
+const NAME_FONT = "font-serif font-bold";
+
+export function SpecialtyCard({
+  item,
+  index,
+  seed,
+  widthClass = CARD_WIDTH,
+  nameClassName = NAME_FONT,
+}: {
+  item: SpecialtyItem;
+  index: number;
+  seed: number;
+  widthClass?: string;
+  nameClassName?: string;
+}) {
   const Art = ART[item.art];
   return (
     <li
-      className={`scene-card section-light relative w-[calc((100%-1.5rem)/2)] md:w-[calc((100%-2rem)/2)] lg:w-[calc((100%-4rem)/3)] px-2 min-[400px]:px-2.5 pt-7 pb-4 md:px-5 md:pt-9 md:pb-6 shadow-[0_1px_4px_rgba(47,36,28,0.06)]`}
+      className={`scene-card section-light relative ${widthClass} px-2 min-[400px]:px-2.5 pt-7 pb-4 md:px-5 md:pt-9 md:pb-6 shadow-[0_1px_4px_rgba(47,36,28,0.06)]`}
     >
       <CardFrame seed={seed} />
 
@@ -83,7 +101,7 @@ function SpecialtyCard({ item, index, seed }: { item: SpecialtyItem; index: numb
       </ScenePlayOnView>
 
       <div className="mt-2 md:mt-4 text-center">
-        <h4 className="font-serif font-bold text-foreground text-[13px] min-[400px]:text-[14px] md:text-[18px] leading-snug md:tracking-wider [word-break:auto-phrase]">
+        <h4 className={`${nameClassName} text-foreground text-[13px] min-[400px]:text-[14px] md:text-[18px] leading-snug md:tracking-wider [word-break:auto-phrase]`}>
           {item.name}
         </h4>
         <p className="mt-1.5 hidden md:block whitespace-nowrap text-[13px] lg:text-[14px] text-muted leading-relaxed">
