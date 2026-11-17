@@ -315,7 +315,7 @@
 .scene-anim.sake-vb { transform-box: view-box; }
 .sake-gone { opacity: 0; }
 
-/* 店舗情報・店主紹介のページの、項目のあいだの区切りの線（components/Washi.tsx の BrushRule）。
+/* 店舗情報のページの、項目のあいだの区切りの線（components/Washi.tsx の BrushRule）。
    料理の絵の線と同じ描き方（draw.ts の line の揺らぎ）と色（currentColor ＝ text-foreground）。
    幅いっぱいに伸ばしても太さが変わらないよう non-scaling-stroke。料理の絵の中の線（scene-fine）くらいの細さ */
 .info-rule-line {

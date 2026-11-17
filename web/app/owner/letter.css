@@ -1,0 +1,82 @@
+/* ─── 店主紹介のページの便箋（app/owner/page.tsx） ───
+   店舗情報は「店先の貼り紙」、店主紹介は「店主からの手紙」。見た目で分けるため、店主紹介は便箋にする。
+   ・紙（.letter-paper）は section-light（和紙の色とテクスチャ）。罫線は紙の内側の箱（.letter-body）に引く
+     （section-light の背景の絵を、罫線で上書きしないため）
+   ・行の高さ（--pitch）と罫線の間隔を同じにして、字の行と罫線をそろえる。中の字は、大きさが違っても
+     行の高さはすべて --pitch。段落のあいだの空き行も --pitch の倍数
+   ・罫線は字の色（漆褐 #2F241C）をごく薄く（--rule）。まっすぐな細い線（1px）
+
+   lg 未満（スマホ・タブレット）… 横書きの便箋。各行の下に横の罫線
+   lg 以上（1024px〜）           … 縦書きの便箋（vertical-rl。右から左へ読む）。行と行のあいだに縦の罫線。
+                                   高さは --letter-h（紙の上下の余白を除いた、字の入る高さ）。
+                                   文が便箋1枚の幅に収まるよう、字の大きさ・行の高さ・高さを決めている（下の値） */
+
+.letter-body {
+  --pitch: 32px;
+  --rule: rgba(47, 36, 28, 0.13);
+  font-size: 16px;
+  line-height: var(--pitch);
+  /* 各行の下に横の罫線（行の高さと同じ間隔。紙の内側の箱の上の端から） */
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(var(--pitch) - 1px),
+    var(--rule) calc(var(--pitch) - 1px),
+    var(--rule) var(--pitch)
+  );
+}
+
+/* 書き出しの文（今の大きめの字。行の高さは --pitch のまま） */
+.letter-open {
+  font-size: 18px;
+}
+/* 段落（小見出し＋本文）。段落の前は1行あける */
+.letter-para {
+  margin-block-start: var(--pitch);
+}
+/* 本文の段落の書き出しは1字下げる（手紙の書き方） */
+.letter-text {
+  text-indent: 1em;
+}
+/* 署名（明朝。本文より少し大きく。横書きは右寄せ、縦書きは下寄せ）。前は1行あける */
+.letter-sign {
+  margin-block-start: var(--pitch);
+  text-align: end;
+  font-size: 18px;
+}
+
+@media (min-width: 1024px) {
+  .letter-body {
+    --pitch: 31px;
+    --letter-h: 544px;
+    writing-mode: vertical-rl;
+    width: 100%;
+    height: var(--letter-h);
+    font-size: 15.5px;
+    /* 縦書きの字は、端末の明朝体（Windows は游明朝、Mac・iPad はヒラギノ明朝）。
+       サイトで読み込んでいる字（@fontsource の Noto Sans JP・Noto Serif JP）は、縦書き用の約物（「。」「、」を
+       字の右上に置く形）に切り替わらず、横書きの位置のまま出るため。端末の明朝体は縦書き用の約物を持っている。
+       小見出し（.letter-body h2）と署名も、この明朝体 */
+    font-family: "Yu Mincho", "YuMincho", "Hiragino Mincho ProN", "Hiragino Mincho Pro", "Noto Serif CJK JP", serif;
+    font-weight: 500;
+    /* 行と行のあいだに縦の罫線（右の端から、行の高さと同じ間隔）。いちばん右の行の右にも1本 */
+    background-image: repeating-linear-gradient(
+      to left,
+      transparent 0,
+      transparent calc(var(--pitch) - 1px),
+      var(--rule) calc(var(--pitch) - 1px),
+      var(--rule) var(--pitch)
+    );
+    box-shadow: inset -1px 0 0 var(--rule);
+  }
+  .letter-open {
+    font-size: 19px;
+  }
+  .letter-body h2 {
+    font-family: inherit;
+    font-weight: 700;
+  }
+  .letter-sign {
+    font-family: inherit;
+  }
+}

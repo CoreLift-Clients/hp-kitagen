@@ -4,7 +4,9 @@ import { jitter, smooth, type P } from "./scenes/draw";
 // 区切りの線の太さ（.info-rule-line）は scenes.css にある
 import "./scenes/scenes.css";
 
-// ─── 1枚の和紙（店舗情報・店主紹介のページで共通） ───
+// ─── 1枚の和紙（店舗情報のページ。「店先の貼り紙」） ───
+// 店主紹介のページは「店主からの手紙」として、見た目を分けて便箋にしている（app/owner/letter.css）。
+// 店主紹介で使うのは、下の WASHI_LINK（文字のリンク）だけ
 // ・地（section-deep。メニューのページの名物の欄と同じ）に、縦に長い1枚の和紙（section-light。名物のカードと同じ紙の色）を置く
 // ・和紙の幅：md より狭い画面は左右の余白を除いた幅いっぱい、md〜lg も幅いっぱい、lg 以上は 1040px まで
 //   （サイト共通の幅 max-w-page-wide。globals.css の --container-page-wide）。
@@ -15,15 +17,14 @@ import "./scenes/scenes.css";
 // ・項目のあいだは、筆で引いたような細い横線1本だけ（BrushRule。料理の絵の線と同じ揺らぎ・色）
 // ・折り返しは語の切れ目で（auto-phrase。メニューのページのテイクアウトのご案内と同じ）
 
-// 和紙を置く地と、和紙。after には和紙の下（地の上）に置くもの（店主紹介の結びなど）
-export function WashiSheet({ children, after }: { children: ReactNode; after?: ReactNode }) {
+// 和紙を置く地と、和紙
+export function WashiSheet({ children }: { children: ReactNode }) {
   return (
     <div className="section-deep py-14 md:py-24">
       <SectionInner>
         <article className="section-light mx-auto w-full max-w-page-wide px-5 py-3 md:px-12 md:py-6 lg:px-24 lg:py-8 shadow-[0_1px_6px_rgba(47,36,28,0.08)]">
           {children}
         </article>
-        {after}
       </SectionInner>
     </div>
   );
@@ -60,11 +61,10 @@ export function BrushRule({ seed }: { seed: number }) {
   );
 }
 
-// 縦書きの項目名の列と、本文の列（md 以上）。和紙の中で、項目でないもの（店主紹介の書き出しの文など）を
-// 本文の列にそろえるときにも使う
-export const WASHI_GRID = "md:grid md:grid-cols-[2.5rem_1fr] lg:grid-cols-[3rem_1fr] md:gap-x-12 lg:gap-x-20";
+// 縦書きの項目名の列と、本文の列（md 以上）
+const WASHI_GRID = "md:grid md:grid-cols-[2.5rem_1fr] lg:grid-cols-[3rem_1fr] md:gap-x-12 lg:gap-x-20";
 // 本文の字（店舗情報の本文と同じ）
-export const WASHI_BODY = "min-w-0 max-w-[38em] text-base text-foreground leading-[1.95] [word-break:auto-phrase] text-pretty";
+const WASHI_BODY = "min-w-0 max-w-[38em] text-base text-foreground leading-[1.95] [word-break:auto-phrase] text-pretty";
 
 // 項目（左に縦書きの項目名、右に中身。md より狭い画面は項目名が上）
 export function WashiItem({ label, children }: { label: string; children: ReactNode }) {
