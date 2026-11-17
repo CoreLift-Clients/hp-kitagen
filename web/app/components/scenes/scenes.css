@@ -400,23 +400,25 @@
   60%  { stroke-dashoffset: 0; opacity: 0.9; }
   to   { stroke-dashoffset: 0; opacity: 0; }
 }
-/* 席の絵（SeatIllustration.tsx）の子どもの右の靴：ずれた形（つま先が外へ開き、少し前）で待ち、
-   その場でちょこんとはね（ずれた位置から上へ 10px）、はねている間に靴のまん中（--o。view-box の座標）を中心に
-   向きを直して、そろった位置に着地（70%）。着地で縦に少しだけ縮んで戻る */
+/* 席の絵（SeatIllustration.tsx）の子どもの右の靴：ずれた形（つま先が外へ開き、少し前）で止まって見える「間」（〜24%）のあと、
+   その場でちょこんとはね（ずれた位置から上へ 12px。いちばん高いのは 50%）、はねている間に靴のまん中（--o。view-box の座標）を中心に
+   向きを直して、そろった位置に着地（74%）。着地で縦に少しだけ縮み（79%）、ほんの少し弾んで（85%。上へ 1.2px）止まる（91%）。
+   91% から後ろは、そろった形のまま */
 @keyframes seat-fix {
-  from, 12% { transform: translateY(var(--fix-dy, 6px)) rotate(var(--fix-rot, -22deg)) scaleY(1); }
-  28%       { transform: translateY(-0.5px) rotate(calc(var(--fix-rot, -22deg) * 0.8)) scaleY(1); }
-  42%       { transform: translateY(-4px) rotate(calc(var(--fix-rot, -22deg) * 0.45)) scaleY(1); }
-  56%       { transform: translateY(-2.5px) rotate(calc(var(--fix-rot, -22deg) * 0.12)) scaleY(1); }
-  70%       { transform: translateY(0px) rotate(0deg) scaleY(1); }
-  80%       { transform: translateY(0px) rotate(0deg) scaleY(0.94); }
-  90%, to   { transform: translateY(0px) rotate(0deg) scaleY(1); }
+  from, 24% { transform: translateY(var(--fix-dy, 6px)) rotate(var(--fix-rot, -22deg)) scaleY(1); }
+  36%       { transform: translateY(-2px) rotate(calc(var(--fix-rot, -22deg) * 0.8)) scaleY(1); }
+  50%       { transform: translateY(-6px) rotate(calc(var(--fix-rot, -22deg) * 0.45)) scaleY(1); }
+  62%       { transform: translateY(-3.5px) rotate(calc(var(--fix-rot, -22deg) * 0.12)) scaleY(1); }
+  74%       { transform: translateY(0px) rotate(0deg) scaleY(1); }
+  79%       { transform: translateY(0px) rotate(0deg) scaleY(0.94); }
+  85%       { transform: translateY(-1.2px) rotate(0deg) scaleY(1); }
+  91%, to   { transform: translateY(0px) rotate(0deg) scaleY(1); }
 }
-/* 席の絵の「きらっ」：靴がそろった瞬間（70%）に線が描かれ、すぐ薄くなって消える */
+/* 席の絵の「きらっ」：靴がそろった瞬間（74%）に線が描かれ、すぐ薄くなって消える */
 @keyframes seat-sparkle {
-  from, 70% { stroke-dashoffset: 1; opacity: 0; }
-  72%       { opacity: 1; }
-  82%       { stroke-dashoffset: 0; opacity: 1; }
+  from, 74% { stroke-dashoffset: 1; opacity: 0; }
+  76%       { opacity: 1; }
+  86%       { stroke-dashoffset: 0; opacity: 1; }
   to        { stroke-dashoffset: 0; opacity: 0; }
 }
 /* ぱっと出て、すぐ消える（からあげの油のパチパチ）。動き終わりは消えた形。

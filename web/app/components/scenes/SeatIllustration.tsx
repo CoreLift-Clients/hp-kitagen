@@ -13,8 +13,8 @@
 //   子どもの右の靴は seat-fix で包む）・「きらっ」（seat-sparkle）
 // ・動きの順番：段・畳・座布団の線が描かれる → 1足目（革靴）が少し上から置かれるように現れる →
 //   2足目・3足目が、間をあけて1足ずつ横に並んでいく → 4足目（子どもの靴）が、右の靴だけつま先が外へ開いて
-//   少し前にずれた形で置かれる → ずれた右の靴が、その場でちょこんとはね、はねている間にくるっと向きを直し、
-//   左の靴の隣にまっすぐ着地する（着地で少しだけ縦に縮んで戻る）→ そろった瞬間、靴の右上に「きらっ」が描かれて消える。
+//   少し前にずれた形で置かれる → ずれた右の靴が一瞬止まって見えてから（「間」）、その場でちょこんとはね、はねている間にくるっと向きを直し、
+//   左の靴の隣にまっすぐ着地する（着地で少しだけ縦に縮み、ほんの少し弾んで止まる）→ そろった瞬間、靴の右上に「きらっ」が描かれて消える。
 //   最後は4足がそろって並び、「きらっ」は見えない形で止まる（何も動かさないときの形がこれ）
 //   （動きの名前と範囲は anim(...)、@keyframes は scenes.css）
 // 線の描き方の道具（揺らぎ）は draw.ts。乱数は使わないので、毎回同じ絵になる。
@@ -329,18 +329,28 @@ const PAIRS: ShoeSpec[] = [
 ];
 const SHOES = PAIRS.map((s, i) => buildPair(s, 6200 + i * 100));
 
-// 1足ずつ、間をあけて現れる（少し上から置かれるように）
+// ── 動きの段の配分（4〜60） ──
+//   段・畳・座布団の線 4〜14.1 → 靴が1足ずつ並ぶ 14〜35.5（1足 5 ずつ。あいだ 0.5）→
+//   子どもの右の靴がそろう 34〜60（ずれた靴が止まって見える「間」→ はねる → 着地して少し弾む → そろった形で止まる）
+// 段・畳・座布団の線は、もとの数（4〜17.5）を 0.75 倍に詰める（描く順番は同じ。そろう段に長さを回すため）
+const ROOM_K = 0.75;
+function roomAnim(from: number, to: number) {
+  return anim("scene-draw", 4 + (from - 4) * ROOM_K, 4 + (to - 4) * ROOM_K);
+}
+
+// 1足ずつ、間をあけて現れる（少し上から置かれるように。1足の長さ 5 は前と同じ）
 const SHOE_RANGES: readonly [number, number][] = [
-  [18, 23],
-  [24, 29],
-  [30, 35],
-  [36, 41],
+  [14, 19],
+  [19.5, 24.5],
+  [25, 30],
+  [30.5, 35.5],
 ];
 
 // ── 子どもの右の靴が、自分でそろう（4足目） ──
 // 子どもの右の靴は、置かれたときはつま先が外へ 22° 開き、少し前（手前）にずれている。
-// そのあと、その場でちょこんとはね（上へ 10px）、はねている間に靴のまん中を中心にくるっと向きを直し、
-// 左の靴の隣のそろった位置にまっすぐ着地する（着地で縦に 0.94 まで縮んで戻る）。
+// 置かれたあと、ずれた形で一瞬止まって見えてから（「間」）、その場でちょこんとはね（上へ 12px）、
+// はねている間に靴のまん中を中心にくるっと向きを直し、左の靴の隣のそろった位置にまっすぐ着地する
+// （着地で縦に 0.94 まで縮み、ほんの少し弾んで止まる）。
 // そろった瞬間に、靴の右上で「きらっ」（短い線3本）が描かれ、すぐ薄くなって消える
 const CHILD = PAIRS[3];
 const FIX_PIVOT = rot(
@@ -359,9 +369,12 @@ const SPARKLE = [-100, -42, 12].map((deg, i) => {
   return line(at(4), at(i === 1 ? 12.5 : 10.5), 6860 + i * 5, 0.2, 1);
 });
 
-// 4足目が置かれ終わる（41）と、はねてそろう動き（44〜60）。靴の動きと「きらっ」は同じ範囲・同じ割合で進めるので、
-// 時間で進めるとき（動かせないブラウザ）もずれない（着地は 70%、「きらっ」は 70〜100%）
-const FIX_RANGE: readonly [number, number] = [44, 60];
+// はねてそろう段は 34〜60（長さ 26。前は 44〜60 の 16）。4足目が置かれ終わる（35.5）より少し前から始まるが、
+// はじめの 24%（〜40.2）はずれた形のまま止まっている（ここが「間」）。はねて着地は 74%（53.2）、
+// 少し弾んで 91%（57.7）で止まり、そのあとはそろった形のまま（60 より後ろも、画面から出るまでこの形）。
+// 靴の動きと「きらっ」は同じ範囲・同じ割合で進めるので、時間で進めるとき（動かせないブラウザ）もずれない
+// （「きらっ」は着地の 74% から描かれて、100% で消える。割合は scenes.css の @keyframes seat-fix・seat-sparkle）
+const FIX_RANGE: readonly [number, number] = [34, 60];
 
 export default function SeatIllustration({ className = "" }: { className?: string }) {
   return (
@@ -382,7 +395,7 @@ export default function SeatIllustration({ className = "" }: { className?: strin
             d={d}
             pathLength={1}
             className="scene-line scene-stroke-draw scene-anim"
-            style={anim("scene-draw", 4 + i * 2, 12 + i * 2)}
+            style={roomAnim(4 + i * 2, 12 + i * 2)}
           />
         ))}
         {STEP_FINE.map((d, i) => (
@@ -391,7 +404,7 @@ export default function SeatIllustration({ className = "" }: { className?: strin
             d={d}
             pathLength={1}
             className="scene-fine scene-stroke-draw scene-anim"
-            style={anim("scene-draw", 5, 12)}
+            style={roomAnim(5, 12)}
           />
         ))}
         {GRAIN.map((d, i) => (
@@ -400,7 +413,7 @@ export default function SeatIllustration({ className = "" }: { className?: strin
             d={d}
             pathLength={1}
             className="scene-fine scene-stroke-draw scene-anim"
-            style={anim("scene-draw", 10 + (i % 3), 14 + (i % 3))}
+            style={roomAnim(10 + (i % 3), 14 + (i % 3))}
           />
         ))}
         {ROOM_FINE.map((d, i) => (
@@ -409,7 +422,7 @@ export default function SeatIllustration({ className = "" }: { className?: strin
             d={d}
             pathLength={1}
             className="scene-fine scene-stroke-draw scene-anim"
-            style={anim("scene-draw", 6 + i * 2, 13 + i)}
+            style={roomAnim(6 + i * 2, 13 + i)}
           />
         ))}
         {/* 畳の目は薄く（opacity は g に付ける。path の opacity は動きで上書きされるため） */}
@@ -420,7 +433,7 @@ export default function SeatIllustration({ className = "" }: { className?: strin
               d={d}
               pathLength={1}
               className="scene-fine scene-stroke-draw scene-anim"
-              style={anim("scene-draw", 10 + i, 15 + i)}
+              style={roomAnim(10 + i, 15 + i)}
             />
           ))}
         </g>
@@ -430,7 +443,7 @@ export default function SeatIllustration({ className = "" }: { className?: strin
             d={d}
             pathLength={1}
             className="scene-line scene-stroke-draw scene-anim"
-            style={anim("scene-draw", 9, 15)}
+            style={roomAnim(9, 15)}
           />
         ))}
         {CUSHION_FINE.map((d, i) => (
@@ -439,7 +452,7 @@ export default function SeatIllustration({ className = "" }: { className?: strin
             d={d}
             pathLength={1}
             className="scene-fine scene-stroke-draw scene-anim"
-            style={anim("scene-draw", 11, 16)}
+            style={roomAnim(11, 16)}
           />
         ))}
         {TASSEL.map((d, i) => (
@@ -448,7 +461,7 @@ export default function SeatIllustration({ className = "" }: { className?: strin
             d={d}
             pathLength={1}
             className="scene-fine scene-stroke-draw scene-anim"
-            style={anim("scene-draw", 13 + i * 0.5, 17 + i * 0.5)}
+            style={roomAnim(13 + i * 0.5, 17 + i * 0.5)}
           />
         ))}
       </g>
