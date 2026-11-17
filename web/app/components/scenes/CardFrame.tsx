@@ -2,7 +2,7 @@ import { jitter, smooth, type P } from "./draw";
 import "./scenes.css";
 
 // ─── カードのふち（筆ペンで描いた四角い枠） ───
-// 名物の欄のカード（Specialties.tsx）と、店舗情報のページ（app/info/page.tsx）の囲みで使う。
+// 名物の欄のカード（Specialties.tsx）と、店舗情報のページ（app/info/page.tsx）の地図の枠で使う。
 // 置き方：親を relative にして、いちばん初めの子として置く（absolute inset-0 で親いっぱいに広がる）。
 // viewBox は 0〜100 の正方形で描き、カードの大きさに合わせて伸ばす（preserveAspectRatio="none"）。
 // 線の太さは伸ばしても変わらないよう vector-effect: non-scaling-stroke（scenes.css の .scene-card-frame）。

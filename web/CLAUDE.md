@@ -83,7 +83,7 @@ npx tsc --noEmit   # 型の確認（package.json に lint のスクリプトは�
 
 - 営業時間・定休日（急な変更は Instagram へ案内）
 - アクセス
-- 店舗外観写真
+- 店の入口の線画（components/scenes/StorefrontIllustration.tsx。写真は使わない）
 
 店主紹介 `/owner`
 

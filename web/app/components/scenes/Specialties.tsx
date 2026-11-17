@@ -62,7 +62,7 @@ const ART: Record<SpecialtyArt, ComponentType<{ className?: string }>> = {
 
 const KANJI_NUM = ["壱", "弐", "参", "肆", "伍", "陸", "漆", "捌", "玖", "拾"] as const;
 
-// カードのふち（筆ペンで描いた四角い枠）は CardFrame.tsx（店舗情報のページの囲みでも使う）
+// カードのふち（筆ペンで描いた四角い枠）は CardFrame.tsx（店舗情報のページの地図の枠でも使う）
 
 // ─── 品名の仮名と漢字のつり合い ───
 // 佑字 朴は、漢字が大きく太く、仮名が小さく細い（字の形の高さ：漢字 約 0.85〜0.92em、仮名 約 0.55〜0.76em）。
