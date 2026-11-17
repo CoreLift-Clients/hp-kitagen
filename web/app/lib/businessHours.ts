@@ -5,13 +5,14 @@
  * 構造化データ（StructuredData.tsx の JSON-LD）は、すべてここを参照する。
  * BUSINESS_HOURS は通常営業（ランチを含む）の時間を残しておく。
  * ランチ休止中かどうかの判定は isLunchSuspendedFor() の 1 か所で行い、
- * JSON-LD の開店時刻は openTimeNow() から作る（休止中はランチの曜日も DINNER_START から）。
+ * 開店時刻は openTimeNow() から作る（休止中はランチの曜日も DINNER_START から）。
+ * /info の営業時間の表と JSON-LD は businessHoursNow()（いまの時間が同じ曜日を1行にまとめたもの）を使う。
  */
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // ★ ランチ営業を再開したら、ここを false にするだけでよい ★
 //   → /info・ランチメニューページの「臨時休業中」表示が消え、
-//     JSON-LD の開店時刻もランチの時間（11:30 など）に戻る。
+//     /info の表と JSON-LD は、ランチのある曜日（11:30〜）とない曜日の行に分かれて戻る。
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 export const LUNCH_SUSPENDED = true;
 
@@ -65,6 +66,56 @@ export function isLunchSuspendedFor(g: HourGroup): boolean {
  */
 export function openTimeNow(g: HourGroup): string {
   return isLunchSuspendedFor(g) ? DINNER_START : g.open;
+}
+
+/** 曜日の並び（月曜はじまり）。schemaDays を日本語の曜日にするときと、並べ替えに使う */
+const WEEK: readonly (readonly [string, string])[] = [
+  ["Monday", "月"], ["Tuesday", "火"], ["Wednesday", "水"], ["Thursday", "木"],
+  ["Friday", "金"], ["Saturday", "土"], ["Sunday", "日"],
+];
+const weekIndex = (d: string) => WEEK.findIndex(([en]) => en === d);
+const isWeekdayGroup = (days: string[]) => days.every((d) => weekIndex(d) >= 0);
+
+/** 曜日の名前（英語）を、画面に出す形にする。3日以上続いていれば「月〜土」、それ以外は「月・水・土」 */
+function weekdayLabel(schemaDays: string[]): string {
+  const idx = schemaDays.map(weekIndex).sort((a, b) => a - b);
+  const contiguous = idx.every((v, i) => i === 0 || v === idx[i - 1] + 1);
+  if (idx.length >= 3 && contiguous) return `${WEEK[idx[0]][1]}〜${WEEK[idx[idx.length - 1]][1]}`;
+  return idx.map((i) => WEEK[i][1]).join("・");
+}
+
+/** いまの営業時間の1行（/info の表と JSON-LD に使う） */
+export interface HoursNowRow {
+  days: string;
+  schemaDays: string[];
+  open: string;
+  close: string;
+  lo: string;
+}
+
+/**
+ * いまの営業時間。BUSINESS_HOURS の曜日グループのうち、いまの開店時刻（openTimeNow）・閉店・L.O. が
+ * すべて同じもの（月〜日の曜日のグループどうし）を1行にまとめる。
+ * ・ランチ休止中：「月・水・土」と「火・木・金」がどちらも 17:00〜22:00 なので「月〜土」の1行になる
+ * ・ランチ再開後（LUNCH_SUSPENDED = false）：時間が違うので、もとの2行のまま
+ * ・祝日（PublicHolidays）は曜日ではないので、まとめない
+ * まとめなかった行の days は BUSINESS_HOURS の書き方のまま。
+ */
+export function businessHoursNow(): HoursNowRow[] {
+  const rows: (HoursNowRow & { merged: boolean })[] = [];
+  for (const g of BUSINESS_HOURS) {
+    const open = openTimeNow(g);
+    const same = isWeekdayGroup(g.schemaDays)
+      ? rows.find((r) => isWeekdayGroup(r.schemaDays) && r.open === open && r.close === g.close && r.lo === g.lo)
+      : undefined;
+    if (same) {
+      same.schemaDays = [...same.schemaDays, ...g.schemaDays].sort((a, b) => weekIndex(a) - weekIndex(b));
+      same.merged = true;
+    } else {
+      rows.push({ days: g.days, schemaDays: [...g.schemaDays], open, close: g.close, lo: g.lo, merged: false });
+    }
+  }
+  return rows.map(({ merged, ...r }) => (merged ? { ...r, days: weekdayLabel(r.schemaDays) } : r));
 }
 
 /** 定休日（/info の「定休日」の行に出す）。日曜日は BUSINESS_HOURS に入れない。 */

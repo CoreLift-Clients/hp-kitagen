@@ -5,16 +5,16 @@
  * layout.tsx から全ページに出力している（1店舗のため内容は共通）。
  *
  * ── 更新のポイント ──────────────────────────────────────
- * ・営業時間は lib/businessHours.ts の BUSINESS_HOURS から作る。
- *   開店時刻は openTimeNow() を使い、ランチ休止中（LUNCH_SUSPENDED）は
- *   ランチの曜日もディナーの開始時刻（DINNER_START）からにする。
+ * ・営業時間は lib/businessHours.ts の businessHoursNow() から作る（/info の表と同じ行）。
+ *   ランチ休止中（LUNCH_SUSPENDED）は、ランチの曜日もディナーの開始時刻（DINNER_START）からになり、
+ *   時間が同じ月〜土は1つにまとまる。日曜（定休日）は入れない。祝日は PublicHolidays の1つ。
  * ・sameAs には公式・予約系アカウントのURLを入れる。分かった順に追記する。
  * ────────────────────────────────────────────────────────
  */
 
 import { PHONE_INTL, INSTAGRAM_URL } from "../lib/contact";
 import { SITE_URL, OG_IMAGE } from "../lib/seo";
-import { BUSINESS_HOURS, openTimeNow } from "../lib/businessHours";
+import { businessHoursNow } from "../lib/businessHours";
 
 const restaurantJsonLd = {
   "@context": "https://schema.org",
@@ -43,10 +43,10 @@ const restaurantJsonLd = {
     longitude: 135.5293742,
   },
   // 通常営業時間（曜日ごと）。臨時休業などの一時的な状態はここには反映しない。
-  openingHoursSpecification: BUSINESS_HOURS.map((g) => ({
+  openingHoursSpecification: businessHoursNow().map((g) => ({
     "@type": "OpeningHoursSpecification",
     dayOfWeek: g.schemaDays,
-    opens: openTimeNow(g),
+    opens: g.open,
     closes: g.close,
   })),
   // ── 公式・予約系アカウント ──────────────────────────────

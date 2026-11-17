@@ -11,7 +11,7 @@ import HiyayakkoIllustration from "./HiyayakkoIllustration";
 import BeerIllustration from "./BeerIllustration";
 import SakeIllustration from "./SakeIllustration";
 import SoftDrinkIllustration from "./SoftDrinkIllustration";
-import { jitter, smooth, type P } from "./draw";
+import CardFrame from "./CardFrame";
 import type { SpecialtyArt, SpecialtyCards, SpecialtyItem } from "../../content";
 import { formatSpecialtyPrice } from "../../content/specialty-prices";
 import "./scenes.css";
@@ -61,57 +61,7 @@ const ART: Record<SpecialtyArt, ComponentType<{ className?: string }>> = {
 
 const KANJI_NUM = ["壱", "弐", "参", "肆", "伍", "陸", "漆", "捌", "玖", "拾"] as const;
 
-// ─── カードのふち（筆ペンで描いた四角い枠） ───
-// viewBox は 0〜100 の正方形で描き、カードの大きさに合わせて伸ばす（preserveAspectRatio="none"）。
-// 線の太さは伸ばしても変わらないよう vector-effect: non-scaling-stroke（scenes.css の .scene-card-frame）。
-// 辺はわずかに揺らした点をなめらかな線でつなぎ、角は小さな曲線（Q）で、ほんの少しだけ丸める。
-function framePath(seed: number): string {
-  const a = 0.6; // 枠の内側へのあき（線が切れないように）
-  const b = 100 - a;
-  const c = 1.1; // 角の丸み（角から両側へ、この分だけ手前で曲がり始める）
-  const amp = 0.28;
-  const side = (x0: number, y0: number, x1: number, y1: number, s: number): string => {
-    const pts: P[] = [];
-    const n = 5;
-    for (let i = 0; i <= n; i++) {
-      const t = i / n;
-      const edge = i === 0 || i === n ? 0 : 1;
-      pts.push([x0 + (x1 - x0) * t + jitter(s + i) * amp * edge, y0 + (y1 - y0) * t + jitter(s + i + 20) * amp * edge]);
-    }
-    // smooth() の書き出し（M x y）を外し、曲線の部分だけをつなぐ
-    return smooth(pts).replace(/^M[^C]*/, "");
-  };
-  return [
-    `M${a + c} ${a}`,
-    side(a + c, a, b - c, a, seed), // 上
-    `Q${b} ${a} ${b} ${a + c}`,
-    side(b, a + c, b, b - c, seed + 40), // 右
-    `Q${b} ${b} ${b - c} ${b}`,
-    side(b - c, b, a + c, b, seed + 80), // 下
-    `Q${a} ${b} ${a} ${b - c}`,
-    side(a, b - c, a, a + c, seed + 120), // 左
-    `Q${a} ${a} ${a + c} ${a}`,
-    "Z",
-  ].join(" ");
-}
-
-function CardFrame({ seed }: { seed: number }) {
-  return (
-    <svg
-      viewBox="0 0 100 100"
-      preserveAspectRatio="none"
-      aria-hidden="true"
-      focusable="false"
-      className="pointer-events-none absolute inset-0 h-full w-full overflow-visible text-foreground"
-      fill="none"
-      stroke="currentColor"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d={framePath(seed)} className="scene-card-frame" />
-    </svg>
-  );
-}
+// カードのふち（筆ペンで描いた四角い枠）は CardFrame.tsx（店舗情報のページの囲みでも使う）
 
 // ─── 1枚のカード ───
 function SpecialtyCard({ item, index, seed }: { item: SpecialtyItem; index: number; seed: number }) {
