@@ -16,6 +16,7 @@ import Header from "./components/Header";
 import { NAV_LINKS } from "./lib/nav";
 import StructuredData from "./components/StructuredData";
 import MobileCallBar from "./components/MobileCallBar";
+import ScrollToTop from "./components/ScrollToTop";
 import { SITE_URL, OG_IMAGE } from "./lib/seo";
 import "./globals.css";
 
@@ -108,9 +109,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja">
+    // data-scroll-behavior="smooth"：html の scroll-behavior: smooth（globals.css）を、ページを移るときだけ Next.js が止める
+    // （付けないと、移ったあとのスクロールが下から滑らかに流れる）。ページを移ったら上から始めるのは ScrollToTop
+    <html lang="ja" data-scroll-behavior="smooth">
       <body className="font-sans antialiased">
         <StructuredData />
+        <ScrollToTop />
         <Header />
         {/* 固定ヘッダーの下に中身を逃がす（高さは globals.css の --header-h） */}
         <main className="pt-[var(--header-h)]">{children}</main>

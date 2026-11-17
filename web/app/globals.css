@@ -86,6 +86,8 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ページの中の「#」の場所へのリンクは、滑らかに流す。ページを移るときは Next.js が止める
+   （layout.tsx の html の data-scroll-behavior="smooth"）。移ったら上から始めるのは components/ScrollToTop.tsx */
 html {
   scroll-behavior: smooth;
 }
