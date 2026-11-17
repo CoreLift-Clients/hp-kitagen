@@ -7,10 +7,12 @@ import Specialties from "../../components/scenes/Specialties";
 import TakeoutNote from "../../components/TakeoutNote";
 import { getSpecialtyCards } from "../../content";
 
-// 明朝体（Noto Serif JP）。名物の欄（縦書きの見出し・小見出し・カードの番号と品名）のために、このページでも読み込む。
+// 明朝体（Noto Serif JP）。名物の欄（縦書きの見出し・小見出し・カードの番号）のために、このページでも読み込む。
 // 太さはトップと同じく 500・700 だけ
 import "@fontsource/noto-serif-jp/500.css";
 import "@fontsource/noto-serif-jp/700.css";
+// 筆の字（佑字 朴 400）。名物のカードの品名だけに使う（globals.css の font-brush）。読み込むのはこのページだけ
+import "@fontsource/yuji-boku/400.css";
 
 export const metadata = pageMetadata({
   title: "ディナーメニュー｜きたげん",

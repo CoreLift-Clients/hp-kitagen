@@ -1,4 +1,4 @@
-import type { ComponentType, ReactNode } from "react";
+import type { ComponentType, CSSProperties, ReactNode } from "react";
 import SectionInner from "../SectionInner";
 import ScenePlayOnView from "./ScenePlayOnView";
 import type { SceneTone } from "./Scene";
@@ -23,7 +23,7 @@ import "./scenes.css";
 // ・欄の中は「料理」と「お飲みもの」の2つ。小見出しは、このページのほかの小見出し（dinner/page.tsx の SubHeading）と
 //   同じ大きさ・色・下線で、字だけ明朝体にする
 // ・背景：tone で section-*（ページの前後の欄と色が変わるものを渡す）。上下の余白はメニューのページの欄にそろえる
-// ・明朝体（Noto Serif JP 500・700）は、この欄を置くページで読み込む
+// ・明朝体（Noto Serif JP 500・700）と、カードの品名の筆の字（佑字 朴 400。font-brush）は、この欄を置くページで読み込む
 //
 // ・並べ方（カードどうしは重ねない。カードの間は、md より狭い画面 24px、md 以上 32px）
 //   - 料理：lg（1024px）以上は 3つずつ2段、lg より狭い画面は 2つずつ3段
@@ -31,10 +31,11 @@ import "./scenes.css";
 //   - flex-wrap と justify-center で並べるので、段の最後の1つは自然に真ん中に来る
 //   - 欄の幅：lg 以上は 960px まで、md〜lg は 720px まで（カードが大きくなりすぎないように）
 //   - カードの幅：(欄の幅 − 間) ÷ 列の数。lg の 1024px の画面で約 299px、md の 768px の画面で約 336px、
-//     320px の画面で 124px（中の幅 108px。品名はいちばん長い「自家製しゅうまい」8字が 13px で1行に収まる）
+//     320px の画面で 124px（中の幅 108px）
 // ・カードの中身（上から）：
 //   番号（漢数字。左上の角、明朝体 700、accent）→ 動く線画（カードの幅いっぱいの正方形の場所。絵はその中に収める）→
-//   品名（横書き、明朝体 700）→ ひとこと（横書き、1行。md より狭い画面では出さない）→
+//   品名（横書き、佑字 朴。1行。スマホ 18px まで（長い品名だけカードの幅に合わせて縮める）・md 22px・lg 24px）→
+//   ひとこと（横書き、1行。md 12px・lg 13px、muted を少しうすく。md より狭い画面では出さない）→
 //   値段（値段のある品だけ。料理は「¥580（税込）」、お飲みものは「¥450〜（税込）」）
 // ・カードの色：section-light（#F7F3EB と同じ和紙の模様）。欄の背景（section-deep）より少し明るい。
 //   絵の中の「後ろの線を隠す塗り」（--scene-paper）もカードの色にする（scenes.css の .scene-card）
@@ -82,11 +83,21 @@ function SpecialtyCard({ item, index, seed }: { item: SpecialtyItem; index: numb
         <Art className={ART_CLASS} />
       </ScenePlayOnView>
 
-      <div className="mt-2 md:mt-4 text-center">
-        <h4 className="font-serif font-bold text-foreground text-[13px] min-[400px]:text-[14px] md:text-[18px] leading-snug md:tracking-wider [word-break:auto-phrase]">
+      {/* @container：品名の字の大きさを、この入れ物の幅（cqw）から決めるため */}
+      <div className="@container mt-2 md:mt-4 text-center">
+        {/* 品名：佑字 朴（font-brush。太さは 400 しかないので font-normal。太字にすると字が作られてつぶれる）。
+            ひとことより、はっきり大きく。どの画面でも1行に収める（2行に折れると「自家製しゅ／うまい」のように語の途中で切れるため）
+            ・md より狭い画面：18px まで。入れ物の幅に入らない長い品名だけ、その字数（--name-len）に合わせて縮める
+              （390px の画面で「自家製しゅうまい」約 17px、ほかは 18px。320px の画面で「自家製しゅうまい」約 13px）
+            ・md 22px、lg 24px（どの品名も1行に入る） */}
+        <h4
+          style={{ "--name-len": [...item.name].length } as CSSProperties}
+          className="font-brush font-normal text-foreground text-[length:min(18px,calc(100cqw/(var(--name-len)_+_0.4)))] md:text-[22px] lg:text-[24px] leading-snug whitespace-nowrap md:tracking-wider"
+        >
           {item.name}
         </h4>
-        <p className="mt-1.5 hidden md:block whitespace-nowrap text-[13px] lg:text-[14px] text-muted leading-relaxed">
+        {/* ひとこと：品名を引き立てるよう、小さく・少しうすく。md より狭い画面では今までどおり出さない（カードの幅に1行で入らない） */}
+        <p className="mt-2 md:mt-2.5 hidden md:block whitespace-nowrap text-[12px] lg:text-[13px] text-muted/80 leading-relaxed">
           {item.tagline}
         </p>
         {item.price !== undefined && (
