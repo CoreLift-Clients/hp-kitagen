@@ -67,9 +67,11 @@ const WASHI_GRID = "md:grid md:grid-cols-[2.5rem_1fr] lg:grid-cols-[3rem_1fr] md
 const WASHI_BODY = "min-w-0 max-w-[38em] text-base text-foreground leading-[1.95] [word-break:auto-phrase] text-pretty";
 
 // 項目（左に縦書きの項目名、右に中身。md より狭い画面は項目名が上）
-export function WashiItem({ label, children }: { label: string; children: ReactNode }) {
+// id … リンクや転送の飛び先にするとき（ご案内のページの「お知らせ」の欄は id="news"）。
+//   scroll-mt は、ほかの飛び先（メニューのページの #takeout）と同じ。固定ヘッダーに隠れないよう、上にあきを取る
+export function WashiItem({ label, id, children }: { label: string; id?: string; children: ReactNode }) {
   return (
-    <section className={`py-9 md:py-12 lg:py-14 ${WASHI_GRID}`}>
+    <section id={id} className={`scroll-mt-32 py-9 md:py-12 lg:py-14 ${WASHI_GRID}`}>
       <h2 className="mb-4 md:mb-0 font-serif text-lg md:text-xl lg:text-[1.375rem] font-bold text-foreground tracking-[0.18em] md:[writing-mode:vertical-rl] md:leading-[1.7]">
         {label}
       </h2>

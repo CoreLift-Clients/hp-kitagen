@@ -343,7 +343,6 @@ export function InstagramOwnerSection() {
     <>
         {/* ── ⑧ Instagram と ⑨ 店主紹介へのリンク（1つの欄にまとめる）──────
             最新情報・急な営業の変更は Instagram で発信している。URL は lib/contact.ts。
-            お知らせの一覧は /news のページに残している。
             ・lg 以上 … 左に INSTAGRAM、右に OWNER を左右に並べ、間に細い区切りの線。
               線は divide-x ではなく ::before で描き、欄の中身の上下いっぱい（高いほうの中身に合わせる）に伸ばす。
               それぞれの中身は横の真ん中にそろえる（本文の改行の位置は同じまま、各行を真ん中に）

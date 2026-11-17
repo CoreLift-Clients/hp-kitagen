@@ -30,11 +30,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.8,
     },
-    {
-      url: 'https://www.kitagen-izakaya.com/news',
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
+    // お知らせのページはやめ、/info#news へ転送するだけなので載せない（next.config.ts）。
   ]
 }

@@ -71,7 +71,7 @@ function ActionRow({ children }: { children: ReactNode }) {
 export default function InfoPage() {
   const hours = businessHoursNow();
 
-  const items: { label: string; body: ReactNode }[] = [
+  const items: { label: string; id?: string; body: ReactNode }[] = [
     {
       label: "営業時間",
       body: (
@@ -161,6 +161,8 @@ export default function InfoPage() {
     },
     {
       label: "お知らせ",
+      // お知らせのページ（やめた）から来た人の飛び先（next.config.ts の redirects で /info#news）
+      id: "news",
       body: (
         <>
           <p>料理やお店の様子を、<NoBreak>Instagramにのせています。</NoBreak></p>
@@ -194,7 +196,7 @@ export default function InfoPage() {
         {items.map((it, i) => (
           <div key={it.label}>
             {i > 0 && <BrushRule seed={20000 + i * 97} />}
-            <WashiItem label={it.label}>{it.body}</WashiItem>
+            <WashiItem label={it.label} id={it.id}>{it.body}</WashiItem>
           </div>
         ))}
       </WashiSheet>

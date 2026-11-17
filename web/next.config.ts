@@ -22,6 +22,10 @@ const nextConfig: NextConfig = {
       { source: "/survey", destination: "/", permanent: true },
       // テイクアウトのページはやめ、メニューのページの中の案内（components/TakeoutNote.tsx）にまとめた（恒久転送）。
       { source: "/takeout", destination: "/menu/dinner#takeout", permanent: true },
+      // お知らせはインスタグラムで出すので、お知らせのページ（/news）はやめた。
+      // /news とその下の URL に来た人は、ご案内のページの「お知らせ」の欄（app/info/page.tsx。id="news"）へ（恒久転送）。
+      { source: "/news", destination: "/info#news", permanent: true },
+      { source: "/news/:path*", destination: "/info#news", permanent: true },
     ];
   },
   // 画像はすべて public/ のものを使うため、外部の画像の許可（remotePatterns）は持たない。

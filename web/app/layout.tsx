@@ -68,7 +68,6 @@ export const metadata: Metadata = {
 const FOOTER_LINKS = [
   { href: "/", label: "トップ" },
   ...NAV_LINKS,
-  { href: "/news", label: "お知らせ" },
 ];
 
 function Footer() {
@@ -83,8 +82,9 @@ function Footer() {
             <p className="font-serif text-lg font-bold text-accent">きたげん</p>
             <p className="text-sm text-muted">落ち着いて飲める、ちゃんとした居酒屋。</p>
           </div>
-          {/* 並びは「トップ」→ ヘッダーと同じ項目（lib/nav.ts の NAV_LINKS：お品書き・店舗情報・店主紹介）→「お知らせ」。
-              ヘッダーに無いトップ・お知らせも、ここから辿れる。390px でも1行に収まるよう、あきは 20px。項目が増えたら折り返す。 */}
+          {/* 並びは「トップ」→ ヘッダーと同じ項目（lib/nav.ts の NAV_LINKS：お品書き・ご案内・ごあいさつ）。
+              ヘッダーに無いトップも、ここから辿れる（お知らせのページはやめた。お知らせはご案内のページの欄からインスタグラムへ）。
+              390px でも1行に収まるよう、あきは 20px。項目が増えたら折り返す。 */}
           <ul className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-muted">
             {FOOTER_LINKS.map(({ href, label }) => (
               <li key={href}>
