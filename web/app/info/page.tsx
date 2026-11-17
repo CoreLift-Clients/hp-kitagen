@@ -146,7 +146,7 @@ export default function InfoPage() {
         <>
           <p>人数が多いときは、お電話ください。お席をご用意します。</p>
           <p>お昼や開店前でも、予約のお電話を受け付けています。</p>
-          <p className="text-muted">「ホームページを見た」と言っていただけると、話が早いです。</p>
+          <p className="text-muted">「ホームページを見た」とお伝えください。</p>
           <ActionRow>
             <a
               href={`tel:${PHONE}`}
@@ -187,7 +187,7 @@ export default function InfoPage() {
 
       {/* ── ページヘッダー（お品書きのページと同じ帯・同じ見出しの形。components/PageHeading.tsx）──────────
           添え書きは「仕事帰りに、ふらっと一杯。」（以前の「桃谷駅から、歩いて2分。」は、下の「場所」と重なるので外した。上下の余白は、お品書きのページと同じ） */}
-      <PageHeading title="店舗情報" lead="仕事帰りに、ふらっと一杯。" />
+      <PageHeading title="ご案内" lead="仕事帰りに、ふらっと一杯。" />
 
       {/* ── 1枚の和紙（店先の貼り紙）──────────────────────────── */}
       <WashiSheet>

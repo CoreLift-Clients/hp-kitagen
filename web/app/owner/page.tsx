@@ -121,7 +121,7 @@ export default function OwnerPage() {
                 お品書きを見る
               </Link>
               <Link href="/info" className={WASHI_LINK}>
-                店舗情報を見る
+                ご案内を見る
               </Link>
             </div>
           </div>

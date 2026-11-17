@@ -189,7 +189,7 @@ export default async function Home() {
         art={<SeatIllustration className={ART} />}
         heading="ひとりでも、大勢でも。"
         lines={["カウンターと、", "2階の座敷。"]}
-        action={<SceneLink href="/info">店舗情報を見る →</SceneLink>}
+        action={<SceneLink href="/info">ご案内を見る →</SceneLink>}
       />
 
       {/* 宴（右に絵。ビールとチューハイの乾杯）。以前の PARTY & GROUP の欄の飛び先（/#group-reservation）を引き継ぐ */}
@@ -233,12 +233,12 @@ export default async function Home() {
             </li>
             <li>
               <Link href="/owner" className={SCENE_LINK_CLASS}>
-                店主紹介 →
+                ごあいさつ →
               </Link>
             </li>
             <li>
               <Link href="/info" className={SCENE_LINK_CLASS}>
-                店舗情報 →
+                ご案内 →
               </Link>
             </li>
           </ul>

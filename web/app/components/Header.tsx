@@ -81,11 +81,11 @@ export default function Header() {
           {/* 電話予約 — 縦区切り線 ＋ 番号 */}
           <div className="ml-4 pl-4 lg:ml-6 lg:pl-6 xl:ml-8 xl:pl-8 border-l border-border/60 flex flex-col justify-center">
             <p className="text-[9px] lg:text-[11px] text-muted/90 tracking-wider leading-none mb-1.5">
-              ご予約・お問い合わせ
+              ご予約は、お電話で。
             </p>
             <a
               href={`tel:${TEL}`}
-              className="text-[17px] lg:text-[20px] font-bold tracking-wide text-foreground hover:text-accent transition-colors duration-200 tabular-nums leading-none whitespace-nowrap"
+              className="font-serif text-[17px] lg:text-[20px] font-bold tracking-wide text-foreground hover:text-accent transition-colors duration-200 tabular-nums leading-none whitespace-nowrap"
             >
               {TEL}
             </a>
