@@ -30,6 +30,8 @@ const restaurantJsonLd = {
   // メニューページ（実ページはディナー）。電話予約を受けるため予約可も明示。
   menu: `${SITE_URL}/menu/dinner`,
   acceptsReservations: true,
+  // お支払い（/info の「お支払い」と同じ内容。変えるときは両方そろえる）
+  paymentAccepted: "Cash, Credit Card, PayPay",
   address: {
     "@type": "PostalAddress",
     postalCode: "544-0033",

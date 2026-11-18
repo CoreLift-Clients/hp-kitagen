@@ -7,6 +7,10 @@ import PageHeading from "../components/PageHeading";
 import SectionInner from "../components/SectionInner";
 import { WASHI_LINK } from "../components/Washi";
 import { keepWords } from "../lib/keepWords";
+import ScenePlayOnView from "../components/scenes/ScenePlayOnView";
+import OwnerStamp from "./OwnerStamp";
+// 一筆箋と判子の動きは、料理の絵と同じ仕組み（.scene-art・.scene-anim。scenes.css と sceneScroll.ts）で進める
+import "../components/scenes/scenes.css";
 import "./letter.css";
 
 // 明朝体（Noto Serif JP）。小見出しと署名のために、このページでも読み込む（店舗情報のページと同じ 500・700）
@@ -29,6 +33,13 @@ export const metadata = pageMetadata({
 // ・罫線・行の高さ・字の大きさ・便箋の高さは letter.css
 // ・便箋の下（ページの地）に、結びの文と、控えめな文字のリンク2つ（店舗情報の「地図アプリで開く」と同じ見せ方）
 // ・本文の文は店主の言葉なので、一字も変えない（lib/owner.ts）。語の途中で折れる所は、表示の側で KEEP の語のかたまりを折り返さない
+//
+// ─── 縦長の画面（lg 未満で、高さが 500px より大きい画面。スマホ・タブレットの縦向き）：一筆箋を重ねる ───
+// 便箋の代わりに、4つの段落を1枚ずつ小さな一筆箋にして、少しずつ傾けて重ねる（letter.css の「一筆箋」）。
+// ・いちばん上に書き出しの文（紙の外、ページの地の上）→ 一筆箋4枚 → 署名と、その右に判子（OwnerStamp.tsx）
+// ・一筆箋は、スクロールに合わせて1枚ずつ置かれ、最後に署名が出て、判子が押される（料理の絵と同じ仕組み）
+// ・背の低い横向きの画面（高さ 500px 以下）と lg 以上は、今までの便箋のまま（一筆箋の並びは display: none）
+// ・便箋と一筆箋は、同じ文（OWNER_SECTIONS）から作る。見えているのはどちらか一方だけ（もう一方は display: none で、読み上げにも出ない）
 
 // 折り返さない語のかたまり（狭い画面で、Chrome の語の切れ目の判定が外れて語の途中で折れる所と、
 // auto-phrase が効かない iPhone の Safari で語の途中で折れそうな所）。
@@ -66,7 +77,8 @@ export default function OwnerPage() {
       <PageHeading title="きたげんの店主より" lead="桃谷で、みんなの居場所になる店を。" />
 
       {/* ── 便箋（店主からの手紙）と、便箋の下の結び ───────────────── */}
-      <div className="section-deep py-14 md:py-24">
+      {/* overflow-x: clip … 一筆箋が置かれる途中（傾きが大きい形）で、画面の横にはみ出さないように（スクロールの箱にはしない） */}
+      <div className="section-deep py-14 md:py-24 overflow-x-clip">
         <SectionInner>
           {/* 店主写真（フォルダ方式）。未設置の間は出さない。
               写真は web/public/images/owner/ に置き、app/lib/owner.ts の OWNER_PHOTO を設定すると、便箋の上に出る */}
@@ -85,7 +97,7 @@ export default function OwnerPage() {
             </figure>
           )}
 
-          <article className="section-light mx-auto w-full max-w-page-wide px-6 py-9 md:px-14 md:py-14 lg:px-14 lg:py-12 shadow-[0_1px_6px_rgba(47,36,28,0.08)]">
+          <article className="owner-letter section-light mx-auto w-full max-w-page-wide px-6 py-9 md:px-14 md:py-14 lg:px-14 lg:py-12 shadow-[0_1px_6px_rgba(47,36,28,0.08)]">
             <div className="letter-body text-foreground [word-break:auto-phrase]">
               {/* 書き出しの文（大きめの字） */}
               <p className="letter-open font-medium">
@@ -111,6 +123,40 @@ export default function OwnerPage() {
               <p className="letter-sign font-serif font-medium tracking-[0.12em]">店主　北口 隆</p>
             </div>
           </article>
+
+          {/* 縦長の画面の、一筆箋の並び（letter.css の「一筆箋」） */}
+          <div className="owner-notes text-foreground [word-break:auto-phrase]">
+            {/* 書き出しの文（紙の外、ページの地の上。字は便箋と同じ） */}
+            <p className="note-open font-medium">
+              はじめまして。
+              <br />
+              <span className="whitespace-nowrap">居酒屋きたげんの店主です。</span>
+            </p>
+
+            {/* 一筆箋4枚（1枚に1つの段落。傾き・左右のずれは letter.css の .note-1〜.note-4） */}
+            {OWNER_SECTIONS.map((section, i) => (
+              <ScenePlayOnView key={section.heading} name={`一筆箋${i + 1}`} className={`note note-${i + 1}`}>
+                <section className="note-paper section-light scene-anim">
+                  <div className="note-body letter-body">
+                    <h2 className="font-serif font-bold">{section.heading}</h2>
+                    {section.body.map((text, j) => (
+                      <p key={j} className="letter-text">
+                        {keepWords(text, KEEP)}
+                      </p>
+                    ))}
+                  </div>
+                </section>
+              </ScenePlayOnView>
+            ))}
+
+            {/* 署名と判子（署名が出たあとに、判子が押される） */}
+            <ScenePlayOnView name="署名と判子" className="note-sign-row">
+              <div className="note-sign-inner">
+                <p className="note-sign scene-anim font-serif font-medium tracking-[0.12em]">店主　北口 隆</p>
+                <OwnerStamp />
+              </div>
+            </ScenePlayOnView>
+          </div>
 
           {/* 結び（便箋の下・外） */}
           <div className="mt-14 md:mt-20 text-center">

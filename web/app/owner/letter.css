@@ -87,3 +87,179 @@
     font-family: inherit;
   }
 }
+
+/* ─── 一筆箋を重ねる形（縦長の画面：lg 未満で、高さが 500px より大きい画面。app/owner/page.tsx の .owner-notes） ───
+   便箋（.owner-letter）の代わりに、4つの段落を1枚ずつ小さな一筆箋にして、少しずつ傾けて重ねる。
+   背の低い横向きの画面（高さ 500px 以下）と lg 以上は、今までの便箋のまま。
+   ・一筆箋（.note-paper）：紙は section-light（和紙の色）。幅は左右の余白を除いた幅の 88%（タブレットは 26rem まで）。
+     縦長の形にするため、高さは幅の 4/3 より低くしない（aspect-ratio。文が長ければ、そのぶん伸びる）。
+     罫線・字の大きさ・行の高さは便箋の横書きと同じ（中の箱に .letter-body を使う。字の行と罫線がそろう）。
+     紙の上 28px・左右 20px・下 44px は余白（罫線なし）
+   ・傾き −2°・1.5°・−1°・2°、左右のずれ −3%・2.5%・−2%・3%（紙の幅に対して。乱数なし）
+   ・重なり：2枚目からは、上の一筆箋の下のふちに 18px 乗る（後ろの紙ほど上に重なる）。
+     上の一筆箋の下の余白は 44px あるので、傾き（ふちの上下 約 ±8px）を足しても、文字には届かない
+   ・影：ごく淡い2段（紙が机に置かれているように）
+   ・署名（明朝・右寄せ。字は便箋と同じ 18px）と、その右に判子（OwnerStamp.tsx。42px ＝ 署名の字の約 2.3 倍。4° 傾ける）
+   動き（スクロールに合わせて進む。料理の絵と同じ仕組み：scenes.css の 1)・1')・2)、sceneScroll.ts）：
+   ・一筆箋：少し下（64px）・少し大きく（1.04 倍）・傾きを倍にした所から、うすい → 濃い で、決めた傾きに落ち着く（note-place）。
+     始まりは「一筆箋の上の端が、見えている画面の下の端から 100px 上に来たところ」（entry 100px。--scene-entry）、
+     完成は contain 40%（--scene-span）＝ 一筆箋の真ん中が、見えている画面の真ん中より少し下（空いている高さの 1 割）に来たところ
+   ・署名と判子（.note-sign-row）：囲みが画面に全部入ったところ 〜 囲みの真ん中が画面の真ん中に来たところ（contain 0〜50%）を
+     4〜60 に割り当て、署名は 18〜32（ふわっと出る）、判子は 36〜60（ポンと押される）。
+     4枚目が置かれたあと（4枚目の完成は、囲みの進みでおよそ 4〜12）に署名が出る。判子の完成は、判子の真ん中が画面の真ん中に来たところ
+   ・prefers-reduced-motion と、JavaScript が動かないときは、置かれた形・押された形（下の、動きのない形）で止まる */
+
+/* 判子の朱（新しく足した色。食材のほかに色を付ける、ただ1つの例外。scenes.css の先頭の決まり） */
+.owner-notes {
+  --stamp-shu: #AE4630;
+  display: none;
+}
+@media (max-width: 1023px) and (min-height: 501px) {
+  .owner-letter {
+    display: none;
+  }
+  .owner-notes {
+    display: block;
+  }
+}
+
+/* 書き出しの文（紙の外。字は便箋と同じ 18px、360px より狭い画面は 17px） */
+.note-open {
+  margin-block-end: 32px;
+  text-align: center;
+  font-size: 18px;
+  line-height: 32px;
+}
+@media (max-width: 359px) {
+  .note-open {
+    font-size: 17px;
+  }
+}
+
+/* 一筆箋の囲み（.scene-art。動きの範囲の決まりを置く） */
+.note {
+  --scene-entry: 100px;
+  --scene-span: 40%;
+}
+.note + .note {
+  margin-block-start: -18px;
+}
+.note-1 { --tilt: -2deg;  --shift: -3%; }
+.note-2 { --tilt: 1.5deg; --shift: 2.5%; }
+.note-3 { --tilt: -1deg;  --shift: -2%; }
+.note-4 { --tilt: 2deg;   --shift: 3%; }
+
+.note-paper {
+  --a: note-place;
+  --r0: 4;
+  --r1: 60;
+  display: flex;
+  flex-direction: column;
+  width: 88%;
+  max-width: 26rem;
+  aspect-ratio: 3 / 4;
+  margin-inline: auto;
+  padding: 28px 20px 44px;
+  transform: translateX(var(--shift)) rotate(var(--tilt));
+  box-shadow:
+    0 1px 2px rgba(47, 36, 28, 0.07),
+    0 8px 18px -8px rgba(47, 36, 28, 0.2);
+}
+.note-body {
+  flex: 1;
+}
+
+@keyframes note-place {
+  from {
+    opacity: 0;
+    transform: translate(var(--shift), 64px) rotate(calc(var(--tilt) * 2)) scale(1.04);
+    animation-timing-function: cubic-bezier(0.22, 0.7, 0.3, 1);
+  }
+  to {
+    opacity: 1;
+    transform: translate(var(--shift), 0) rotate(var(--tilt)) scale(1);
+  }
+}
+
+/* 署名と判子 */
+.note-sign-row {
+  margin-block-start: 40px;
+}
+.note-sign-inner {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  width: 88%;
+  max-width: 26rem;
+  margin-inline: auto;
+}
+.note-sign {
+  --a: note-sign-in;
+  --r0: 18;
+  --r1: 32;
+  font-size: 18px;
+  line-height: 32px;
+}
+@keyframes note-sign-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.note-stamp {
+  --a: stamp-press;
+  --r0: 36;
+  --r1: 60;
+  display: block;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  transform: rotate(4deg);
+}
+.note-stamp-ink {
+  fill: var(--stamp-shu);
+  fill-opacity: 0.92;
+}
+.note-stamp-char {
+  fill: #F7F3EB;
+  font-family: "Noto Serif JP", serif;
+  font-weight: 700;
+  font-size: 18px;
+}
+/* 判子が押される：1.4 倍のうすい所から、すっと縮んで濃くなり（〜70%）、押された瞬間に 0.97 倍に沈んで（〜84%）、戻る */
+@keyframes stamp-press {
+  0% {
+    opacity: 0;
+    transform: rotate(4deg) scale(1.4);
+    animation-timing-function: cubic-bezier(0.5, 0, 0.8, 0.4);
+  }
+  70% {
+    opacity: 1;
+    transform: rotate(4deg) scale(1);
+    animation-timing-function: ease-out;
+  }
+  84% {
+    opacity: 1;
+    transform: rotate(4deg) scale(0.97);
+    animation-timing-function: ease-in-out;
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(4deg) scale(1);
+  }
+}
+
+/* 一筆箋の範囲（scenes.css の 1) の範囲の式の代わり）：始まりは entry --scene-entry、完成は contain --scene-span。
+   JS で進める形（sceneScroll.ts）も、囲みの --scene-entry・--scene-span を読んで同じ位置にする */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .note .scene-anim {
+      animation-range: entry var(--scene-entry) contain var(--scene-span);
+    }
+  }
+}

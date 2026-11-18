@@ -20,6 +20,9 @@
 //     len  … svg の --scene-len（付けていない絵は 56）
 //     span … svg の --scene-span（席の絵 62%、背の低い画面の席 80%。付けていない絵は 50%）
 //     lead … 名物の欄のカード（.scene-svg-card）は (1 − --scene-ink) × 絵の場所の幅。それ以外は svg の --scene-lead（付けていない絵は 0）
+//   絵（svg）のない囲み（店主紹介のページの一筆箋・署名と判子。app/owner/letter.css）は、これらの値を囲み（.scene-art）から読む。
+//   囲みに --scene-entry（px）があるときは、始まりを「囲みの上の端が、見えている画面の下の端から --scene-entry だけ上に来たところ」
+//   （CSS の entry --scene-entry）にする：yS ＝ B − entry
 //
 // ・当て方：data-scene="js" のとき、各部品の CSS の動きを「長さ 1000ms・一時停止」にしておき（scenes.css）、
 //   element.getAnimations() で取った動きの currentTime を、進み具合 × 1000ms にする
@@ -48,6 +51,7 @@ type Entry = {
   len: number;
   span: number;
   lead: number;
+  entry: number | null; // --scene-entry（px）。あるときは始まりを entry で決める
   // ?debug=1 の表示のため
   f: number;
   center: number;
@@ -113,15 +117,18 @@ function num(s: string, fallback: number): number {
 
 function readConfig(e: Entry) {
   const svg = e.el.querySelector<SVGSVGElement>(".scene-svg");
-  const cs = svg ? getComputedStyle(svg) : null;
-  e.len = cs ? num(cs.getPropertyValue("--scene-len"), 56) : 56;
-  const span = cs ? cs.getPropertyValue("--scene-span").trim() : "";
+  // 絵（svg）のない囲み（一筆箋など）は、囲みそのものから読む
+  const cs = getComputedStyle(svg ?? e.el);
+  const entry = cs.getPropertyValue("--scene-entry").trim();
+  e.entry = entry ? num(entry, 0) : null;
+  e.len = num(cs.getPropertyValue("--scene-len"), 56);
+  const span = cs.getPropertyValue("--scene-span").trim();
   e.span = span.endsWith("%") ? num(span, 50) / 100 : 0.5;
   if (svg && svg.classList.contains("scene-svg-card")) {
-    const ink = cs ? num(cs.getPropertyValue("--scene-ink"), 1) : 1;
+    const ink = num(cs.getPropertyValue("--scene-ink"), 1);
     e.lead = (1 - ink) * e.el.clientWidth;
   } else {
-    e.lead = cs ? num(cs.getPropertyValue("--scene-lead"), 0) : 0;
+    e.lead = num(cs.getPropertyValue("--scene-lead"), 0);
   }
 }
 
@@ -150,7 +157,7 @@ function progressOf(e: Entry, rect: DOMRect): number {
   const h = rect.height;
   const y0 = Math.max(B - h, T);
   const y1 = Math.min(T, B - h);
-  const yS = y0 + e.lead;
+  const yS = e.entry !== null ? B - e.entry : y0 + e.lead;
   const yE = y0 + e.span * (y1 - y0);
   if (yS === yE) return y <= yE ? 1 : 0;
   return (yS - y) / (yS - yE);
@@ -178,7 +185,12 @@ function frame() {
   // 各部品の動き（getAnimations）は、登録したときに1回だけ取る（画面の大きさが変わっても、動きそのものは同じ）
   if (configDirty) {
     vp = viewport();
-    for (const e of entries) readConfig(e);
+    for (const e of entries) {
+      readConfig(e);
+      // 画面の大きさが変わって、部品の動きが作り直されたとき（display: none になった・戻った囲み。
+      // 店主紹介のページは、画面の形で一筆箋と便箋を切り替える）だけ、動きを取り直す
+      if (mode === "js" && (e.parts.length === 0 || e.parts.some((p) => p.anim.playState === "idle"))) collectParts(e);
+    }
   }
   // 先に位置をまとめて読む
   const work: Entry[] = [];
@@ -243,7 +255,7 @@ export function registerScene(el: HTMLElement, name: string): () => void {
   if (m === "css" && !isDebug()) return () => {};
   if (m !== "css" && m !== "js") return () => {};
   if (m === "js") el.dataset.scene = "js";
-  const e: Entry = { el, name, parts: [], near: false, len: 56, span: 0.5, lead: 0, f: 0, center: 0, once: true };
+  const e: Entry = { el, name, parts: [], near: false, len: 56, span: 0.5, lead: 0, entry: null, f: 0, center: 0, once: true };
   entries.add(e);
   if (isDebug()) ensureDebug();
   startListening();

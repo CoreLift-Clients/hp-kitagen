@@ -5,6 +5,7 @@ import { ensureDebug, registerScene, sceneMode } from "./sceneScroll";
 
 // ─── 場面の絵の囲み（動きの切り替え） ───
 // トップの線画の場面（Scene.tsx）と、名物の欄のカード（Specialties.tsx）が、絵をこの囲みに入れる。
+// 店主紹介のページ（縦長の画面）の一筆箋・署名と判子も、この囲みに入れて同じ仕組みで動かす（絵〈svg〉はない。app/owner/letter.css）。
 // どの仕組みで動かすかは sceneScroll.ts の sceneMode で決める：
 // ・css（scroll-driven animations〈animation-timeline: view()〉が使えるブラウザ）… 何もしない。
 //   動きはすべて CSS（scenes.css）で、スクロールの位置に合わせて進む・戻る
