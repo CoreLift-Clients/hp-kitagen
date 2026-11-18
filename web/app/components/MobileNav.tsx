@@ -151,8 +151,10 @@ export default function MobileNav() {
           </ul>
         </nav>
 
-        {/* フッター — 電話予約ボタン（唯一の予約導線）。下は iPhone のホームのバーの分だけあける */}
-        <div className="px-6 pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] border-t border-border/50 space-y-3">
+        {/* フッター — 電話予約ボタン（唯一の予約導線）と、注意書き。下は iPhone のホームのバーの分だけあける。
+            電話番号の文字は出さない（すぐ上の「電話で予約する」ボタンと重なるため。以前はボタンと注意書きのあいだにあった）。
+            ボタンと注意書きのあいだは 16px（space-y-4） */}
+        <div className="px-6 pt-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] border-t border-border/50 space-y-4">
           <a
             href={`tel:${TEL}`}
             onClick={() => setOpen(false)}
@@ -164,7 +166,6 @@ export default function MobileNav() {
             <Phone size={18} strokeWidth={2} />
             電話で予約する
           </a>
-          <p className="text-center font-serif text-sm font-bold text-muted/90 tabular-nums">{TEL}</p>
           {/* 「ホームページを見た」と後ろを分けて、それぞれ折り返さない（「くださ／い。」のように語の途中で折れないように） */}
           <p className="text-center text-xs text-muted/90 leading-relaxed">
             <span className="whitespace-nowrap">「ホームページを見た」</span>

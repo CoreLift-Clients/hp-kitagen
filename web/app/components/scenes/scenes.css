@@ -508,31 +508,43 @@
   35%  { opacity: 1; }
   to   { opacity: 0; transform: translate(-3px, -8px) rotate(var(--rot, 12deg)); }
 }
-/* マドラーで混ぜる：グラスの口の少し下（--o）を中心に左右へ小さく傾け、少しずらして、小さく回るように、ゆっくり 1 周
-   （グラスの中の先が、左 → 奥 → 右 → 元の位置と、左右に1往復する。止まって見えないよう、円を 12 コマでなめらかにたどる。
-   最初と最後だけ、ゆっくり動き出して、ゆっくり止まる） */
+/* マドラーで混ぜる：グラスの口の少し下（--o）を中心に左右へ小さく傾け、少しずらして、小さく回るように 1 周半
+   （グラスの中の先が、左右に1往復半。止まって見えないよう、円を 30 度ずつ 18 コマでなめらかにたどる。
+   最初はゆっくり動き出す）。1 周半を回り終えるのは 92%（そのときマドラーの傾きは 0、先は奥へ 2px ずれた所）。
+   92% から 100% で、ずれを戻して、まっすぐ立った形（transform なし）にそろえる。そのあと抜く（sake-pull-out）。
+   以前は、同じ段の長さで、ゆっくり 1 周（12 コマ）だった。回数が増えた分、1 周は少し速い。
+   値は x ＝ 2·sin θ、y ＝ −(1 − cos θ)、傾き ＝ 5·sin θ（θ は 0 → 3π） */
 @keyframes sake-stir {
   from     { transform: none; animation-timing-function: ease-in; }
-  8.333%   { transform: translate(1px, -0.13px) rotate(2.5deg); }
-  16.667%  { transform: translate(1.73px, -0.5px) rotate(4.33deg); }
-  25%      { transform: translate(2px, -1px) rotate(5deg); }
-  33.333%  { transform: translate(1.73px, -1.5px) rotate(4.33deg); }
-  41.667%  { transform: translate(1px, -1.87px) rotate(2.5deg); }
-  50%      { transform: translate(0px, -2px) rotate(0deg); }
-  58.333%  { transform: translate(-1px, -1.87px) rotate(-2.5deg); }
-  66.667%  { transform: translate(-1.73px, -1.5px) rotate(-4.33deg); }
-  75%      { transform: translate(-2px, -1px) rotate(-5deg); }
-  83.333%  { transform: translate(-1.73px, -0.5px) rotate(-4.33deg); }
-  91.667%  { transform: translate(-1px, -0.13px) rotate(-2.5deg); animation-timing-function: ease-out; }
+  5.111%   { transform: translate(1px, -0.13px) rotate(2.5deg); }
+  10.222%  { transform: translate(1.73px, -0.5px) rotate(4.33deg); }
+  15.333%  { transform: translate(2px, -1px) rotate(5deg); }
+  20.444%  { transform: translate(1.73px, -1.5px) rotate(4.33deg); }
+  25.556%  { transform: translate(1px, -1.87px) rotate(2.5deg); }
+  30.667%  { transform: translate(0px, -2px) rotate(0deg); }
+  35.778%  { transform: translate(-1px, -1.87px) rotate(-2.5deg); }
+  40.889%  { transform: translate(-1.73px, -1.5px) rotate(-4.33deg); }
+  46%      { transform: translate(-2px, -1px) rotate(-5deg); }
+  51.111%  { transform: translate(-1.73px, -0.5px) rotate(-4.33deg); }
+  56.222%  { transform: translate(-1px, -0.13px) rotate(-2.5deg); }
+  61.333%  { transform: translate(0px, 0px) rotate(0deg); }
+  66.444%  { transform: translate(1px, -0.13px) rotate(2.5deg); }
+  71.556%  { transform: translate(1.73px, -0.5px) rotate(4.33deg); }
+  76.667%  { transform: translate(2px, -1px) rotate(5deg); }
+  81.778%  { transform: translate(1.73px, -1.5px) rotate(4.33deg); }
+  86.889%  { transform: translate(1px, -1.87px) rotate(2.5deg); }
+  92%      { transform: translate(0px, -2px) rotate(0deg); animation-timing-function: ease-in-out; }
   to       { transform: none; }
 }
-/* 混ぜるときの氷の揺れ（--j で、氷ごとに向きと大きさを変える）。マドラーの1周に合わせて、1回だけ揺れる
-   （マドラーの先が左へ来るころに片側へ、右へ来るころに反対側へ傾き、元に戻る） */
+/* 混ぜるときの氷の揺れ（--j で、氷ごとに向きと大きさを変える）。マドラーの 1 周半に合わせて、3回揺れる
+   （マドラーの先が片側へ来るころ〈θ ＝ π/2・3π/2・5π/2 ＝ 15.3%・46%・76.7%〉に、片側・反対側・片側へ傾き、
+   マドラーがまっすぐにそろうころに元に戻る。3回目は少し小さく） */
 @keyframes sake-ice-jiggle {
-  from, 28%, 72%, to { animation-timing-function: ease-in-out; }
+  from, 15.333%, 46%, 76.667%, to { animation-timing-function: ease-in-out; }
   from, to { transform: none; }
-  28% { transform: translate(calc(1.5px * var(--j, 1)), -1px) rotate(calc(4deg * var(--j, 1))); }
-  72% { transform: translate(calc(-1.5px * var(--j, 1)), 0.5px) rotate(calc(-3deg * var(--j, 1))); }
+  15.333% { transform: translate(calc(1.5px * var(--j, 1)), -1px) rotate(calc(4deg * var(--j, 1))); }
+  46%     { transform: translate(calc(-1.5px * var(--j, 1)), 0.5px) rotate(calc(-3.5deg * var(--j, 1))); }
+  76.667% { transform: translate(calc(1.1px * var(--j, 1)), -0.7px) rotate(calc(2.5deg * var(--j, 1))); }
 }
 /* マドラーを抜く：上へまっすぐ（--pull）動かし、後ろ半分で消える */
 @keyframes sake-pull-out {
