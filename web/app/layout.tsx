@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 // フォントはサイトの中に持たせる（ビルドのたびに Google Fonts へ取りに行かない）。
 // @fontsource のファイルはビルド時に node_modules から出力される。文字の範囲ごとに分かれているので、
 // ブラウザはページで使う文字を含むファイルだけを読む。太さは使うものだけ（400・500・700）。
@@ -64,6 +64,15 @@ export const metadata: Metadata = {
   },
 };
 
+// 画面の大きさの指定。viewportFit: "cover" で、iPhone の画面の端（丸い角・切り欠き・ホームのバー）の
+// 大きさが env(safe-area-inset-*) で分かるようにする（付けないと iOS では env() がいつも 0）。
+// その分、下に固定した「電話する」・メニューの板・トップの写真の場面・フッター・ヘッダーと、
+// 中身の左右の余白（SectionInner）で、env() の分をあけている。パソコンと Android では env() は 0 で、見た目は変わらない
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 const FOOTER_LINKS = [
   { href: "/", label: "トップ" },
@@ -74,9 +83,10 @@ function Footer() {
   const currentYear = new Date().getFullYear();
   return (
     // md より狭い画面では、下に固定した「電話する」ボタン（MobileCallBar・52px ＋ safe-area）に
-    // 隠れないよう、フッターの下に同じ高さのあきを足す
-    <footer className="border-t border-border bg-card-bg pb-[calc(52px+env(safe-area-inset-bottom))] md:pb-0">
-      <div className="max-w-5xl mx-auto px-4 py-8">
+    // 隠れないよう、フッターの下に同じ高さのあきを足す。md 以上は safe-area の分だけ（iPad のホームのバー。ほかの端末では 0）。
+    // 左右は、iPhone の横向きの丸い角・切り欠きより狭くしない（ほかの端末では今までの 16px）
+    <footer className="border-t border-border bg-card-bg pb-[calc(52px+env(safe-area-inset-bottom))] md:pb-[env(safe-area-inset-bottom)]">
+      <div className="max-w-5xl mx-auto pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] py-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-center md:text-left">
             <p className="font-serif text-lg font-bold text-accent">きたげん</p>
@@ -84,11 +94,13 @@ function Footer() {
           </div>
           {/* 並びは「トップ」→ ヘッダーと同じ項目（lib/nav.ts の NAV_LINKS：お品書き・ご案内・ごあいさつ）。
               ヘッダーに無いトップも、ここから辿れる（お知らせのページはやめた。お知らせはご案内のページの欄からインスタグラムへ）。
-              390px でも1行に収まるよう、あきは 20px。項目が増えたら折り返す。 */}
-          <ul className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm text-muted">
+              390px でも1行に収まるよう、あきは 20px。項目が増えたら折り返す。
+              押せる範囲は高さ 44px（py-3。上下にはみ出す 12px ずつは -my-3 で戻し、並びと見た目は今までのまま）。
+              折り返したときに、上下の行の押せる範囲が重ならないよう、行のあきは 24px（gap-y-6） */}
+          <ul className="flex flex-wrap justify-center gap-x-5 gap-y-6 text-sm text-muted">
             {FOOTER_LINKS.map(({ href, label }) => (
               <li key={href}>
-                <Link href={href} className="hover:text-foreground transition-colors">
+                <Link href={href} className="inline-block py-3 -my-3 hover:text-foreground transition-colors">
                   {label}
                 </Link>
               </li>

@@ -3,12 +3,13 @@ import { Phone, ExternalLink } from "lucide-react";
 import { getSiteImages } from "./lib/site-images";
 import HeroImage from "./components/HeroImage";
 import SectionInner from "./components/SectionInner";
-import Scene, { SceneLink, SCENE_LINK_CLASS, TextOnlyScene } from "./components/scenes/Scene";
+import Scene, { SceneLink, SCENE_LINK_CLASS, SCENE_LINK_HIT, TextOnlyScene } from "./components/scenes/Scene";
 import SeiroIllustration from "./components/scenes/SeiroIllustration";
 import SeatIllustration from "./components/scenes/SeatIllustration";
 import ToastIllustration from "./components/scenes/ToastIllustration";
 import { PHONE, INSTAGRAM_URL } from "./lib/contact";
 import { STORY } from "./content/story";
+import { keepWords } from "./lib/keepWords";
 
 // 明朝体（Noto Serif JP）。このページでだけ読み込む。
 // 太さは使うものだけ：OUR STORY の本文と場面の文 500、見出し 700。字の並び（読み込めないときの代わりの明朝体）は
@@ -34,11 +35,24 @@ import "@fontsource/noto-serif-jp/700.css";
 const CALL_BUTTON_CLASS =
   "btn-lift inline-flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 py-4 px-8 rounded-sm bg-accent text-white hover:bg-accent-dark font-bold text-sm tracking-wider transition-colors duration-200 active:scale-[0.98]";
 
+// OUR STORY の本文（lg より狭い画面の横書き）で、語の途中で折り返さないかたまり（lib/keepWords.tsx）。
+// iPhone の Safari では auto-phrase が効かず、字と字のあいだのどこででも折れるため、
+// 320〜430px の画面で語の途中で折れた所・折れそうな所を挙げている。文を変えたら、狭い画面で見直すこと
+const STORY_KEEP = [
+  "桃谷の", "商店街に", "小さな", "居酒屋。",
+  "仕事帰りに、", "ふらっと", "一杯。", "気の合う", "仲間と、", "ゆっくり", "食事。", "そんな", "何気ない", "時間を、", "大切に", "したい。",
+  "自家製の", "しゅうまいに、", "こんがり", "焼いた", "鉄鍋餃子。", "一品一品、", "手間を", "惜しまず。", "おいしいと", "思って", "もらえる", "料理を", "ご用意", "しています。",
+  "特別な", "日だけ", "じゃなく、", "なんでもない", "日にも", "来たくなる。",
+  "初めての", "方も、", "いつもの方も。", "肩肘張らず、", "思い思いの", "時間を。",
+  "今日も", "桃谷で、", "お待ちして", "います。",
+] as const;
+
 export default async function Home() {
   const SITE_IMAGES = await getSiteImages();
 
-  // 場面の絵の大きさ：md 以上 幅 400px、スマホ 画面の幅の 70%
-  const ART = "block w-[70vw] md:w-[400px] h-auto text-foreground";
+  // 場面の絵の大きさ：md 以上 幅 400px、スマホ 画面の幅の 70%。
+  // 背の低い画面（高さ 500px 以下。スマホの横向き）は、高さでも抑える（scenes.css の .scene-top-art。絵の全体が画面に入るように）
+  const ART = "scene-top-art block w-[70vw] md:w-[400px] h-auto text-foreground";
 
   return (
     <div className="min-h-screen">
@@ -156,7 +170,7 @@ export default async function Home() {
                           lg 以上は1行ずつ（block・折り返さない） */}
                       {para.map((line) => (
                         <span key={line} className="lg:block lg:whitespace-nowrap">
-                          {line}
+                          {keepWords(line, STORY_KEEP)}
                         </span>
                       ))}
                     </p>
@@ -212,19 +226,20 @@ export default async function Home() {
       />
 
       {/* 結び（絵なし、文字だけ。縦書きと入口を横の真ん中に）。入口は横に3つ（md より狭い画面は縦に）。
+          入口の押せる範囲は高さ 44px（SCENE_LINK_HIT）。縦に並ぶときに押せる範囲が重ならないよう、あきは 24px（gap-6）。
           背景は section-deep（下のフッター（card-bg ＝ section-warm と同じ色）と分ける） */}
       <TextOnlyScene
         tone="deep"
         heading="今日も桃谷で、"
         lines={["お待ちしています。"]}
         action={
-          <ul className="flex flex-col md:flex-row items-center justify-center gap-5 md:gap-8">
+          <ul className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8">
             <li>
               <a
                 href={INSTAGRAM_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`inline-flex items-center gap-1.5 ${SCENE_LINK_CLASS}`}
+                className={`inline-flex items-center gap-1.5 ${SCENE_LINK_HIT} ${SCENE_LINK_CLASS}`}
               >
                 Instagram
                 <ExternalLink size={13} strokeWidth={1.75} aria-hidden="true" />
@@ -232,12 +247,12 @@ export default async function Home() {
               </a>
             </li>
             <li>
-              <Link href="/owner" className={SCENE_LINK_CLASS}>
+              <Link href="/owner" className={`inline-block ${SCENE_LINK_HIT} ${SCENE_LINK_CLASS}`}>
                 ごあいさつ →
               </Link>
             </li>
             <li>
-              <Link href="/info" className={SCENE_LINK_CLASS}>
+              <Link href="/info" className={`inline-block ${SCENE_LINK_HIT} ${SCENE_LINK_CLASS}`}>
                 ご案内 →
               </Link>
             </li>

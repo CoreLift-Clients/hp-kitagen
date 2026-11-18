@@ -91,13 +91,36 @@ const KANA_VARS = {
 const KANA_RUN = /([ぁ-ゟァ-ヿ]+)/;
 const isKana = (s: string) => /^[ぁ-ゟァ-ヿ]+$/.test(s);
 
-function CardName({ name }: { name: string }) {
+// 品名を2行に折るときの切れ目（語の切れ目）。md より狭い画面で、1行だと 16px より小さくなる長い品名だけが、ここで折れる。
+// 品名のデータ（content/specialty-prices.ts）は変えない。ここに無い品名は折れない（1行のまま縮む）。
+// 品名を変えたり足したりして、320px の画面で 16px に入らない長さになるときは、ここに切れ目を足すこと
+const NAME_BREAKS: Record<string, readonly string[]> = {
+  "自家製しゅうまい": ["自家製", "しゅうまい"],
+  "ソフトドリンク": ["ソフト", "ドリンク"],
+  "日本酒・焼酎": ["日本酒・", "焼酎"],
+};
+
+function KanaRuns({ text }: { text: string }) {
   return (
     <>
-      {name
+      {text
         .split(KANA_RUN)
         .filter(Boolean)
         .map((part, i) => (isKana(part) ? <span key={i} className="card-name-kana">{part}</span> : part))}
+    </>
+  );
+}
+
+// 品名。切れ目のある品名は、かたまりごとに折り返さない span に分ける（折れるのは、かたまりの切れ目だけ）
+function CardName({ name }: { name: string }) {
+  const parts = NAME_BREAKS[name] ?? [name];
+  return (
+    <>
+      {parts.map((part, i) => (
+        <span key={i} className="whitespace-nowrap">
+          <KanaRuns text={part} />
+        </span>
+      ))}
     </>
   );
 }
@@ -129,13 +152,15 @@ function SpecialtyCard({ item, index, seed }: { item: SpecialtyItem; index: numb
       {/* @container：品名の字の大きさを、この入れ物の幅（cqw）から決めるため */}
       <div className="@container mt-2 text-center">
         {/* 品名：佑字 朴（font-brush。太さは 400 しかないので font-normal。太字にすると字が作られてつぶれる）。
-            ひとことより、はっきり大きく。どの画面でも1行に収める（2行に折れると「自家製しゅ／うまい」のように語の途中で切れるため）
+            ひとことより、はっきり大きく。語の途中では折らない（「自家製しゅ／うまい」のように切れないよう、CardName のかたまりの切れ目でだけ折る）
             ・仮名は CardName で span に分け、漢字との大きさ・太さをそろえる（下の KANA_* と scenes.css の .card-name-kana）
-            ・md より狭い画面：18px まで。入れ物の幅に入らない長い品名だけ、その幅（--name-len。仮名の大きさと詰めを入れた字数）に合わせて縮める
-            ・md 22px、lg 24px（どの品名も1行に入る） */}
+            ・md より狭い画面：18px まで。入れ物の幅に入らない長い品名だけ、その幅（--name-len。仮名の大きさと詰めを入れた字数）に合わせて縮める。
+              ただし 16px より小さくはしない。16px で1行に入らない品名（320px の画面の「自家製しゅうまい」「ソフトドリンク」など）は、
+              NAME_BREAKS の切れ目で2行に折る（以前は 1行のまま 12.6px・14.1px まで縮んでいた）
+            ・md 22px、lg 24px（どの品名も1行に入る。md 以上は折らない） */}
         <h4
           style={{ "--name-len": nameUnits(item.name), ...KANA_VARS } as CSSProperties}
-          className="font-brush font-normal text-foreground text-[length:min(18px,calc(100cqw/(var(--name-len)_+_0.4)))] md:text-[22px] lg:text-[24px] leading-snug whitespace-nowrap md:tracking-wide"
+          className="font-brush font-normal text-foreground text-[length:max(16px,min(18px,calc(100cqw/(var(--name-len)_+_0.4))))] md:text-[22px] lg:text-[24px] leading-snug md:whitespace-nowrap md:tracking-wide"
         >
           <CardName name={item.name} />
         </h4>
@@ -182,8 +207,14 @@ export default function Specialties({
   id?: string;
   afterFood?: ReactNode;
 }) {
+  // 下の余白：ページのいちばん下までスクロールしたとき、最後の段のカードの絵の真ん中が、見えている画面の真ん中まで
+  // 上がってくるようにする（カードの動きは、そこで完成する。scenes.css の「名物の欄の決まり」）。
+  // 欄のあとはフッターだけなので、背の高い画面（縦向きのタブレットなど）では、今までの余白（80px・md 96px）では足りず、
+  // 最後のカードの動きが終わらなかった（430×932 で 81%、768×1024 で 72%、820×1180 で泡が出ないまま）。
+  // そこで、下の余白を「画面の高さの半分 − 20rem（320px）」と今までの余白の大きいほうにする。
+  // 背の低い画面（パソコンの 1280×720、スマホの 375×667 など）は今までのまま。上の余白は変えない
   return (
-    <section id={id} className={`scene scroll-mt-32 py-20 md:py-24 section-${tone}`}>
+    <section id={id} className={`scene scroll-mt-32 pt-20 md:pt-24 pb-[max(5rem,calc(50vh-20rem))] md:pb-[max(6rem,calc(50vh-20rem))] section-${tone}`}>
       <SectionInner>
         {/* 欄の見出し（縦書き・明朝体 700）。欄のいちばん上の真ん中 */}
         <div className="mb-14 lg:mb-16 flex justify-center">

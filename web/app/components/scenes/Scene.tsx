@@ -18,6 +18,11 @@ import "./scenes.css";
 // ・絵の大きさ：md 以上 幅 400px、スマホ 画面の幅の 70%
 // ・縦書きの横幅：見出し1列（約 45px）＋文3行（約 102px）＋あき（約 70px）で約 220px。
 //   320px の画面（左右の余白を除いて 272px）にも収まる。文を4行以上にするときは、ここの計算を見直すこと
+// ・背の低い画面（高さ 500px 以下。スマホの横向きなど）は、場面が1画面に収まるよう形を変える（scenes.css の「背の低い画面」）：
+//   md より狭くても「絵と縦書きを左右に並べる」形、絵は高さでも抑える、縦書きの字を一段小さく、
+//   入口（action）は縦書きの下ではなく左に置く（縦書きの読み終わりの側。下端をそろえる）。
+//   クラス：.scene-layout（絵と文の並び。reverse のときは .is-reverse）・.scene-textwrap（縦書きと入口の並び）・
+//   .scene-action（入口）・.scene-heading・.scene-lines（SceneText）
 export type SceneTone = "light" | "warm" | "deep";
 
 export default function Scene({
@@ -41,15 +46,15 @@ export default function Scene({
     <section id={id} className={`scene py-28 md:py-40 section-${tone}`}>
       <SectionInner>
         <div
-          className={`flex flex-col items-center justify-center gap-14 md:gap-20 lg:gap-24 ${
-            reverse ? "md:flex-row-reverse" : "md:flex-row"
+          className={`scene-layout flex flex-col items-center justify-center gap-14 md:gap-20 lg:gap-24 ${
+            reverse ? "is-reverse md:flex-row-reverse" : "md:flex-row"
           }`}
         >
           <ScenePlayOnView className="shrink-0">{art}</ScenePlayOnView>
 
-          <div className="flex max-w-full flex-col items-center">
+          <div className="scene-textwrap flex max-w-full flex-col items-center">
             <SceneText heading={heading} lines={lines} />
-            <div className="mt-10">{action}</div>
+            <div className="scene-action mt-10">{action}</div>
           </div>
         </div>
       </SectionInner>
@@ -79,9 +84,9 @@ export function TextOnlyScene({
   return (
     <section id={id} className={`scene py-28 md:py-40 section-${tone}`}>
       <SectionInner>
-        <div className="flex flex-col items-center text-center">
+        <div className="scene-textwrap flex flex-col items-center text-center">
           <SceneText heading={heading} lines={lines} large />
-          <div className="mt-10 flex justify-center">{action}</div>
+          <div className="scene-action mt-10 flex justify-center">{action}</div>
         </div>
       </SectionInner>
     </section>
@@ -139,11 +144,17 @@ export function SceneText({
   }`;
   return (
     <div className="font-serif [writing-mode:vertical-rl] text-foreground">
-      <Heading className={`${headingSize} font-bold leading-[1.6] tracking-[0.16em] whitespace-nowrap`}>
-        {withUprightDigits(heading)}
+      <Heading className={`scene-heading ${large ? "is-large " : ""}${headingSize} font-bold leading-[1.6] tracking-[0.16em] whitespace-nowrap`}>
+        {/* 「、」の後ろで分けたかたまり（それぞれ折り返さない）。ふだんは見出しごと折り返さないので1列のまま。
+            背の低い画面だけ、見出しの長さ（縦書きの高さ）を画面に合わせて抑え、かたまりの切れ目（「、」の後ろ）で2列に折る（scenes.css） */}
+        {heading.split("、").map((part, i, all) => (i < all.length - 1 ? `${part}、` : part)).filter(Boolean).map((part, i) => (
+          <span key={i} className="whitespace-nowrap">
+            {withUprightDigits(part)}
+          </span>
+        ))}
       </Heading>
       <p
-        className={`${textGap} ${textSize} font-medium leading-[2] tracking-[0.14em] [padding-inline-start:2.5em]`}
+        className={`scene-lines ${textGap} ${textSize} font-medium leading-[2] tracking-[0.14em] [padding-inline-start:2.5em]`}
       >
         {lines.map((l) => (
           <span key={l} className="block whitespace-nowrap">
@@ -155,13 +166,16 @@ export function SceneText({
   );
 }
 
-// 入口の小さなリンク（横書き）。external のときは新しいタブで開く
+// 入口の小さなリンク（横書き）の見た目（色・下線・字）。external のときは新しいタブで開く
 export const SCENE_LINK_CLASS =
   "text-sm tracking-wider text-accent hover:text-accent-dark underline underline-offset-4 decoration-accent/40 transition-colors duration-200";
+// 押せる範囲を高さ 44px にする（字の行 20px ＋ 上下 12px）。上下にはみ出す分は -my-3 で戻し、並びと見た目は今までのまま。
+// display（inline-block・inline-flex）は使う所で付ける
+export const SCENE_LINK_HIT = "py-3 -my-3";
 
 export function SceneLink({ href, children }: { href: string; children: ReactNode }) {
   return (
-    <Link href={href} className={SCENE_LINK_CLASS}>
+    <Link href={href} className={`inline-block ${SCENE_LINK_HIT} ${SCENE_LINK_CLASS}`}>
       {children}
     </Link>
   );

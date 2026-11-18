@@ -7,6 +7,7 @@ import { PHONE, INSTAGRAM_URL, MAP_URL } from "../lib/contact";
 import { businessHoursNow, REGULAR_CLOSED, LUNCH_SUSPENDED } from "../lib/businessHours";
 import { pageMetadata } from "../lib/seo";
 import BreadcrumbJsonLd from "../components/BreadcrumbJsonLd";
+import { keepWords } from "../lib/keepWords";
 
 // 明朝体（Noto Serif JP）。項目名（縦書き）・営業時間の大きな数字のために、
 // このページでも読み込む（メニューのページと同じ 500・700）
@@ -54,9 +55,33 @@ const MAP_EMBED_URL =
 //   （md 48px・lg 80px）に回す。本文の1行は 38em（約 38 字）まで。地図の枠も本文の幅に合わせる。
 //   区切りの線は紙の内側の幅いっぱい
 // ・折り返しは語の切れ目で（auto-phrase。メニューのページのテイクアウトのご案内と同じ）。
-//   それでも語の途中で折れてしまう所（Chrome の語の切れ目の判定が外れる所）は、NoBreak で語のかたまりを折り返さない
+//   それでも語の途中で折れてしまう所（Chrome の語の切れ目の判定が外れる所）と、auto-phrase が効かない
+//   iPhone の Safari で語の途中で折れそうな所は、NoBreak で語のかたまりを折り返さない
 
-// 語のかたまりを折り返さない（狭い画面で、語の途中で折れてしまう所だけに使う。かたまりは短く、390px の本文の幅に収まる長さまで）
+// 本文の、折り返さない語のかたまり（lib/keepWords.tsx）。iPhone の Safari は auto-phrase が効かず、
+// 字と字のあいだのどこででも折れるため、語の切れ目でだけ折れるよう、本文を語のかたまりに分けている。
+// 文を変えたり足したりしたら、ここにも語を足すこと（足さなくても表示はできるが、Safari で語の途中で折れることがある）
+const INFO_KEEP = [
+  "しばらく", "お休みしています。", "急に", "お休みや", "時間を", "変える",
+  "〒544-0033", "大阪府", "大阪市", "生野区",
+  "JR環状線", "「桃谷駅」から、", "歩いて", "2分。", "駐車場は", "ありません。", "近くの",
+  "41席。", "1階は", "カウンター", "7席、", "2階は", "座敷です。",
+  "電子タバコは", "店内で", "どうぞ。", "紙タバコは、", "2階に", "喫煙所が", "あります。",
+  "現金・", "クレジットカード、", "どちらも", "使えます。",
+  "人数が", "多いときは、", "お電話ください。", "お席を", "ご用意します。",
+  "お昼や", "開店前でも、", "予約の", "お電話を", "受け付けています。",
+  "「ホームページを見た」", "とお伝えください。",
+  "料理や", "お店の", "様子を、", "お休みの", "お知らせも、", "こちらから。",
+] as const;
+const k = (text: string) => keepWords(text, INFO_KEEP);
+
+// 押せる範囲を高さ 44px 以上にする（上下の余白を足し、同じだけ負の余白で戻す。並びと見た目は今までのまま）。
+// 地図アプリで開く：字の行 31px ＋ 16px。Instagram：24px ＋ 20px。電話番号（32px）は、その a に py-1.5 -my-1.5（＋12px）
+const LINK_HIT_MAP = "py-2 -my-2";
+const LINK_HIT_INSTAGRAM = "py-2.5 -my-2.5";
+
+// 語のかたまりを折り返さない（狭い画面で、語の途中で折れてしまう所だけに使う。かたまりは短く、320px の本文の幅に収まる長さまで）。
+// iPhone の Safari では auto-phrase が効かないので、Safari で語の途中で折れそうな所も、これで守る
 function NoBreak({ children }: { children: ReactNode }) {
   return <span className="whitespace-nowrap">{children}</span>;
 }
@@ -81,7 +106,8 @@ export default function InfoPage() {
             {hours.map((g) => (
               <p key={g.days} className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                 <span className="w-full font-serif text-base md:text-lg font-bold tracking-[0.12em]">{g.days}</span>
-                <span className="font-serif text-[2.5rem] md:text-6xl font-bold leading-[1.1] tracking-[0.02em] tabular-nums whitespace-nowrap">
+                {/* 時刻の字：スマホ 40px・md 以上 60px。360px より狭い画面（320px）は、本文の幅（約 232px）に入るよう 34px */}
+                <span className="font-serif text-[2.5rem] max-[359px]:text-[2.125rem] md:text-6xl font-bold leading-[1.1] tracking-[0.02em] tabular-nums whitespace-nowrap">
                   {g.open}〜{g.close}
                 </span>
                 <span className="text-sm text-muted tabular-nums whitespace-nowrap">（L.O. {g.lo}）</span>
@@ -89,8 +115,8 @@ export default function InfoPage() {
             ))}
           </div>
           <p className="font-semibold">{REGULAR_CLOSED}はお休みです。</p>
-          {LUNCH_SUSPENDED && <p>ランチは、しばらくお休みしています。</p>}
-          <p className="text-muted">急にお休みや時間を変える<NoBreak>ときは、Instagramで</NoBreak><NoBreak>お知らせすることがあります。</NoBreak></p>
+          {LUNCH_SUSPENDED && <p>{k("ランチは、しばらくお休みしています。")}</p>}
+          <p className="text-muted">{k("急にお休みや時間を変える")}<NoBreak>ときは、Instagramで</NoBreak><NoBreak>お知らせすることがあります。</NoBreak></p>
         </>
       ),
     },
@@ -99,13 +125,13 @@ export default function InfoPage() {
       body: (
         <>
           <p className="font-medium">
-            {ADDRESS[0]}
+            {k(ADDRESS[0])}
             <NoBreak>{ADDRESS[1]}</NoBreak>
           </p>
-          <p>JR環状線「桃谷駅」から、歩いて2分。</p>
-          <p className="text-muted">駐車場はありません。お車の方は、近くのコインパーキングをご利用ください。</p>
+          <p>{k("JR環状線「桃谷駅」から、歩いて2分。")}</p>
+          <p className="text-muted">{k("駐車場はありません。")}<NoBreak>お車の方は、</NoBreak>{k("近くの")}<NoBreak>コインパーキングを</NoBreak><NoBreak>ご利用ください。</NoBreak></p>
           <ActionRow>
-            <a href={MAP_URL} target="_blank" rel="noopener noreferrer" className={LINK}>
+            <a href={MAP_URL} target="_blank" rel="noopener noreferrer" className={`${LINK} ${LINK_HIT_MAP}`}>
               地図アプリで開く
               <ExternalLink size={13} strokeWidth={1.5} className="opacity-60" />
             </a>
@@ -131,26 +157,26 @@ export default function InfoPage() {
       label: "お席",
       body: (
         <>
-          <p>41席。1階はカウンター7席、2階は座敷です。</p>
-          <p>電子タバコは店内でどうぞ。紙タバコは、2階に喫煙所があります。</p>
+          <p>{k("41席。1階はカウンター7席、2階は座敷です。")}</p>
+          <p>{k("電子タバコは店内でどうぞ。紙タバコは、2階に喫煙所があります。")}</p>
         </>
       ),
     },
     {
       label: "お支払い",
-      body: <p>現金・クレジットカード、どちらも使えます。</p>,
+      body: <p>{k("現金・クレジットカード、どちらも使えます。")}</p>,
     },
     {
       label: "ご予約",
       body: (
         <>
-          <p>人数が多いときは、お電話ください。お席をご用意します。</p>
-          <p>お昼や開店前でも、予約のお電話を受け付けています。</p>
-          <p className="text-muted">「ホームページを見た」とお伝えください。</p>
+          <p>{k("人数が多いときは、お電話ください。お席をご用意します。")}</p>
+          <p>{k("お昼や開店前でも、予約のお電話を受け付けています。")}</p>
+          <p className="text-muted">{k("「ホームページを見た」とお伝えください。")}</p>
           <ActionRow>
             <a
               href={`tel:${PHONE}`}
-              className="inline-flex items-center gap-2.5 font-serif text-2xl md:text-3xl font-bold tracking-[0.06em] tabular-nums text-foreground hover:text-accent transition-colors duration-200"
+              className="inline-flex items-center gap-2.5 py-1.5 -my-1.5 font-serif text-2xl md:text-3xl font-bold tracking-[0.06em] tabular-nums text-foreground hover:text-accent transition-colors duration-200"
             >
               <Phone size={20} strokeWidth={1.75} className="text-accent" aria-hidden="true" />
               {PHONE}
@@ -165,10 +191,10 @@ export default function InfoPage() {
       id: "news",
       body: (
         <>
-          <p>料理やお店の様子を、<NoBreak>Instagramにのせています。</NoBreak></p>
-          <p>お休みのお知らせも、こちらから。</p>
+          <p>{k("料理やお店の様子を、")}<NoBreak>Instagramにのせています。</NoBreak></p>
+          <p>{k("お休みのお知らせも、こちらから。")}</p>
           <ActionRow>
-            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className={`${LINK} text-base md:text-lg`}>
+            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className={`${LINK} ${LINK_HIT_INSTAGRAM} text-base md:text-lg`}>
               @izakaya_kitagen
               <ExternalLink size={14} strokeWidth={1.5} className="opacity-60" />
             </a>

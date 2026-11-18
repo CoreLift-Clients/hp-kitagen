@@ -1,5 +1,6 @@
 import { Phone } from "lucide-react";
 import { PHONE } from "../lib/contact";
+import { keepWords } from "../lib/keepWords";
 
 // ─── テイクアウトのご案内（ディナーメニューのページの、名物の欄の「料理」と「お飲みもの」の間） ───
 // 以前は別のページ（/takeout）があったが、テイクアウトのメニューは店内と同じなので、ページはやめてここにまとめた。
@@ -13,6 +14,14 @@ import { PHONE } from "../lib/contact";
 //   この囲みは控えめにするので、塗りではなく accent の線と字にし、少し小さくしている
 // ・番号は lib/contact.ts の PHONE（1か所）から読む
 // ・文は代表者が決めたもの。変えるときは代表者に確かめる
+
+// 本文の、折り返さない語のかたまり（lib/keepWords.tsx）。iPhone の Safari は auto-phrase が効かないため。文を変えたら見直すこと
+const TAKEOUT_KEEP = [
+  "お料理は、", "お持ち帰り", "いただけます", "（一部", "できない", "ものも", "ございます）。",
+  "お電話、", "または", "店頭で", "ご注文ください。",
+  "お持ち帰りの", "お値段は、", "店内と", "少し", "異なる", "場合が", "ございます。",
+] as const;
+const k = (text: string) => keepWords(text, TAKEOUT_KEEP);
 
 const CALL_BUTTON_CLASS =
   "inline-flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 py-3 px-6 rounded-sm border border-accent/70 bg-background/60 text-accent hover:bg-accent hover:text-white font-bold text-sm tracking-wider transition-colors duration-200 active:scale-[0.98]";
@@ -29,9 +38,9 @@ export default function TakeoutNote() {
             テイクアウトもできます
           </h3>
           <div className="mt-2.5 space-y-1 text-[13px] md:text-sm text-muted leading-relaxed [word-break:auto-phrase]">
-            <p>お料理は、お持ち帰りいただけます（一部できないものもございます）。</p>
-            <p>お電話、または店頭でご注文ください。</p>
-            <p>お持ち帰りのお値段は、店内と少し異なる場合がございます。</p>
+            <p>{k("お料理は、お持ち帰りいただけます（一部できないものもございます）。")}</p>
+            <p>{k("お電話、または店頭でご注文ください。")}</p>
+            <p>{k("お持ち帰りのお値段は、店内と少し異なる場合がございます。")}</p>
           </div>
         </div>
         <a href={`tel:${PHONE}`} className={`${CALL_BUTTON_CLASS} shrink-0 self-stretch md:self-center`}>

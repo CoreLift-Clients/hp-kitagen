@@ -4,9 +4,9 @@ import { OWNER_SECTIONS, OWNER_PHOTO, OWNER_PHOTO_ALT } from "../lib/owner";
 import { pageMetadata } from "../lib/seo";
 import BreadcrumbJsonLd from "../components/BreadcrumbJsonLd";
 import PageHeading from "../components/PageHeading";
-import type { ReactNode } from "react";
 import SectionInner from "../components/SectionInner";
 import { WASHI_LINK } from "../components/Washi";
+import { keepWords } from "../lib/keepWords";
 import "./letter.css";
 
 // 明朝体（Noto Serif JP）。小見出しと署名のために、このページでも読み込む（店舗情報のページと同じ 500・700）
@@ -30,22 +30,25 @@ export const metadata = pageMetadata({
 // ・便箋の下（ページの地）に、結びの文と、控えめな文字のリンク2つ（店舗情報の「地図アプリで開く」と同じ見せ方）
 // ・本文の文は店主の言葉なので、一字も変えない（lib/owner.ts）。語の途中で折れる所は、表示の側で KEEP の語のかたまりを折り返さない
 
-// 折り返さない語のかたまり（狭い画面で、Chrome の語の切れ目の判定が外れて語の途中で折れる所）。
-// 本文の中にこの語があれば、そこを折り返さない span で包む。かたまりは短く（縦書きの1行・390px の横書きの1行に収まる長さ）
-const KEEP = ["しゅうまい", "からあげ", "きたげん", "店名", "小学生", "あだ名", "入りにくい", "のぞいて", "手頃に", "揚げたて", "居場所"];
-
-function keepWords(text: string): ReactNode[] {
-  const re = new RegExp(`(${KEEP.join("|")})`, "g");
-  return text.split(re).map((part, i) =>
-    KEEP.includes(part) ? (
-      <span key={i} className="whitespace-nowrap">
-        {part}
-      </span>
-    ) : (
-      part
-    ),
-  );
-}
+// 折り返さない語のかたまり（狭い画面で、Chrome の語の切れ目の判定が外れて語の途中で折れる所と、
+// auto-phrase が効かない iPhone の Safari で語の途中で折れそうな所）。
+// 本文の中にこの語があれば、そこを折り返さない span で包む（lib/keepWords.tsx）。かたまりは短く（縦書きの1行・320px の横書きの1行に収まる長さ）
+// 「ください」は、320px で「くださ／い。」と1字だけ次の行に残っていたので足した
+// それ以外の語は、iPhone の Safari（auto-phrase が効かない）で語の途中で折れないよう、本文を語のかたまりに分けたもの
+const KEEP = [
+  "しゅうまい", "からあげ", "きたげん", "店名", "小学生", "あだ名", "入りにくい", "のぞいて", "手頃に", "揚げたて", "居場所", "ください",
+  // 「きたげん」という名前
+  "『きたげん』", "という", "店名は、", "実は", "私の", "小学生の", "頃からの", "あだ名なんです。", "この", "桃谷で", "生まれ育って、", "気づけば", "街で", "お店を", "開いていました。",
+  // みんなの居場所になる店を
+  "店を始めたとき、", "一番", "やりたかったのは、", "みんなが", "自然と", "集まってくる", "場所を", "つくること。", "特別な", "日じゃなくても、", "ふらっと", "立ち寄って、",
+  "うまいものを", "食べて、", "気持ちよく", "帰って", "もらえる。", "そんな、", "地元の", "みんなの", "居場所みたいな", "店に", "したかったんです。",
+  // 自慢は、鉄鍋餃子
+  "料理は、", "美味しくて", "手頃に、", "大事に", "しています。", "一番の", "自慢は", "鉄鍋餃子。", "ひとつひとつ", "手を", "かけた", "自家製", "しゅうまいや、", "揚げたての",
+  "からあげも、", "ぜひ", "味わって", "ほしい", "一品です。", "お酒が", "進む", "料理を、", "気取らずに", "楽しんで", "もらえたら", "うれしいです。",
+  // お一人でも、気兼ねなく
+  "そして、", "女性の", "お一人でも、", "気兼ねなく", "入って", "もらえる", "したいと", "思っています。", "居酒屋は", "一人だと", "ことも", "あると", "思いますが、",
+  "きたげんは", "そんな", "心配の", "いらない", "店を", "目指しています。", "桃谷に", "お越しの", "際は、", "気軽に", "みて", "ください。", "お待ちしています。",
+];
 
 export default function OwnerPage() {
   const hasPhoto = OWNER_PHOTO.trim() !== "";
@@ -98,7 +101,7 @@ export default function OwnerPage() {
                   <h2 className="font-serif font-bold">{section.heading}</h2>
                   {section.body.map((text, j) => (
                     <p key={j} className="letter-text">
-                      {keepWords(text)}
+                      {keepWords(text, KEEP)}
                     </p>
                   ))}
                 </section>
@@ -116,11 +119,13 @@ export default function OwnerPage() {
               <br />
               きたげんで、お待ちしています。
             </p>
-            <div className="mt-7 flex flex-wrap items-center justify-center gap-x-10 gap-y-4 text-sm md:text-base">
-              <Link href="/menu/dinner" className={WASHI_LINK}>
+            {/* リンクの押せる範囲は高さ 44px（py-3。上下の 12px ずつは -my-3 で戻し、見た目は今までのまま）。
+                折り返したときに押せる範囲が重ならないよう、行のあきは 24px（gap-y-6） */}
+            <div className="mt-7 flex flex-wrap items-center justify-center gap-x-10 gap-y-6 text-sm md:text-base">
+              <Link href="/menu/dinner" className={`${WASHI_LINK} py-3 -my-3`}>
                 お品書きを見る
               </Link>
-              <Link href="/info" className={WASHI_LINK}>
+              <Link href="/info" className={`${WASHI_LINK} py-3 -my-3`}>
                 ご案内を見る
               </Link>
             </div>

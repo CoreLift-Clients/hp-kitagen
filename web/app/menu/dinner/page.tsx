@@ -5,6 +5,10 @@ import { LUNCH_SUSPENDED, dinnerTimeLabel } from "../../lib/businessHours";
 import Specialties from "../../components/scenes/Specialties";
 import TakeoutNote from "../../components/TakeoutNote";
 import { getSpecialtyCards } from "../../content";
+import { keepWords } from "../../lib/keepWords";
+
+// 見出しの下の注意書きの、折り返さない語のかたまり（lib/keepWords.tsx。iPhone の Safari で語の途中で折れないように）
+const NOTE_KEEP = ["仕入れによって、", "内容が", "変わる", "ことがあります。", "ランチは、", "しばらく", "お休みしています。"] as const;
 
 // 明朝体（Noto Serif JP）。名物の欄（縦書きの見出し・小見出し・カードの番号）のために、このページでも読み込む。
 // 太さはトップと同じく 500・700 だけ
@@ -41,8 +45,8 @@ export default async function DinnerMenuPage() {
            以前ここにあった、ランチのご案内の角の丸い囲み（Instagram への案内）は外した（Instagram は店舗情報・フッターから） */}
       <PageHeading title="お品書き" lead={dinnerTimeLabel()}>
         <div className="mt-3 space-y-0.5 text-xs md:text-sm text-muted/90 leading-relaxed">
-          <p>仕入れによって、内容が変わることがあります。</p>
-          {LUNCH_SUSPENDED && <p>ランチは、しばらくお休みしています。</p>}
+          <p>{keepWords("仕入れによって、内容が変わることがあります。", NOTE_KEEP)}</p>
+          {LUNCH_SUSPENDED && <p>{keepWords("ランチは、しばらくお休みしています。", NOTE_KEEP)}</p>}
         </div>
       </PageHeading>
 

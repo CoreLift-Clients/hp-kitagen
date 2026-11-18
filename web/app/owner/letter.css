@@ -30,6 +30,13 @@
 .letter-open {
   font-size: 18px;
 }
+/* 360px より狭い画面（320px）は 17px。「居酒屋きたげんの店主です。」（折り返さない 13 字）を、字の入る幅（約 224px）に収める
+   （18px だと 234px で、罫線の外へ 8px 出ていた）。行の高さは --pitch のままなので、罫線と字の行はずれない */
+@media (max-width: 359px) {
+  .letter-open {
+    font-size: 17px;
+  }
+}
 /* 段落（小見出し＋本文）。段落の前は1行あける */
 .letter-para {
   margin-block-start: var(--pitch);
