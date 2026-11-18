@@ -14,13 +14,19 @@
 //   流れの描き方と、注ぎ終わりに上から切れて消える動きは、日本酒・焼酎の絵と共通の部品（Pour.tsx の cut）
 // ・流れが泡に当たっていた所は、泡がこんもり盛り上がった山（流れが切れたあとも、完成の形で残る）。
 //   そのまわりに小さな泡の粒を4つ、はねるように置く（泡の粒は、ほかの線と同じ foreground の色）
+// ・ジョッキの中のビールに、炭酸の泡（共通の部品 Fizz。コーラと同じ）。注ぎ終わってビールの色が出たあとで見え始め、
+//   時間でずっと底の近くから上へ立ちのぼり、上の白い泡の層に入るところで、すっと消える（FIZZ。18 粒）。
+//   コーラより細かく（半径 1.0〜2.2）、色は白〜うすい金色（.beer-fizz）。
+//   3本は、底の近くの同じ所から粒が列になって細い筋で上がる形（1本 5 粒。同じ x・同じ長さで、始まる時刻を等しくずらす。ゆれなし）。
+//   残りの 3 粒は、ばらばらの位置から（少し大きめ。少しゆれる）。ビールの面（BEER_WASH）で切り抜き、ガラスの縦の筋・ジョッキの線・泡の層より後ろに描く
 // ・注ぎ口の上に、上へ伸びる太いレバー（先は丸い玉）。注ぎ口とレバーは淡い灰色の水彩。
 //   レバーは、まっすぐ立った形（完成の形）で描き、注ぐあいだだけ手前（左）へ倒す
 // ・部品ごとに g でまとめる：注ぎ口（beer-tap）・レバー（beer-lever）・注がれる流れ（Pour。class は pour）・ジョッキ（beer-mug）・
-//   ビールの線（beer-level）・泡（beer-foam）・泡の粒（beer-bubbles）
+//   ビールの線（beer-level）・炭酸の泡（beer-fizz）・泡（beer-foam）・泡の粒（beer-bubbles）
 // ・動きの順番：注ぎ口が上から現れる → レバーが手前へ少し倒れる → 流れが上から下へ伸びる →
 //   ジョッキの中のビールの線が下から上がる → 泡がふわっと盛り上がる → 流れが上から切れて消える（中の筋も先に消える）→
-//   間をおいて、レバーがまっすぐ立った形に戻る → 泡の粒がはねて、ビールと泡の水彩がじわっと出る
+//   間をおいて、レバーがまっすぐ立った形に戻る → 泡の粒がはねて、ビールと泡の水彩がじわっと出る →
+//   炭酸の泡が見え始める（そのあとは時間でずっと立ちのぼる）
 //   動き終わり（prefers-reduced-motion のときも）は完成の形：泡の乗ったジョッキと、止まった注ぎ口（流れ・筋はない）
 //   （動きの名前と範囲は anim(...)、@keyframes は scenes.css。レバーは toast-tilt を2段（倒れる・戻る）、流れは pour-grow → pour-cut）
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
@@ -28,6 +34,7 @@
 import { PI, animAt, arcPts, cardTiming, jitter, line, polygon, ring, smooth, type P } from "./draw";
 import { Pour, pourShape } from "./Pour";
 import { Wash, WashFilter } from "./Wash";
+import { Fizz, type FizzBubble } from "./Fizz";
 
 // ── 注ぎ口（サーバーの口。右から伸びる管と、下向きの口） ──
 const TAP = [
@@ -166,6 +173,24 @@ const BEER_WASH = polygon([
   [131, 270],
 ]);
 
+// ── 炭酸の泡（ビールの中。共通の部品 Fizz） ──
+// 底の近く（y = 340）から、泡の層の下の端（y = 198）まで立ちのぼる。ガラスの縦の筋（x 166・206・246）の上は避けて置く
+const FIZZ_BOTTOM = 340;
+const FIZZ_TOP = 198;
+// 筋：同じ x から、同じ長さ（dur）で、始まる時刻を dur ÷ 粒の数 ずつずらす（粒が等しい間で列になって上がる）。
+// 止まっているとき（prefers-reduced-motion）は、筋の上に等しい間で並ぶ（ys）
+const stream = (x: number, dur: number, rs: readonly number[], ys: readonly number[], shift = 0): FizzBubble[] =>
+  rs.map((r, i) => ({ x, y: ys[i], r, dur, delay: -shift - (dur * i) / rs.length }));
+const FIZZ: readonly FizzBubble[] = [
+  ...stream(152, 2.2, [1.1, 1.3, 1.2, 1.4, 1.2], [322, 294, 266, 238, 212]),
+  ...stream(226, 2.6, [1.2, 1.4, 1.1, 1.3, 1.2], [330, 300, 270, 240, 212], 0.3),
+  ...stream(264, 2.0, [1.1, 1.3, 1.2, 1.4, 1.1], [316, 288, 260, 232, 208], 0.2),
+  // ばらばらの粒（少し大きめ。横に少しゆれる）
+  { x: 180, y: 276, r: 2.2, dur: 3.8, delay: -2.1, wx: -1 },
+  { x: 196, y: 318, r: 1.6, dur: 3.0, delay: -1.2, wx: 1 },
+  { x: 216, y: 242, r: 1.9, dur: 3.5, delay: -2.8, wx: -1 },
+];
+
 // ── 泡（ふちの上にもこもこと盛り上がる。ふちより少し外へはみ出す） ──
 // 流れが当たる所（x 243 あたり）は、泡がこんもり盛り上がった山（てっぺん y 121）
 const FOAM_TOP: readonly P[] = [
@@ -222,6 +247,7 @@ const T = {
   bubbles: [45.5, 51.5], // 泡の粒がはねる（1つおきに 2 ずらす）
   liquid: [48, 58], // ビールの水彩がじわっと出る
   foamWash: [50, 60], // 泡の水彩（完成）
+  fizz: [50, 60], // 炭酸の泡が見え始める（ビールの色が出たあと。そのあとは時間でずっと立ちのぼる）
 } as const;
 // 線のいちばん下は、絵の場所の上から 96.7%。主役が時間で動くとき ((25.5 − 14) × 0.045 + 9.5 × 0.05) × 1.35 ≒ 1.34 秒
 const CARD = cardTiming({ ink: 0.975, time: 1.35 });
@@ -260,6 +286,17 @@ export default function BeerIllustration({ className = "" }: { className?: strin
       <g className="beer-liquid scene-anim" style={animAt("scene-fade-up", T.liquid, { "--dy": "0px" })}>
         <Wash filter="beer-wash" d={BEER_WASH} tone="food-wash-beer" id="beer-w-beer" shift={[1.5, 1]} holes={[[150, 300, 3, 10], [262, 226, 2.6, 6]]} />
       </g>
+      {/* 炭酸の泡（ビールの中だけ。ガラスの縦の筋・ジョッキの線・泡の層より後ろ） */}
+      <Fizz
+        id="beer-fizz-clip"
+        clip={BEER_WASH}
+        bubbles={FIZZ}
+        bottom={FIZZ_BOTTOM}
+        top={FIZZ_TOP}
+        range={T.fizz}
+        className="beer-fizz-group"
+        tone="beer-fizz"
+      />
       <g className="beer-level scene-anim" style={animAt("scene-fade-up", T.level, { "--dy": "136px" })}>
         <path d={LEVEL} className="scene-fine" />
       </g>

@@ -16,18 +16,18 @@
 // ・部品ごとに g でまとめる：グラスの面（soft-glass-face。紙の色・グラスとコーラの水彩・水面の泡の帯）・炭酸の泡（soft-bubbles）・
 //   ストロー（soft-straw）・グラス（soft-glass。氷3個と飲みものの線も一緒）
 //   重なりの順：グラスの面 → 炭酸の泡 → ストロー → 氷（ストローの一部と泡を隠す）→ グラスの線
-//   泡は液の形（DRINK_FILL）で切り抜くので、グラスの外・水面より上には出ない。氷とストローより後ろなので、氷の上にも出ない
+//   泡は共通の部品 Fizz（Fizz.tsx。ビールと同じ）。液の形（DRINK_FILL）で切り抜くので、グラスの外・水面より上には出ない。氷とストローより後ろなので、氷の上にも出ない
 // ・動きの順番：グラス（コーラの色・氷も一緒）が現れる → ストローが上から入る → 炭酸の泡が見え始める（スクロールの段）
-// ・炭酸の泡は、見え始めたあと、時間でずっと下から上へ立ちのぼる（scenes.css の cola-rise。湯気の揺れと同じく、
+// ・炭酸の泡は、見え始めたあと、時間でずっと下から上へ立ちのぼる（scenes.css の fizz-rise。湯気の揺れと同じく、
 //   場面が画面の外にあるあいだは止める）。粒ごとに、横の位置・大きさ・速さ・始まる時刻をずらす（BUBBLES。乱数なし）。
 //   スクロールで進めるのは泡の囲み（.scene-anim）の現れ方だけで、立ちのぼる動きは iPhone の JS で進める形（sceneScroll.ts）でも時間のまま。
 //   prefers-reduced-motion のときは止まった形で、液の中に散らばって見える（各粒の cy の位置）
 //   （動きの名前と範囲は anim(...)、@keyframes は scenes.css）
 // 線の描き方の道具（揺らぎ・曲線）は draw.ts。乱数は使わないので、毎回同じ絵になる。
 
-import type { CSSProperties } from "react";
 import { PI, animAt, arc, cardTiming, jitter, line, polygon, ring, smooth, type P } from "./draw";
 import { Wash, WashFilter } from "./Wash";
+import { Fizz, type FizzBubble } from "./Fizz";
 
 // ── グラス（上が少し広い、背の高いタンブラー） ──
 const GLASS = [
@@ -149,10 +149,10 @@ const STRAW = [
 ];
 
 // ── 炭酸の泡（10 粒）：[x, 止まっているときの y（氷に隠れない、液の下の方と氷のすき間に散らす）, 半径, 立ちのぼる長さ（秒）, 始まる時刻（秒。負の数で途中から）] ──
-// 立ちのぼる道すじは、どの粒も底の近く（y = 330）から水面（y = 132）まで（scenes.css の cola-rise。--from・--to）
+// 立ちのぼる道すじは、どの粒も底の近く（y = 330）から水面（y = 132）まで（Fizz の bottom・top）。横のゆれは 1 粒おきに ±1.5
 const BUBBLE_BOTTOM = 330;
 const BUBBLE_TOP = 132;
-const BUBBLES: readonly [number, number, number, number, number][] = [
+const BUBBLE_ROWS: readonly [number, number, number, number, number][] = [
   [162, 292, 2.4, 3.4, 0],
   [172, 246, 1.7, 2.8, -1.1],
   [186, 318, 3.0, 3.9, -2.3],
@@ -164,6 +164,7 @@ const BUBBLES: readonly [number, number, number, number, number][] = [
   [176, 280, 1.6, 2.7, -2.1],
   [156, 204, 2.0, 3.0, -0.9],
 ];
+const BUBBLES: readonly FizzBubble[] = BUBBLE_ROWS.map(([x, y, r, dur, delay], i) => ({ x, y, r, dur, delay, wx: i % 2 ? 1.5 : -1.5 }));
 
 // ── 動きの段（anim の from・to。4〜60。scenes.css の「名物の欄の決まり」） ──
 // 主役は、ストローが上からグラスへすっと入る所（14〜36 ＝ 全体の約 4 割）。段のあいだに短い間
@@ -191,10 +192,6 @@ export default function SoftDrinkIllustration({ className = "" }: { className?: 
       <defs>
         {/* 水彩のにじみ（塗りにだけ。絵の中で使い回す） */}
         <WashFilter id="soft-wash" seed={23} />
-        {/* 炭酸の泡を、液の中だけに切り抜く */}
-        <clipPath id="soft-cola-clip">
-          <path d={DRINK_FILL} />
-        </clipPath>
       </defs>
       {/* グラスの面とコーラの水彩・水面の泡の帯（グラスと一緒に現れる） */}
       <g className="soft-glass-face scene-anim" style={animAt("scene-fade-up", T.glass, { "--dy": "10px" })}>
@@ -205,29 +202,16 @@ export default function SoftDrinkIllustration({ className = "" }: { className?: 
         <path d={FOAM} className="cola-foam" stroke="none" />
       </g>
       {/* 炭酸の泡（ストローのあとで見え始め、時間でずっと立ちのぼる。液の中だけ） */}
-      <g className="soft-bubbles scene-anim" style={animAt("scene-fade-up", T.bubble, { "--dy": "0px" })}>
-        <g clipPath="url(#soft-cola-clip)">
-          {BUBBLES.map(([x, y, r, dur, delay], i) => (
-            <circle
-              key={i}
-              cx={x}
-              cy={y}
-              r={r}
-              className="cola-bubble"
-              stroke="none"
-              style={
-                {
-                  "--from": `${BUBBLE_BOTTOM - y}px`,
-                  "--to": `${BUBBLE_TOP - y}px`,
-                  "--wx": `${i % 2 ? 1.5 : -1.5}px`,
-                  "--rise-dur": `${dur}s`,
-                  "--rise-delay": `${delay}s`,
-                } as CSSProperties
-              }
-            />
-          ))}
-        </g>
-      </g>
+      <Fizz
+        id="soft-cola-clip"
+        clip={DRINK_FILL}
+        bubbles={BUBBLES}
+        bottom={BUBBLE_BOTTOM}
+        top={BUBBLE_TOP}
+        range={T.bubble}
+        className="soft-bubbles"
+        tone="cola-bubble"
+      />
       {/* ストロー（上から入る） */}
       <g className="soft-straw scene-anim" style={animAt("scene-fade-up", T.straw, { "--dy": "-90px" })}>
         <Wash filter="soft-wash" d={STRAW_FILL} tone="food-wash-straw" id="soft-w-straw" shift={[0.5, 0.4]} />
