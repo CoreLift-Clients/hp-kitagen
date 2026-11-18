@@ -8,7 +8,7 @@
 //   左から、革靴・スニーカー・パンプス・小さな子どもの靴
 //   ・子どもの右の靴がそろった瞬間の、小さな「きらっ」（短い線3本。動きの途中だけ見える）
 // ・線は1色（currentColor ＝ 呼び出し側の text-foreground）。端と角は丸く。塗りはなし
-// ・差し色は accent を1か所だけ（スニーカーの横の線）。「きらっ」は foreground
+// ・色は付けない（食材以外には色を付けない決まり。以前のスニーカーの横の accent の線は外した）。「きらっ」も foreground
 // ・部品ごとに g でまとめる：段・畳・座布団（seat-room）・靴4足（seat-shoes。1足ごとに g。
 //   子どもの右の靴は seat-fix で包む）・「きらっ」（seat-sparkle）
 // ・動きの順番：段・畳・座布団の線が描かれる → 1足目（革靴）が少し上から置かれるように現れる →
@@ -198,7 +198,6 @@ type ShoeSpec = {
   open: Shape;
   // 細かい線（ひも・つま先の飾りなど）。[v, u] の点の並び（外側が ＋）
   details: Shape[];
-  accent?: Shape; // 差し色の線（スニーカーの横の線だけ）
   ang: number; // 1足の向き（度。＋で時計回り）。人が脱いでそろえた形に見えるよう、足ごとに 2〜4° ずらす
 };
 
@@ -228,7 +227,6 @@ function buildPair(s: ShoeSpec, seed: number) {
       outline: closed(s.shape.map((p, i) => at(p, i, 0.45))),
       open: closed(s.open.map((p, i) => at(p, i + 30, 0.25))),
       details: s.details.map((d) => smooth(d.map((p, i) => at(p, i + 50, 0.15)))),
-      accent: s.accent ? smooth(s.accent.map((p, i) => at(p, i + 70, 0.15))) : null,
     };
   });
   return shoes;
@@ -287,11 +285,6 @@ const PAIRS: ShoeSpec[] = [
         [0.86, 0.8],
       ], // つま先のゴム
     ],
-    accent: [
-      [0.24, 0.5],
-      [0.44, 0.56],
-      [0.66, 0.64],
-    ], // 横の線（外側に1本）
   },
   // 3足目：パンプス（つま先が細い。大きな履き口）
   {
@@ -481,8 +474,6 @@ export default function SeatIllustration({ className = "" }: { className?: strin
                   {shoe.details.map((d, j) => (
                     <path key={j} d={d} className="scene-fine" />
                   ))}
-                  {/* 差し色（accent）はここだけ：スニーカーの横の線 */}
-                  {shoe.accent && <path d={shoe.accent} className="scene-fine scene-accent" />}
                 </g>
               );
               if (i !== 3 || k !== 1) return body;
