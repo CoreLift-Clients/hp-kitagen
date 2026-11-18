@@ -33,6 +33,7 @@ export default function Scene({
   tone,
   reverse = false,
   id,
+  name,
 }: {
   art: ReactNode;
   heading: string;
@@ -41,6 +42,8 @@ export default function Scene({
   tone: SceneTone;
   reverse?: boolean;
   id?: string;
+  /** ?debug=1 の表示に出す絵の名前（ScenePlayOnView） */
+  name?: string;
 }) {
   return (
     <section id={id} className={`scene py-28 md:py-40 section-${tone}`}>
@@ -50,7 +53,7 @@ export default function Scene({
             reverse ? "is-reverse md:flex-row-reverse" : "md:flex-row"
           }`}
         >
-          <ScenePlayOnView className="shrink-0">{art}</ScenePlayOnView>
+          <ScenePlayOnView className="shrink-0" name={name}>{art}</ScenePlayOnView>
 
           <div className="scene-textwrap flex max-w-full flex-col items-center">
             <SceneText heading={heading} lines={lines} />

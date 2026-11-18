@@ -1,32 +1,40 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
+import { ensureDebug, registerScene, sceneMode } from "./sceneScroll";
 
 // ─── 場面の絵の囲み（動きの切り替え） ───
-// トップの線画の場面（components/scenes/Scene.tsx）が、絵をこの囲みに入れる。
-// ・scroll-driven animations（animation-timeline: view()）が使えるブラウザ … 何もしない。
+// トップの線画の場面（Scene.tsx）と、名物の欄のカード（Specialties.tsx）が、絵をこの囲みに入れる。
+// どの仕組みで動かすかは sceneScroll.ts の sceneMode で決める：
+// ・css（scroll-driven animations〈animation-timeline: view()〉が使えるブラウザ）… 何もしない。
 //   動きはすべて CSS（scenes.css）で、スクロールの位置に合わせて進む・戻る
-//   （絵が画面の中に全部入ったところから、絵の真ん中が画面の真ん中に来たところまで）
-// ・使えないブラウザ … 絵を「動く前」の形にしておき（data-scene="wait"）、
-//   絵の 70% 以上が画面に入ったら1回だけ同じ動きをする（data-scene="play"）。IntersectionObserver を使う。
-//   画面の上の固定ヘッダー（64px）に隠れる分は、画面に入っていないものとして数える。
+// ・js（使えないが、Web Animations API が使えるブラウザ。iOS 26 より前の Safari など）…
+//   sceneScroll.ts が、CSS と同じ決まりでスクロールの位置から進み具合を計算して当てる（data-scene="js"）。上に戻すと動きも戻る
+// ・time（それも使えない古いブラウザ）… 今までどおり、絵を「動く前」の形にしておき（data-scene="wait"）、
+//   絵の 70% 以上が画面に入ったら1回だけ時間で動かす（data-scene="play"）。
+//   画面の上の固定ヘッダーに隠れる分は、画面に入っていないものとして数える。
 //   絵が画面より大きくて 70% まで入りきらないときは、絵が画面の高さの 70% 以上をふさいだところで動かす
-// ・prefers-reduced-motion: reduce のとき … 何もしない（動き終わった絵のまま）
+// ・none（prefers-reduced-motion: reduce）… 何もしない（動き終わった絵のまま）
 // ・時間で揺れ続ける動き（湯気の揺れなど）は、場面が画面の外にあるあいだ止める（data-inview="false"）
 // JavaScript が動かないときも、動き終わった絵のまま見える。
+// name … ?debug=1 の表示に出す絵の名前
 export default function ScenePlayOnView({
   children,
   className = "",
+  name = "",
 }: {
   children: ReactNode;
   className?: string;
+  name?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const mode = sceneMode();
+    ensureDebug();
+    if (mode === "none") return;
     if (!("IntersectionObserver" in window)) return;
 
     // 揺れ続ける動きを、画面の外では止める
@@ -38,9 +46,12 @@ export default function ScenePlayOnView({
     );
     inview.observe(el);
 
-    // scroll-driven animations が使えないブラウザだけ、絵の 70% 以上が画面に入ったときに1回だけ動かす
+    // css・js：スクロールの位置で進める（css は ?debug=1 の表示のためだけに登録する）
+    const unregister = registerScene(el, name);
+
+    // time：絵の 70% 以上が画面に入ったときに1回だけ動かす
     let once: IntersectionObserver | undefined;
-    if (!(typeof CSS !== "undefined" && CSS.supports("animation-timeline: view()"))) {
+    if (mode === "time") {
       el.dataset.scene = "wait";
       const PLAY_RATIO = 0.7;
       // 固定ヘッダー（globals.css の --header-h。px で書いてある）に隠れる分は、画面に入っていないものとして数える
@@ -67,8 +78,9 @@ export default function ScenePlayOnView({
     return () => {
       inview.disconnect();
       once?.disconnect();
+      unregister();
     };
-  }, []);
+  }, [name]);
 
   return (
     <div ref={ref} className={`scene-art ${className}`}>

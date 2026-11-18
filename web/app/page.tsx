@@ -191,6 +191,7 @@ export default async function Home() {
       <Scene
         tone="deep"
         reverse
+        name="top-seiro"
         art={<SeiroIllustration className={ART} pace="top" />}
         heading="きたげんの名物。"
         lines={["しゅうまいに、", "鉄鍋餃子、", "まずは生ビール。"]}
@@ -200,6 +201,7 @@ export default async function Home() {
       {/* 席（左に絵） */}
       <Scene
         tone="warm"
+        name="top-seat"
         art={<SeatIllustration className={ART} />}
         heading="ひとりでも、大勢でも。"
         lines={["カウンターと、", "2階の座敷。"]}
@@ -211,6 +213,7 @@ export default async function Home() {
         id="group-reservation"
         tone="light"
         reverse
+        name="top-toast"
         art={<ToastIllustration className={ART} />}
         heading="ご宴会・貸切も。"
         lines={["2階の座敷で、", "人数に合わせて。"]}

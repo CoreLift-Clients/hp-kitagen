@@ -66,7 +66,8 @@
      prefers-reduced-motion: reduce のときと、JavaScript が動かないときは、この形のまま止まって見える
    ・動きは「動く前 → 動き終わり」の @keyframes を、
      1) scroll-driven animations が使えるブラウザ … スクロールの位置で進める（下に進む・上で巻き戻る）
-     2) 使えないブラウザ … 場面が画面に入ったとき1回だけ、時間で進める（data-scene="play"）
+     1') 使えないブラウザ … sceneScroll.ts が、1) と同じ決まりでスクロールの位置から進み具合を計算して当てる（data-scene="js"）
+     2) それも使えない、とても古いブラウザ … 場面が画面に入ったとき1回だけ、時間で進める（data-scene="play"）
    ・動かす部品には class の scene-anim と、style の --a（動きの名前）・--r0・--r1（どこからどこまで）を付ける
      （draw.ts の anim()）。--r0・--r1 は 4〜60 くらいの数で、動きの順番と長さの割合を決める。
      スクロールで進めるときは、この 4〜60 を「絵が画面の中に全部入ったところ」〜「絵の真ん中が画面の真ん中に来たところ」
@@ -629,9 +630,7 @@
        contain 0〜50% だけでは動きにあてるスクロールが 16〜36px しかなかったため。
        終わり（絵の真ん中が見えている画面の真ん中）は変えない。始まりでは、絵の下の 100px がまだ画面の下の外にある。
        高さが 500px より大きい画面（縦向きのスマホ・タブレット・パソコン）は今までどおり */
-    @media (max-height: 500px) {
-      .scene-top-art { --scene-lead: 100px; }
-    }
+    /* （値の --scene-lead: 100px は、JS で進める形〈sceneScroll.ts〉と同じ値を読むため、下の「範囲の値」に書く） */
     /* 席の場面（SeatIllustration.tsx の .seat-svg）だけ、動きにあてるスクロールの範囲を広げる（靴がそろう動きを長く見せるため）：
        ・終わりを contain 50% → 62% にする（絵の真ん中が、見えている画面の真ん中を少し過ぎたところで完成。
          そのあとも絵が画面から出始めるまで、範囲の残りの 38% のあいだ、そろった形が見えている）。
@@ -641,13 +640,29 @@
          絵が画面より少し小さいだけなので、始まりを前へ出しすぎると、靴が並ぶ所と「間」が画面の下（「電話する」）に隠れる。
          この形で、4足目が置かれてからの「間」・浮く・下りる・弾む・そろった形が、画面の中で見える
        ほかの場面・ほかのページの範囲は変えない */
-    .seat-svg { --scene-span: 62%; }
-    @media (max-height: 500px) {
-      .scene-top-art.seat-svg { --scene-span: 80%; --scene-lead: 75px; }
-    }
+    /* （値は、下の「範囲の値」に書く） */
+  }
+  /* 範囲の値（上の2つの説明のもの）。CSS の仕組み（animation-range）と、JS で進める形（sceneScroll.ts が svg から読む）の両方で使う。
+     custom property を置くだけなので、どちらの仕組みでも、ほかの見た目は変わらない */
+  @media (max-height: 500px) {
+    .scene-top-art { --scene-lead: 100px; }
+  }
+  .seat-svg { --scene-span: 62%; }
+  @media (max-height: 500px) {
+    .scene-top-art.seat-svg { --scene-span: 80%; --scene-lead: 75px; }
   }
 
-  /* 2) 使えないブラウザ：絵の 70% 以上が画面に入ったとき1回だけ、時間で同じ順に進める（data-scene は ScenePlayOnView が付ける）。
+  /* 1') JS で進める形（data-scene="js"。scroll-driven animations が使えないブラウザ。sceneScroll.ts が付ける）
+     各部品の動きを「長さ 1000ms・一時停止・linear」にしておき、sceneScroll.ts が currentTime を
+     スクロールの位置から出した進み具合 × 1000ms にする（範囲・段の配分の決まりは 1) と同じ）。
+     animation-timeline は、CSS の仕組みが使えるブラウザで試すとき（判定をすり替えたとき）のために、初期値（時間）に戻しておく */
+  .scene-art[data-scene="js"] .scene-anim {
+    animation: var(--a) 1s linear both paused;
+    animation-timeline: auto;
+  }
+
+  /* 2) 使えないブラウザで、Web Animations API（getAnimations）も使えないとき（とても古いブラウザ）だけ：
+     絵の 70% 以上が画面に入ったとき1回だけ、時間で同じ順に進める（data-scene は ScenePlayOnView が付ける）。
      始まる時刻は (--r0 − 4) × 0.045 秒、長さは (--r1 − --r0) × 0.05 秒（短くても 0.5 秒）。
      どちらも --scene-time 倍（名物の欄のカードの絵が、svg の style で付ける。主役の動きが 1.4 秒ほど見えるよう、絵ごとに
      1.3〜1.45、日本酒・焼酎は 3。付けていない絵〈トップの場面〉は 1） */

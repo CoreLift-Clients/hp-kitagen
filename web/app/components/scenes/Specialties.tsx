@@ -164,7 +164,7 @@ function SpecialtyCard({ item, index, seed }: { item: SpecialtyItem; index: numb
       </span>
 
       {/* 絵（カードの幅いっぱいの正方形の場所。絵はその中に収める） */}
-      <ScenePlayOnView className="aspect-square w-full">
+      <ScenePlayOnView className="aspect-square w-full" name={`card-${item.art}`}>
         <Art className={ART_CLASS} />
       </ScenePlayOnView>
 
