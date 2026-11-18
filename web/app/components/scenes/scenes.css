@@ -25,7 +25,8 @@
    ・日本酒・焼酎 … 徳利とお猪口（焼き物の色 .food-wash-yakimono）、お猪口の中のお酒（.food-wash-sake）、
      注がれる日本酒（.food-wash-sake の帯）、タンブラーと水差し（.food-wash-glass）、氷と注がれる水（.food-wash-ice）、
      焼酎の水割り（.food-wash-shochu）
-   ・ソフトドリンク … グラス（.food-wash-glass）、ウーロン茶（.food-wash-tea）、氷（.food-wash-ice）、ストロー（.food-wash-straw）
+   ・ソフトドリンク … グラス（.food-wash-glass）、コーラ（.food-wash-cola。下の約 6 割に同じ色をもう1段 .cola-deep）、
+     水面の泡の帯（.cola-foam）、炭酸の泡（.cola-bubble。時間でずっと立ちのぼる）、氷（.food-wash-ice）、ストロー（.food-wash-straw）
 
    水彩の塗り方（9枚すべて。部品は Wash.tsx）：
    線画に、うすく絵の具で塗ったように見せる。上の 1.〜5. のうち、塗りについては、この決まりを優先する
@@ -200,7 +201,10 @@
    ・.food-wash-yakimono … 徳利とお猪口の焼き物（濃いこげ茶〜黒っぽい色。accent 28% に foreground）
    ・.food-wash-sake … お猪口の中の日本酒（ほぼ透明に近い、淡いクリーム色。白に accent 20%）
    ・.food-wash-shochu … タンブラーの焼酎の水割り（ほぼ透明に近い、ごく淡い琥珀色。白に accent 24% を、うすめ 0.4 で）
-   ・.food-wash-tea … ウーロン茶（淡い茶色。accent 78% に foreground を、うすめ 0.55 で）
+   ・.food-wash-cola … ソフトドリンクのコーラ（こげ茶〜黒に近いカラメル色。accent 30% に 赤みのあるこげ茶 #2B0E04 を 0.74 で）。
+     .cola-deep は下の濃い所（同じ色をもう1段 0.42 で重ねる。重ねた所のふちに濃い線が出ないよう、ふちの濃さは 0）。
+     スマホの 0.85 倍（--wash-k）も、ほかの塗りと同じく当たる
+   ・.cola-foam … コーラの水面の泡の帯（紙の色に近い白 #FBF8F2 を 0.72）。.cola-bubble … 炭酸の泡（同じ白を 0.62）
    ・.food-wash-straw … ソフトドリンクのストロー（淡い accent。白に accent 45%）
    ・.food-wash-tap … ビールの注ぎ口（淡い灰色を1段。白に foreground 30%） */
 .food-wash-meat { --wash: #C98A74; --wash-a: 0.75; --wash-edge: 0.44; }
@@ -232,7 +236,10 @@
 .food-wash-yakimono { --wash: color-mix(in srgb, var(--accent) 28%, currentColor); --wash-a: 0.88; --wash-edge: 0.45; }
 .food-wash-sake { --wash: color-mix(in srgb, var(--accent) 20%, #fff); --wash-a: 0.7; --wash-edge: 0.45; }
 .food-wash-shochu { --wash: color-mix(in srgb, var(--accent) 24%, #fff); --wash-a: 0.4; --wash-edge: 0.36; }
-.food-wash-tea { --wash: color-mix(in srgb, var(--accent) 78%, currentColor); --wash-a: 0.55; --wash-edge: 0.42; }
+.food-wash-cola { --wash: color-mix(in srgb, var(--accent) 30%, #2B0E04); --wash-a: 0.74; --wash-edge: 0.4; }
+.food-wash-cola.cola-deep { --wash-a: 0.42; --wash-edge: 0; }
+.cola-foam { fill: #FBF8F2; fill-opacity: 0.72; }
+.cola-bubble { fill: #FBF8F2; fill-opacity: 0.62; }
 .food-wash-straw { --wash: color-mix(in srgb, var(--accent) 45%, #fff); --wash-a: 0.7; --wash-edge: 0.45; }
 .food-wash-tap { --wash: color-mix(in srgb, currentColor 30%, #fff); --wash-a: 0.35; --wash-edge: 0.4; }
 .seiro-wash-shade { --wash: currentColor; --wash-a: 0.16; --wash-edge: 0.1; }
@@ -559,6 +566,15 @@
   to   { stroke-dashoffset: -0.38; }
 }
 /* 湯気の揺れ（時間で、ずっとゆっくり。スクロールとは別） */
+/* コーラの炭酸の泡：底の近く（--from）から水面（--to）まで、まっすぐ上へ。途中で横に少しゆれる（--wx）。
+   出始めと水面の手前で、すっと見えなくなる。止まっているとき（prefers-reduced-motion）は、各粒の cy の位置（液の中に散らばる） */
+@keyframes cola-rise {
+  0%   { transform: translate(0, var(--from)); opacity: 0; }
+  12%  { opacity: 1; }
+  50%  { transform: translate(var(--wx, 0px), calc((var(--from) + var(--to)) / 2)); }
+  86%  { opacity: 1; }
+  100% { transform: translate(0, var(--to)); opacity: 0; }
+}
 @keyframes scene-sway {
   from { transform: translateX(-2.5px) rotate(-1.6deg); }
   to   { transform: translateX(2.5px) rotate(1.6deg); }
@@ -572,6 +588,10 @@
   .pour-flow { animation: pour-flow 0.9s linear infinite; }
   .pour-flow-2 { animation-duration: 1.2s; animation-delay: -0.6s; }
   .scene-art[data-inview="false"] .pour-flow { animation-play-state: paused; }
+  /* コーラの炭酸の泡（時間でずっと。粒ごとに長さと始まる時刻をずらす。SoftDrinkIllustration.tsx の BUBBLES）。
+     .scene-anim ではないので、スクロールで進める形（CSS・sceneScroll.ts）には入らず、どのブラウザでも時間で動く */
+  .cola-bubble { animation: cola-rise var(--rise-dur, 3s) linear var(--rise-delay, 0s) infinite; }
+  .scene-art[data-inview="false"] .cola-bubble { animation-play-state: paused; }
 
   /* 1) スクロールの位置で進める
      動きの範囲は、絵（.scene-art）が「画面の中に全部入ったところ」から「絵の真ん中が画面の真ん中に来たところ」まで。
