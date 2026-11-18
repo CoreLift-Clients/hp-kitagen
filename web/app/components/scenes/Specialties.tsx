@@ -40,7 +40,7 @@ import "./scenes.css";
 // ・カードの中身（上から）：
 //   番号（漢数字。左上の角、明朝体 700、accent）→ 動く線画（カードの幅いっぱいの正方形の場所。絵はその中に収める）→
 //   品名（横書き、佑字 朴。1行。スマホ 18px まで（長い品名だけカードの幅に合わせて縮める）・md 22px・lg 24px）→
-//   ひとこと（横書き、1行。md 12px・lg 13px、muted を少しうすく。md より狭い画面では出さない）→
+//   ひとこと（横書き。md 以上は1行で md 12px・lg 13px。md より狭い画面は 12px で2行まで〈TaglineText の切れ目で折る〉。muted を少しうすく）→
 //   値段（値段のある品だけ。料理は「¥580（税込）」、お飲みものは「¥450〜（税込）」）
 // ・カードの色：section-light（#F7F3EB と同じ和紙の模様）。欄の背景（section-deep）より少し明るい。
 //   絵の中の「後ろの線を隠す塗り」（--scene-paper）もカードの色にする（scenes.css の .scene-card）
@@ -100,6 +100,23 @@ const NAME_BREAKS: Record<string, readonly string[]> = {
   "日本酒・焼酎": ["日本酒・", "焼酎"],
 };
 
+// ひとこと（説明文）を、「、」「・」の後ろで分けたかたまりにする（それぞれ折り返さない）。
+// md より狭い画面では、カードの幅に1行で入らないので、かたまりの切れ目でだけ2行に折る（「底はこんがり、／なかはふっくら。」）。
+// 語の途中や、1文字だけが次の行に残る折れ方にならない。md 以上は1行のまま（折らない）。
+// ひとことを変えたら、320px の画面（中の幅 108px・12px で 9 字）で、かたまりが1行に入るか、2行に収まるかを見ること
+function TaglineText({ text }: { text: string }) {
+  const parts = text.split(/([^、・]*[、・])/).filter(Boolean);
+  return (
+    <>
+      {parts.map((part, i) => (
+        <span key={i} className="whitespace-nowrap">
+          {part}
+        </span>
+      ))}
+    </>
+  );
+}
+
 function KanaRuns({ text }: { text: string }) {
   return (
     <>
@@ -114,14 +131,16 @@ function KanaRuns({ text }: { text: string }) {
 // 品名。切れ目のある品名は、かたまりごとに折り返さない span に分ける（折れるのは、かたまりの切れ目だけ）
 function CardName({ name }: { name: string }) {
   const parts = NAME_BREAKS[name] ?? [name];
+  // 外側の span：品名の場所を grid にしたとき（狭い画面で、2行分の高さの真ん中に置くため）に、かたまりが1つずつ別の行に
+  // ならないよう、品名ぜんぶを1つの塊にする（中では、ふつうの文と同じに、かたまりの切れ目でだけ折れる）
   return (
-    <>
+    <span>
       {parts.map((part, i) => (
         <span key={i} className="whitespace-nowrap">
           <KanaRuns text={part} />
         </span>
       ))}
-    </>
+    </span>
   );
 }
 
@@ -158,15 +177,21 @@ function SpecialtyCard({ item, index, seed }: { item: SpecialtyItem; index: numb
               ただし 16px より小さくはしない。16px で1行に入らない品名（320px の画面の「自家製しゅうまい」「ソフトドリンク」など）は、
               NAME_BREAKS の切れ目で2行に折る（以前は 1行のまま 12.6px・14.1px まで縮んでいた）
             ・md 22px、lg 24px（どの品名も1行に入る。md 以上は折らない） */}
+        {/* 品名の場所の高さ：入れ物の幅が 130px 以下（320・360px の画面）では、品名が2行に折れるカードがあるので、
+            どのカードも2行分（16px の2行 ＝ 44px）をあけ、1行の品名は上下の真ん中に置く（カードの高さをそろえるため）。
+            それより広い画面と md 以上は、今までどおり1行分 */}
         <h4
           style={{ "--name-len": nameUnits(item.name), ...KANA_VARS } as CSSProperties}
-          className="font-brush font-normal text-foreground text-[length:max(16px,min(18px,calc(100cqw/(var(--name-len)_+_0.4))))] md:text-[22px] lg:text-[24px] leading-snug md:whitespace-nowrap md:tracking-wide"
+          className="font-brush font-normal text-foreground text-[length:max(16px,min(18px,calc(100cqw/(var(--name-len)_+_0.4))))] md:text-[22px] lg:text-[24px] leading-snug md:whitespace-nowrap md:tracking-wide @max-[130px]:grid @max-[130px]:min-h-[44px] @max-[130px]:content-center"
         >
           <CardName name={item.name} />
         </h4>
-        {/* ひとこと：品名を引き立てるよう、小さく・少しうすく。md より狭い画面では今までどおり出さない（カードの幅に1行で入らない） */}
-        <p className="mt-2 md:mt-1 hidden md:block whitespace-nowrap text-[12px] lg:text-[13px] text-muted/80 leading-relaxed md:leading-snug">
-          {item.tagline}
+        {/* ひとこと：品名を引き立てるよう、小さく・少しうすく（12px・muted を少しうすく。パソコンと同じ色）。
+            ・md より狭い画面：2行まで。TaglineText のかたまりの切れ目で折る。1行で入るひとことのカードも、
+              2行分の高さ（18px の行 × 2 ＝ 36px）をあけ、カードの高さをそろえる。品名とのあきは 6px
+            ・md 以上：今までどおり1行（md 12px・lg 13px） */}
+        <p className="mt-1.5 md:mt-1 min-h-[36px] md:min-h-0 text-[12px] lg:text-[13px] text-muted/80 leading-[18px] md:leading-snug md:whitespace-nowrap">
+          <TaglineText text={item.tagline} />
         </p>
         {item.price !== undefined && (
           <p className="mt-1.5 md:mt-1 text-[12px] md:text-[14px] md:leading-snug tracking-wider text-foreground tabular-nums">
