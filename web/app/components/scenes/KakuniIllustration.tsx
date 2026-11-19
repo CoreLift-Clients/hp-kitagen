@@ -255,6 +255,8 @@ const EDGE_STRANDS: Strand[] = CABBAGE_EDGE.flatMap(([x, y], k) => {
   return [strand(pts, k + 2)];
 });
 const CABBAGE_STRANDS: Strand[] = [...FACE_STRANDS, ...EDGE_STRANDS].sort((p, q) => p.y - q.y);
+// 描き始める時刻ごとのまとまり（並び順の k を 12 で割った余りが同じもの。余り g の組は 0.35 × g だけ遅れて描き始める）
+const STRAND_GROUPS: Strand[][] = Array.from({ length: 12 }, (_, g) => CABBAGE_STRANDS.filter((_, k) => k % 12 === g));
 
 // ── 味玉（半分に切ったもの1つ。切り口を上に、角煮のそばに少し斜めに置く） ──
 const [EX, EY] = pr(-80, 20, 5);
@@ -324,14 +326,21 @@ export default function KakuniIllustration({ className = "" }: { className?: str
             <Wash filter="kakuni-wash" d={CABBAGE_UNDER} tone="food-wash-cabbage" id="kakuni-w-cab2" shift={[1, 0.75]} />
           </g>
         </g>
-        {CABBAGE_STRANDS.map((st, k) => (
-          <path
-            key={k}
-            d={st.d}
-            pathLength={1}
-            className={`${st.hi ? "kakuni-cabbage-hi" : "kakuni-cabbage-strand"} scene-stroke-draw scene-anim`}
-            style={animAt("scene-draw", ANIM.strand, {}, (k % 12) * 0.35)}
-          />
+        {/* 千切りの線は、描き始める時刻（12 本ごとに 0.35 ずつずらす）が同じものを1つの g にまとめ、g に描き進める動きをかける
+            （線が 440 本あり、1本ずつ動かすと、スクロールのたびの計算と合成のレイヤーが多すぎて重かったため）。
+            線を描き進める値（stroke-dashoffset）は g から受け継ぐ（.scene-stroke-child）。g の中の線の並びは、元の並び（奥から手前）のまま。
+            組と組のあいだでは、線どうしの重なりの上下が元と少し変わる（3 倍に拡大して比べ、線のふちの色がわずかに違うだけで、目では分からない） */}
+        {STRAND_GROUPS.map((group, g) => (
+          <g key={g} className="scene-anim" style={animAt("scene-draw", ANIM.strand, {}, g * 0.35)}>
+            {group.map((st, k) => (
+              <path
+                key={k}
+                d={st.d}
+                pathLength={1}
+                className={`${st.hi ? "kakuni-cabbage-hi" : "kakuni-cabbage-strand"} scene-stroke-child`}
+              />
+            ))}
+          </g>
         ))}
       </g>
 

@@ -299,6 +299,13 @@
   stroke-dasharray: 1 1;
   stroke-dashoffset: 0;
 }
+/* 同じ時刻に描き進める線をまとめるとき（角煮の千切り）：動きは囲みの g（.scene-anim）にかけ、
+   中の線は描き進める値（stroke-dashoffset）を g から受け継ぐ（ここでは決めない）。pathLength="1" は線に付ける。
+   （鉄鍋の側面・座布団の線も同じ時刻のものがあるが、まとめると線のふちの画素がわずかに変わったので、まとめていない）
+   動く部品の数を減らすため（1つずつ動かすと、スクロールのたびの計算と合成のレイヤーが部品の数だけ増えて重い） */
+.scene-stroke-child {
+  stroke-dasharray: 1 1;
+}
 .scene-anim {
   transform-box: fill-box;
   transform-origin: var(--o, 50% 50%);
