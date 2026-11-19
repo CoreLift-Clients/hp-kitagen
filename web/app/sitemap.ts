@@ -1,23 +1,24 @@
 import { MetadataRoute } from 'next'
 
+// lastModified（<lastmod>）は書かない。以前はビルドの日時（new Date()）で、ページが変わっていなくても
+// 出すたびに全部のページの日付が変わり、Google に当てにされなくなるため。
+// 書くなら、ページの中身を変えた日をページごとに決まった日付で書き、変えるたびに直すこと
+
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
     {
       url: 'https://www.kitagen-izakaya.com',
-      lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 1.0,
     },
     {
       url: 'https://www.kitagen-izakaya.com/owner',
-      lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.6,
     },
     // /menu は /menu/dinner へ転送するだけのページなので載せない。
     {
       url: 'https://www.kitagen-izakaya.com/menu/dinner',
-      lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.7,
     },
@@ -26,7 +27,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // /takeout はページをやめ、/menu/dinner#takeout へ転送するだけなので載せない。
     {
       url: 'https://www.kitagen-izakaya.com/info',
-      lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
     },

@@ -48,8 +48,9 @@ export default function Header() {
           ・左右の余白：iPhone の横向きでは、丸い角・切り欠き（safe-area）の分より狭くしない（ほかの端末では env() は 0 で今までの 20px） */}
       <nav className="max-w-5xl lg:max-w-[1200px] mx-auto pl-[max(1.25rem,env(safe-area-inset-left))] pr-[max(1.25rem,env(safe-area-inset-right))] h-full flex items-center justify-between">
 
-        {/* ── ロゴ ─────────────────────────────────────────── */}
-        <Link href="/" className="group flex items-center gap-3.5 shrink-0" aria-label="きたげん トップへ">
+        {/* ── ロゴ ───────────────────────────────────────────
+            aria-label は、見えている字（IZAKAYA・きたげん・桃谷の居酒屋）を含め、行き先（はじめに）を後ろに添える */}
+        <Link href="/" className="group flex items-center gap-3.5 shrink-0" aria-label="IZAKAYA きたげん 桃谷の居酒屋（はじめにへ）">
           <div className="flex flex-col leading-none gap-1">
             <span className="text-[8px] lg:text-[10px] tracking-[0.55em] text-accent/70 font-medium">
               IZAKAYA
