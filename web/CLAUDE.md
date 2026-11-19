@@ -70,12 +70,12 @@ npx tsc --noEmit   # 型の確認（package.json に lint のスクリプトは�
 - メニュー導線
 - 店舗情報導線
 
-メニュー `/menu/dinner`（`/menu` は `/menu/dinner` へ転送）
+メニュー `/menu/dinner`（`/menu` は `/menu/dinner` へ恒久転送。next.config の redirects）
 
 - 名物・おすすめ（イラストのカード。「料理」→ テイクアウトのご案内 `#takeout` →「お飲みもの」）（フード・ドリンクの欄は、中身が空だったので外した）
 - HTMLベースの見やすいメニュー
 
-ランチ `/menu/lunch`（ランチ臨時休業中。ナビ・sitemap には出さない）
+ランチ `/menu/lunch`（ランチ臨時休業中。ナビ・sitemap には出さず、noindex。再開したら robots の行を消し、sitemap に足す）
 
 店舗情報 `/info`
 
@@ -91,6 +91,8 @@ npx tsc --noEmit   # 型の確認（package.json に lint のスクリプトは�
 - `/takeout` … `/menu/dinner#takeout` へ恒久転送（テイクアウトのメニューは店内と同じなので、メニューのページの中で案内する）
 - お知らせのページ（とその下）… `/info#news` へ恒久転送（お知らせは Instagram で出す。ご案内のページの「お知らせ」の欄へ）
 - `/portal`・`/admin`（管理画面）… ページごと外した（404）
+
+見つからないページ（404）… `app/not-found.tsx`（日本語。はじめに・お品書き・ご案内への入口。noindex・canonical なし）
 
 ---
 

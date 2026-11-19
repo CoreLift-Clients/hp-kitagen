@@ -6,11 +6,17 @@ import BreadcrumbJsonLd from "../../components/BreadcrumbJsonLd";
 import { LUNCH_SUSPENDED, LUNCH_SUSPENDED_NOTICE } from "../../lib/businessHours";
 import { pageMetadata } from "../../lib/seo";
 
-export const metadata = pageMetadata({
-  title: "ランチメニュー｜きたげん",
-  description: "きたげんのランチメニューをご覧いただけます。",
-  path: "/menu/lunch",
-});
+// ランチはお休みしているので、このページは検索に出さない（noindex, follow）。ページは残す。
+// ランチを再開したら（lib/businessHours.ts の LUNCH_SUSPENDED を false にしたら）、robots の行を消して検索に戻し、
+// app/sitemap.ts にも /menu/lunch を足す
+export const metadata = {
+  ...pageMetadata({
+    title: "ランチメニュー｜桃谷駅の居酒屋 IZAKAYA きたげん",
+    description: "桃谷の居酒屋 IZAKAYA きたげんのランチメニュー。ランチは、しばらくお休みしています。",
+    path: "/menu/lunch",
+  }),
+  robots: { index: false, follow: true },
+};
 
 function SectionHeading({ title }: { title: string }) {
   return (
@@ -62,7 +68,7 @@ export default async function LunchMenuPage() {
     <div className="min-h-screen">
       <BreadcrumbJsonLd
         items={[
-          { name: "トップ", path: "/" },
+          { name: "はじめに", path: "/" },
           { name: "ランチメニュー", path: "/menu/lunch" },
         ]}
       />

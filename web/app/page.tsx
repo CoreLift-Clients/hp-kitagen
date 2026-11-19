@@ -92,12 +92,21 @@ export default async function Home() {
         <div className="hidden sm:block absolute bottom-12 max-md:bottom-[calc(3rem+52px+env(safe-area-inset-bottom))] right-8 w-8 h-8 border-b border-r border-white/25 z-10 hero-animate" />
 
         {/* 店名・キャッチコピー。ぼかさず、スクロールで薄くするだけ（hero-text-fade。globals.css） */}
+        {/* h1 は「IZAKAYA きたげん 桃谷の居酒屋」の1つ（検索で、店名と「桃谷の居酒屋」が見出しとして読まれるように）。
+            見た目は3段：小さな IZAKAYA → 大きな店名 → 小さな「桃谷の居酒屋」。字のあいだ（tracking）の分だけ
+            右に寄って見えないよう、小さな2段は字の始まりにも同じあきを足している。段のあいだの {" "} は、
+            つなげて読んだときに語が切れるように */}
         <div className="hero-text-fade relative z-10 text-center px-4">
-          <p className="text-xs tracking-[0.5em] text-white/70 mb-4 hero-animate text-shadow">
-            IZAKAYA
-          </p>
-          <h1 className="text-5xl sm:text-7xl md:text-9xl font-bold mb-4 hero-animate-delay text-white text-shadow">
-            きたげん
+          <h1 className="mb-4 text-white text-shadow">
+            <span className="block text-xs tracking-[0.5em] [padding-inline-start:0.5em] text-white/70 mb-4 hero-animate">
+              IZAKAYA
+            </span>{" "}
+            <span className="block text-5xl sm:text-7xl md:text-9xl font-bold hero-animate-delay">
+              きたげん
+            </span>{" "}
+            <span className="block mt-3 md:mt-4 text-sm sm:text-base md:text-lg font-medium tracking-[0.4em] [padding-inline-start:0.4em] text-white/85 hero-animate-delay">
+              桃谷の居酒屋
+            </span>
           </h1>
           <p className="text-[15px] sm:text-lg md:text-xl text-white/85 tracking-wide hero-animate-delay-2 text-shadow">
             ふらっと寄って、ちゃんとうまい。
@@ -187,7 +196,7 @@ export default async function Home() {
           文章を変えるときは、縦書きが 320px の画面からはみ出さないよう Scene.tsx の計算を見ること */}
 
       {/* 名物（右に絵。せいろのふたが開き、湯気が立ち、しゅうまいが見える）。
-          入口は /menu（/menu/dinner へ転送）。そのページのいちばん上に3品のカードとこだわりの文の欄がある */}
+          入口は /menu/dinner（/menu は転送を1回通るので、直接指す）。そのページのいちばん上に3品のカードとこだわりの文の欄がある */}
       <Scene
         tone="deep"
         reverse
@@ -195,7 +204,7 @@ export default async function Home() {
         art={<SeiroIllustration className={ART} pace="top" />}
         heading="きたげんの名物。"
         lines={["しゅうまいに、", "鉄鍋餃子、", "まずは生ビール。"]}
-        action={<SceneLink href="/menu">お品書きを見る →</SceneLink>}
+        action={<SceneLink href="/menu/dinner">お品書きを見る →</SceneLink>}
       />
 
       {/* 席（左に絵） */}
@@ -215,7 +224,7 @@ export default async function Home() {
         reverse
         name="top-toast"
         art={<ToastIllustration className={ART} />}
-        heading="ご宴会・貸切も。"
+        heading="ご宴会・団体も。"
         lines={["2階の座敷で、", "人数に合わせて。"]}
         action={
           <a href={`tel:${PHONE}`} className={CALL_BUTTON_CLASS}>

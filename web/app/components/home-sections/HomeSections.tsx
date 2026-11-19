@@ -176,7 +176,7 @@ export function FoodSection({ images, specialties }: { images: SiteImages; speci
                     ])}
                   </p>
                   <Link
-                    href="/menu"
+                    href="/menu/dinner"
                     className="btn-lift inline-flex items-center gap-2 text-sm text-accent border border-accent/40 px-5 py-2.5 rounded-sm hover:bg-accent/5 transition-colors"
                   >
                     メニューを見る →
@@ -256,7 +256,7 @@ export function SpaceSection({ images }: { images: SiteImages }) {
                             href="/#group-reservation"
                             className="text-accent hover:text-accent-dark underline underline-offset-4 decoration-accent/40 transition-colors duration-200"
                           >
-                            ご宴会や団体でのご利用は、貸切でのご相談も承っています。
+                            ご宴会や団体でのご利用も、お電話でご相談ください。
                           </Link>
                         ),
                       },
