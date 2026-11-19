@@ -1,0 +1,752 @@
+/* ─── 料理の絵の決まり（「基本は線、強調する所だけ色」。名物の欄の9枚と、トップの場面の料理の絵に当てはめる） ───
+   料理と飲み物の絵を、素朴な線画にそろえる（カードを並べたときに揃って見え、トップの静かな雰囲気からも浮かないように）。
+   「ひと目で何か分かる」ことは、形（シルエット）と、色を塗った1〜2か所で伝える
+   1. 絵は線で描く。塗りは、後ろの線を隠すための紙の色（.scene-paper）だけ
+   2. 強調したい所を1〜2か所だけ、その物の色でべた塗りする（下の .food-*）。陰を付けるなら、べた1段まで
+   3. グラデーション・質感の点・細かいしわや筋・たくさんの線の束は使わない
+      （湯気が上で薄くなるのは、線の濃さの変化なので、この決まりの外。今までどおり）
+   4. 中の線は、1つの物に 5〜6 本まで
+   5. 線の太さは、9枚でそろえる：輪郭は .scene-line、中の線は .scene-fine だけを使う
+      （viewBox を切り出した絵は --scene-z で、400 の幅の絵と同じ太さに見せる）
+   9枚の塗る所：
+   ・しゅうまい … 皮とあん（水彩。.food-wash-skin・.food-wash-meat）
+   ・鉄鍋餃子 … 餃子の皮（水彩。.food-wash-skin）、焼き色（水彩。きつね色 .food-wash-yaki に、濃い焼き色 .food-wash-yaki-dark の斑点）、
+     羽根（水彩。.food-wash-hane）。形は写真を見て描いた形（厚みのある鉄のスキレットに、ぷっくりした三日月形の8個が
+     中心のまわりを渦を巻くように並ぶ。白いひだの帯は背の側だけ）。鍋は線だけ
+   ・からあげ … からあげ（水彩。.food-wash-karaage）。形は写真を見て描いた形（浅く広い無地の白い平鉢を上からのぞき込む角度で、
+     まん中に6個をこんもり）。器のふちの帯の奥側の陰だけは、下の「入れ物は線だけ」の例外
+   ・豚の角煮 … 角煮の肉・脂の層・味玉・千切りキャベツ（水彩。.food-wash-*）。形は千切りキャベツを敷いた形（43575ec）
+   ・串焼き … ぼんじり・鶏ハラミ・鶏皮の具と焼き目（水彩。.food-wash-karaage・.food-wash-harami・.food-wash-kawa・.food-wash-koge）。
+     形はメニューの写真を見て描いた串（持ち手の出た竹串を3本）を、肉みそ冷奴と同じ横長の角の丸い長方形のお皿
+     （ふちが少し立った形。draw.ts の roundRectPts）に、お皿の長い向きに沿わせて並べた形
+   ・肉みそ冷奴 … 豆腐・肉みそ・ねぎ・たれ（水彩。.food-wash-*）。形は写真を見て描いた形（ab2dae6）
+   ・生ビール … ビールと泡（水彩。.food-wash-beer・.food-wash-foam）、ビールの中の炭酸の泡（.beer-fizz。部品は Fizz.tsx）、注がれる流れ（.food-wash-beer の帯。輪郭は細い線）、
+     ジョッキのガラス（.food-wash-glass）、注ぎ口とレバー（.food-wash-tap）
+   ・日本酒・焼酎 … 徳利とお猪口（焼き物の色 .food-wash-yakimono）、お猪口の中のお酒（.food-wash-sake）、
+     注がれる日本酒（.food-wash-sake の帯）、タンブラーと水差し（.food-wash-glass）、氷と注がれる水（.food-wash-ice）、
+     焼酎の水割り（.food-wash-shochu）
+   ・ソフトドリンク … グラス（.food-wash-glass）、コーラ（.food-wash-cola。下の約 6 割に同じ色をもう1段 .cola-deep）、
+     水面の泡の帯（.cola-foam）、炭酸の泡（.cola-bubble。時間でずっと立ちのぼる。部品は Fizz.tsx）、氷（.food-wash-ice）、ストロー（.food-wash-straw）
+
+   水彩の塗り方（9枚すべて。部品は Wash.tsx）：
+   線画に、うすく絵の具で塗ったように見せる。上の 1.〜5. のうち、塗りについては、この決まりを優先する
+   ・塗るのは食材だけ。お皿・せいろ・鍋・グラス・ジョッキなどの入れ物は線だけ（塗りは後ろを隠す紙の色だけ）
+     例外：せいろだけは、深さが分かるよう、ごく淡い水彩の陰を1段だけ付けてよい（.seiro-wash-shade）。
+     付ける所は、内側の奥の壁の1か所だけ（光は左上から。陰の下のふちが、奥の壁と底の境目になる）。
+     外側の胴には付けない（斜めの帯に見えて目立つため）。色は foreground をうすく（不透明度 0.12〜0.2）。
+     塗り方（ずれ・ふちの濃さ・にじみ）は、ほかの水彩と同じ
+     例外：からあげの器（無地の白い平鉢）だけは、浅さと広いふちが分かるよう、ふちの帯の奥側（内の線のすぐ外の、
+     奥の半分）に、ごく淡い陰を1段だけ付けてよい（.karaage-wash-shade。foreground をうすく 0.12。塗り方はほかの水彩と同じ）
+   ・飲み物の塗り方（生ビール・日本酒・焼酎・ソフトドリンクの3枚）：飲み物は、入れ物そのものが主役なので、
+     入れ物にも水彩の色を付けてよい（上の「入れ物は線だけ」は、飲み物には当てない）。
+     塗り方は料理と同じ水彩の決まり（線の内側だけ・ふちの濃さ・白い抜け・にじみ・ムラ）。3枚でそろえるため、
+     ガラス（ジョッキ・グラス）はどれも .food-wash-glass（ごく淡い色。ほぼ紙の色で、ふちだけうすく）、
+     氷はどれも .food-wash-ice（ほんのり水色がかった白）。中の飲み物は、その飲み物の色（ふつうの水彩の濃さ）
+   ・色：その食材の色を、水で薄めた色（くすみすぎない、やさしい色）。不透明度 0.6〜0.75 くらい（--wash-a。泡だけ 0.25）
+   ・線から少しずれる：塗りの形を、線の形から右下へ 0.75〜1.5 ずらす（ふつうは 1・0.75。小さな具は 0.4〜0.75）。
+     内側に寄って紙の色が残る所ができる。形のわずかなゆがみは、下のにじみのフィルタで出す（乱数なし。seed を決めておく）
+   ・線の外へは出さない：塗りは、にじみをかけた後で、線の内側だけの形で切り抜く（Wash の mask）。
+     mask は、線の形を白で塗り、線と同じ太さのふちを黒で重ねた形 ＝ 線の太さの半分だけ内側に縮めた形
+     （輪郭が .scene-line なら 2.6 の半分の 1.3、角煮の輪郭 1.8 なら 0.9、ねぎの輪 1.5 なら 0.75 だけ内側。
+     どれも --scene-k・--scene-z を掛けた実際の太さで。Wash の line）。
+     塗りは線の内側のふちで止まり、線の外にも、線の下にも入らない。せいろの陰の塗りも同じ
+   ・水彩らしさは、線のすぐ内側に紙の色が少し残る「塗り残し」（上のずれ）、ふちの濃さ、白い抜け、ムラで出す
+   ・ふちが少し濃い：塗りのふちの内側に沿って、同じ色を細く重ねる（.wash-edge。太さ 4 の線を形で切り取り、内側の 2 だけ見せる。
+     不透明度 --wash-edge 0.35〜0.45 くらい ＝ 重なった所で、塗りより約 0.12 濃い）
+   ・白く抜ける所：塗りの中に、紙の色がのぞく小さなだ円を1〜2か所（.wash-hole。ハイライトの代わり。色の面積を減らさないよう小さめ）
+   ・にじみ：feTurbulence（fractalNoise、baseFrequency 0.035、numOctaves 2）と feDisplacementMap（scale 3 ＝ ずれは最大 ±1.5）で、
+     塗りのふちだけをわずかに揺らす。線にはかけない。フィルタは絵ごとに1つを defs に置き、塗りごとに（Wash の filter で）使い回す
+   ・グラデーションは使わない（水彩のにじみのためだけなら、ごく弱く使ってよい）
+   ・陰は、同じ色の塗りを1段重ねる程度まで
+   ・水彩の塗りは、各絵の最後の段階でじわっと出る
+
+   色を付けるのは食材・飲み物だけ。その例外（食材ではないが色を付ける所）：
+   ・店主紹介のページ（縦長の画面）の、署名の右の判子（app/owner/OwnerStamp.tsx）。落ち着いた、くすんだ朱 #AE4630
+     （app/owner/letter.css の --stamp-shu。サイトで足した、判子のためだけの色）。押した判子らしく、ムラ・かすれを少しだけ付ける。
+     ほかの所には使わない */
+
+
+/* ─── トップの線画の場面と、ディナーメニューの名物の欄（スクロールで動く線画） ─────────────
+   場面の部品は Scene.tsx、名物の欄は Specialties.tsx、絵の囲みは ScenePlayOnView.tsx、絵は *Illustration.tsx。
+   ・何も動かさないときの形が「動き終わった絵」。
+     prefers-reduced-motion: reduce のときと、JavaScript が動かないときは、この形のまま止まって見える
+   ・動きは「動く前 → 動き終わり」の @keyframes を、
+     1) scroll-driven animations が使えるブラウザ … スクロールの位置で進める（下に進む・上で巻き戻る）
+     1') 使えないブラウザ … sceneScroll.ts が、1) と同じ決まりでスクロールの位置から進み具合を計算して当てる（data-scene="js"）
+     2) それも使えない、とても古いブラウザ … 場面が画面に入ったとき1回だけ、時間で進める（data-scene="play"）
+   ・動かす部品には class の scene-anim と、style の --a（動きの名前）・--r0・--r1（どこからどこまで）を付ける
+     （draw.ts の anim()）。--r0・--r1 は 4〜60 くらいの数で、動きの順番と長さの割合を決める。
+     スクロールで進めるときは、この 4〜60 を「絵が画面の中に全部入ったところ」〜「絵の真ん中が画面の真ん中に来たところ」
+     に割り当てる（下の 1)。名物の欄のカードは、始まりを「絵の線のいちばん下が画面に入ったところ」にする）。
+     画面に入る前の絵は、動く前の形（せいろはまだ何も出ていない など）で見える
+   ・動かすのは transform・opacity・stroke-dashoffset だけ
+   ・時間で揺れ続ける動き（scene-sway・注がれる流れの筋 pour-flow）は、場面が画面の外にあるあいだ止める（data-inview="false"）
+   ・--scene-paper … 後ろの線を隠す塗り。場面の背景（section-*）と同じ色（下で背景ごとに決める） */
+
+.scene.section-light { --scene-paper: #F7F3EB; }
+.scene.section-warm  { --scene-paper: #F3EDE2; }
+.scene.section-deep  { --scene-paper: #EBE1D3; }
+
+/* 線の太さ。絵の幅が 400px（viewBox の幅と同じ）のとき 2.6px・2.1px。
+   スマホでは絵が画面の幅の 70% に縮むので、その分だけ少し太くする（1.2 倍。390px の画面で線 2.1px）。
+   絵の幅に対する線の割合は、パソコン 0.65%、スマホ 0.78%（パソコンの 1.2 倍）。
+   以前は 1.45 倍（0.94%。パソコンの 1.45 倍）で、スマホの絵がパソコンより濃く・強く見えていたので、パソコンに近づけた */
+.scene-svg { --scene-k: 1; }
+@media (max-width: 767px) {
+  .scene-svg { --scene-k: 1.2; }
+}
+/* --scene-z … viewBox を 400 より狭く切り出して絵を大きく見せる絵（名物の欄のカードの新しい絵）で、
+   線が太くなりすぎないように、切り出した幅 ÷ 400 を掛ける（付けていない絵は 1） */
+.scene-line { stroke-width: calc(2.6px * var(--scene-k) * var(--scene-z, 1)); }
+.scene-fine { stroke-width: calc(2.1px * var(--scene-k) * var(--scene-z, 1)); }
+.scene-paper { fill: var(--scene-paper); }
+/* 料理の絵の湯気の線（Steam.tsx。しゅうまい・からあげ・串焼き・鉄鍋餃子）：毛やひげに見えないよう、scene-line より少し太く、やわらかく。
+   濃さは線にかける縦のグラデーション（根元と上の端は透明）で、うすくする（決まりの 5. の例外。湯気だけ） */
+.scene-steam-line { stroke-width: calc(3.4px * var(--scene-k) * var(--scene-z, 1)); }
+/* 名物の欄のイラストのカード（Specialties.tsx）の絵。絵の幅（正方形の場所の幅）に合わせて太さを段に分ける。
+   絵の幅に対する線（scene-line）の割合は 2.6 × --scene-k ÷ 400（切り出し --scene-z によらない）：
+   lg 以上 0.94%（1.45）、md〜lg 0.81%（1.25）、640〜767px 0.88%（1.35）、500〜639px 1.04%（1.6）、500px 未満 1.24〜1.3%（1.9・2.0）。
+   500px 未満は、以前は 1.5〜1.95%（2.3・3。パソコンの約 2 倍）で、スマホのカードの絵がパソコンより濃く・強く見えていたので、
+   パソコンの 1.3 倍くらいまで細くした（390px で線 1.8px、320px で 1.4px。細い線 scene-fine は 1.1〜1.5px）。
+   これより細くすると、小さい絵で線がかすれて見えるので、ここまでにしている。絵の幅はおおよそ
+   ・md より狭い画面：2列で、画面の幅の半分から約 56px を引いた幅（320px の画面で約 104px、767px で約 327px）
+   ・md〜lg：2列で約 280〜288px（欄の幅を 720px までにしている。カードの左右の余白 28px）
+   ・lg 以上：3列で約 251〜277px（欄の幅をサイト共通の 1040px までにしている。カードの左右の余白 24px） */
+.scene-svg.scene-svg-card { --scene-k: 1.45; }
+@media (max-width: 1023px) {
+  .scene-svg.scene-svg-card { --scene-k: 1.25; }
+}
+@media (max-width: 767px) {
+  .scene-svg.scene-svg-card { --scene-k: 1.35; }
+}
+@media (max-width: 639px) {
+  .scene-svg.scene-svg-card { --scene-k: 1.6; }
+}
+@media (max-width: 499px) {
+  .scene-svg.scene-svg-card { --scene-k: 1.9; }
+}
+@media (max-width: 399px) {
+  .scene-svg.scene-svg-card { --scene-k: 2; }
+}
+/* 名物の欄の和紙のカード。絵の中の「後ろの線を隠す塗り」をカードの色（section-light と同じ）にする */
+.scene-card { --scene-paper: #F7F3EB; }
+/* 名物のカードの品名の仮名（Specialties.tsx の CardName。倍率・字間・ふちの太さは同じファイルの KANA_* から --kana-* で来る）
+   ・大きくしても行の高さが変わらないよう line-height: 1（品名の行の高さ leading-snug の中に収まる）。ベースラインはそのまま
+   ・ふちは字と同じ色（currentColor）。漢字には付けない */
+.card-name-kana {
+  font-size: calc(var(--kana-scale, 1) * 1em);
+  letter-spacing: var(--kana-track, 0);
+  line-height: 1;
+  -webkit-text-stroke: var(--kana-stroke, 0) currentColor;
+}
+/* カードのふち（伸ばしても線の太さが変わらないようにする） */
+.scene-card-frame {
+  vector-effect: non-scaling-stroke;
+  stroke-width: 2px;
+}
+/* 名物の欄のカードの枠：md より狭い画面は細く（カードの幅に対する割合を、パソコン〈2px ÷ 325px ＝ 0.6%〉に近づける）。
+   以前はどの画面も 2px で、390px の画面のカード（159px）では 1.26% と、パソコンの約 2 倍の太さに見えていた。
+   1.5px（390px で 0.94%）、400px より狭い画面は 1.25px（320px のカード 124px で 1.0%）。店舗情報の地図の枠は変えない */
+@media (max-width: 767px) {
+  .scene-card .scene-card-frame { stroke-width: 1.5px; }
+}
+@media (max-width: 399px) {
+  .scene-card .scene-card-frame { stroke-width: 1.25px; }
+}
+/* 差し色（accent）。色を付けるのは食材・飲み物だけ（今は宴の場面のジョッキの中のビールだけ）。
+   線の差し色（以前の .scene-accent。席の場面のスニーカーの横の線）は、食材ではないので外した */
+.scene-accent-fill { fill: var(--accent); }
+/* 料理の色（このファイルの先頭の「料理の絵の決まり」の 2.）。どれもべた塗り。今まで使っていた色（accent・foreground・白・ねぎの緑）を混ぜて作る。
+   水彩の塗り（.food-wash-*）は、色 --wash と、塗りの不透明度 --wash-a、ふちの濃さ --wash-edge を決める。
+   しゅうまいのあんだけは、小豆あんに見えないよう、少し赤み寄りの肉の色（#C98A74）
+   ・.food-tare … たれ（accent 70% に foreground。今はどの絵でも使っていない） */
+.food-tare { fill: color-mix(in srgb, var(--accent) 70%, currentColor); }
+/* 水彩の塗り（Wash.tsx）。塗り・ふちの濃い所・紙の色の抜け */
+.wash { fill: var(--wash); fill-opacity: calc(var(--wash-a, 0.45) * var(--wash-k, 1)); }
+.wash-edge { fill: none; stroke: var(--wash); stroke-opacity: calc(var(--wash-edge, 0.25) * var(--wash-k, 1)); stroke-width: 4px; }
+/* --wash-k … 水彩の塗りの濃さの倍率。md より狭い画面（スマホ）は 0.85 倍にうすくする
+   （スマホの画面は色が鮮やかに見えやすく、絵が小さいと塗りが詰まって見えるため。パソコン・タブレットは 1 のまま）。
+   トップの宴の場面のビールの色（ToastIllustration.tsx の .toast-beer。fill-opacity 0.3）にも同じ倍率を掛ける */
+@media (max-width: 767px) {
+  .scene-svg { --wash-k: 0.85; }
+  .toast-beer { fill-opacity: calc(0.3 * var(--wash-k, 1)); }
+}
+.wash-hole { fill: var(--scene-paper); fill-opacity: 0.9; }
+/* 水彩の色（淡く、くすんだ、やさしい色）
+   ・.food-wash-meat … しゅうまいのあん（赤み寄りの肉の色 #C98A74）
+   ・.food-wash-skin … しゅうまいの皮・角煮の脂の層（淡いクリーム。白に accent 30%）
+   ・.food-wash-kakuni … 角煮の肉（たれのこげ茶寄りの、しっかりした茶色。accent 72% に foreground）。
+     .food-wash-kakuni-dark は皮と厚みのふち（同じ色をもう1段重ねて濃く）
+   ・.food-wash-cabbage … 千切りキャベツ（淡い黄緑 #B9C985。43575ec の色）
+   ・.food-wash-white … 味玉の白身（ほぼ紙の色。白に accent 18% をごくうすく）
+   ・.food-wash-yolk … 味玉の黄身（淡いオレンジ。accent）
+   ・.food-wash-beer … ビール（淡い琥珀色。白に accent 82%）
+   ・.food-wash-foam … ビールの泡（ほぼ紙の色。ふちだけうすいクリーム。白に accent 34%）
+   ・.food-wash-tofu … 冷奴の豆腐（ごく淡いクリーム。ほとんど白。白に accent 14%。側面は同じ色をもう1段重ねる）
+   ・.food-wash-miso-crumb … 冷奴の肉みその、ひき肉のかたまり（角煮の肉と同じ色をうすく重ねる。山は .food-wash-kakuni）
+   ・.food-wash-negi … 冷奴のねぎの中（落ち着いた緑 #7E9A4C）
+   ・.food-wash-tare … 冷奴のお皿の上のたれ（オレンジ茶色。accent 85% に foreground）。
+     .food-wash-tare-pale は、たまり（もう1段重ねる）と豆腐の上の面（うすく）
+   ・.food-wash-karaage … からあげ（赤みのあるきつね色。accent 80% に赤茶 #7A2E14）。
+     .food-wash-karaage-dark は右下の陰（同じ色をもう1段重ねる）。串焼きのぼんじりも .food-wash-karaage
+   ・.food-wash-harami … 串焼きの鶏ハラミ（赤みのある濃い茶色。accent 62% に こげ茶 #5E2414）
+   ・.food-wash-kawa … 串焼きの鶏皮（淡いきつね色。白に accent 74%。カリッと焼けたふちを濃く ＝ --wash-edge を高め）
+   ・.food-wash-koge … 串焼きの焼き目（濃い茶色。accent 45% に foreground。小さな塗りを具の上に重ねる）
+   ・.food-wash-yaki … 鉄鍋餃子の焼き色（黄色寄りの、こんがりしたきつね色。accent 52% に 黄土色 #E0B458 を、しっかり 0.84 で。
+     写真の焼き色に合わせて、オレンジに寄せない。ひだの帯以外の上の面の全部）。餃子の皮は .food-wash-skin
+   ・.food-wash-yaki-dark … 鉄鍋餃子の濃い焼き色（こげ茶。accent 55% に こげ茶 #5A2A0E）。
+     きつね色の上に、腹の側（ひだと反対の側）に寄せたまだらで重ねる（大きめの塊 1〜2 つと、小さな不揃いな形を数個）
+   ・.food-wash-hane … 鉄鍋餃子の羽根（.food-wash-yaki-dark と同じ色を 0.65 で。外側の輪と餃子のすき間だけ。不揃いな穴を空ける）
+   ・.seiro-wash-shade … せいろの陰（入れ物の例外。foreground をうすく 0.16。ふちはさらにうすく）
+   ・.karaage-wash-shade … からあげの器のふちの帯の奥側の陰（入れ物の例外。foreground をうすく 0.12。ふちはさらにうすく）
+   飲み物（入れ物にも塗る。「料理の絵の決まり」の「飲み物の塗り方」）
+   ・.food-wash-glass … ガラス（ジョッキ・グラス・タンブラー・水差し）。ほぼ紙の色（塗り 0.12）で、ふちだけうすく（0.4）。
+     色は氷の色に foreground を 30% 混ぜた、ごく淡い青灰色
+   ・.food-wash-ice … 氷（ほんのり水色がかった白 #D6E7EC。新しく足した色）。水差しから注がれる水の帯と、水差しの中の水も同じ色
+   ・.food-wash-yakimono … 徳利とお猪口の焼き物（濃いこげ茶〜黒っぽい色。accent 28% に foreground）
+   ・.food-wash-sake … お猪口の中の日本酒（ほぼ透明に近い、淡いクリーム色。白に accent 20%）
+   ・.food-wash-shochu … タンブラーの焼酎の水割り（ほぼ透明に近い、ごく淡い琥珀色。白に accent 24% を、うすめ 0.4 で）
+   ・.food-wash-cola … ソフトドリンクのコーラ（こげ茶〜黒に近いカラメル色。accent 30% に 赤みのあるこげ茶 #2B0E04 を 0.74 で）。
+     .cola-deep は下の濃い所（同じ色をもう1段 0.42 で重ねる。重ねた所のふちに濃い線が出ないよう、ふちの濃さは 0）。
+     スマホの 0.85 倍（--wash-k）も、ほかの塗りと同じく当たる
+   ・.cola-foam … コーラの水面の泡の帯（紙の色に近い白 #FBF8F2 を 0.72）。.cola-bubble … 炭酸の泡（同じ白を 0.62）
+   ・.beer-fizz … ビールの中の炭酸の泡（白〜うすい金色。紙の色に近い白 #FBF8F2 に accent 10% を 0.85）。
+     琥珀色の中で見え、目立ちすぎないように
+   ・.food-wash-straw … ソフトドリンクのストロー（淡い accent。白に accent 45%）
+   ・.food-wash-tap … ビールの注ぎ口（淡い灰色を1段。白に foreground 30%） */
+.food-wash-meat { --wash: #C98A74; --wash-a: 0.75; --wash-edge: 0.44; }
+.food-wash-skin { --wash: color-mix(in srgb, var(--accent) 30%, #fff); --wash-a: 0.62; --wash-edge: 0.4; }
+.food-wash-kakuni { --wash: color-mix(in srgb, var(--accent) 72%, currentColor); --wash-a: 0.75; --wash-edge: 0.42; }
+.food-wash-kakuni-dark { --wash: color-mix(in srgb, var(--accent) 72%, currentColor); --wash-a: 0.6; --wash-edge: 0.36; }
+.food-wash-cabbage { --wash: #B9C985; --wash-a: 0.68; --wash-edge: 0.42; }
+.food-wash-white { --wash: color-mix(in srgb, var(--accent) 18%, #fff); --wash-a: 0.6; --wash-edge: 0.38; }
+.food-wash-yolk { --wash: var(--accent); --wash-a: 0.72; --wash-edge: 0.42; }
+.food-wash-beer { --wash: color-mix(in srgb, var(--accent) 82%, #fff); --wash-a: 0.7; --wash-edge: 0.42; }
+.food-wash-foam { --wash: color-mix(in srgb, var(--accent) 34%, #fff); --wash-a: 0.25; --wash-edge: 0.5; }
+.food-wash-tofu { --wash: color-mix(in srgb, var(--accent) 14%, #fff); --wash-a: 0.5; --wash-edge: 0.4; }
+.food-wash-miso-crumb { --wash: color-mix(in srgb, var(--accent) 72%, currentColor); --wash-a: 0.42; }
+.food-wash-miso-crumb .wash-crumb-dark { fill-opacity: calc(0.6 * var(--wash-k, 1)); }
+.food-wash-negi { --wash: #7E9A4C; --wash-a: 0.72; --wash-edge: 0.3; }
+.food-wash-tare { --wash: color-mix(in srgb, var(--accent) 85%, currentColor); --wash-a: 0.62; --wash-edge: 0.42; }
+.food-wash-tare-pale { --wash: color-mix(in srgb, var(--accent) 85%, currentColor); --wash-a: 0.4; --wash-edge: 0.34; }
+.food-wash-karaage { --wash: color-mix(in srgb, var(--accent) 80%, #7A2E14); --wash-a: 0.72; --wash-edge: 0.44; }
+.food-wash-karaage-dark { --wash: color-mix(in srgb, var(--accent) 80%, #7A2E14); --wash-a: 0.42; --wash-edge: 0.3; }
+.food-wash-harami { --wash: color-mix(in srgb, var(--accent) 62%, #5E2414); --wash-a: 0.72; --wash-edge: 0.44; }
+.food-wash-kawa { --wash: color-mix(in srgb, var(--accent) 74%, #fff); --wash-a: 0.7; --wash-edge: 0.7; }
+.food-wash-koge { --wash: color-mix(in srgb, var(--accent) 45%, currentColor); --wash-a: 0.62; --wash-edge: 0.42; }
+.food-wash-yaki { --wash: color-mix(in srgb, var(--accent) 52%, #E0B458); --wash-a: 0.84; --wash-edge: 0.5; }
+.food-wash-yaki-dark { --wash: color-mix(in srgb, var(--accent) 55%, #5A2A0E); --wash-a: 0.68; --wash-edge: 0.42; }
+.food-wash-hane { --wash: color-mix(in srgb, var(--accent) 55%, #5A2A0E); --wash-a: 0.65; --wash-edge: 0.45; }
+/* 飲み物（入れ物も主役なので、入れ物にも塗る。上の「料理の絵の決まり」の「飲み物の塗り方」） */
+.food-wash-glass { --wash: color-mix(in srgb, #D6E7EC 70%, currentColor); --wash-a: 0.12; --wash-edge: 0.4; }
+.food-wash-ice { --wash: #D6E7EC; --wash-a: 0.8; --wash-edge: 0.55; }
+.food-wash-yakimono { --wash: color-mix(in srgb, var(--accent) 28%, currentColor); --wash-a: 0.88; --wash-edge: 0.45; }
+.food-wash-sake { --wash: color-mix(in srgb, var(--accent) 20%, #fff); --wash-a: 0.7; --wash-edge: 0.45; }
+.food-wash-shochu { --wash: color-mix(in srgb, var(--accent) 24%, #fff); --wash-a: 0.4; --wash-edge: 0.36; }
+.food-wash-cola { --wash: color-mix(in srgb, var(--accent) 30%, #2B0E04); --wash-a: 0.74; --wash-edge: 0.4; }
+.food-wash-cola.cola-deep { --wash-a: 0.42; --wash-edge: 0; }
+.cola-foam { fill: #FBF8F2; fill-opacity: 0.72; }
+.cola-bubble { fill: #FBF8F2; fill-opacity: 0.62; }
+.beer-fizz { fill: color-mix(in srgb, var(--accent) 10%, #FBF8F2); fill-opacity: 0.85; }
+.food-wash-straw { --wash: color-mix(in srgb, var(--accent) 45%, #fff); --wash-a: 0.7; --wash-edge: 0.45; }
+.food-wash-tap { --wash: color-mix(in srgb, currentColor 30%, #fff); --wash-a: 0.35; --wash-edge: 0.4; }
+.seiro-wash-shade { --wash: currentColor; --wash-a: 0.16; --wash-edge: 0.1; }
+.karaage-wash-shade { --wash: currentColor; --wash-a: 0.12; --wash-edge: 0.07; }
+/* 鉄鍋餃子の羽根のふちの線（細く、うすく。とぎれとぎれ。餃子の線より目立たないように） */
+.teppan-hane-line {
+  stroke-width: calc(1.1px * var(--scene-k) * var(--scene-z, 1));
+  opacity: 0.55;
+}
+/* 肉みそ冷奴の線の色（HiyayakkoIllustration.tsx。ab2dae6 の決まり）：ねぎの輪の線は落ち着いた緑、てかりは白い小さな点 */
+.hiyayakko-negi { --hiyayakko-negi: #7E9A4C; }
+.hiyayakko-negi-ring {
+  stroke: var(--hiyayakko-negi);
+  stroke-width: calc(1.5px * var(--scene-k) * var(--scene-z, 1));
+}
+.hiyayakko-miso-shine { fill: #fff; fill-opacity: 0.8; }
+/* 細めの輪郭の線（.scene-line より細い）。豚の角煮の角煮と味玉の輪郭（KakuniIllustration.tsx。43575ec の形）と、
+   からあげの器とからあげの輪郭（KaraageIllustration.tsx）。からあげの中の線は、それより少し細い .scene-outline-fine */
+.scene-outline { stroke-width: calc(1.8px * var(--scene-k) * var(--scene-z, 1)); }
+.scene-outline-fine { stroke-width: calc(1.45px * var(--scene-k) * var(--scene-z, 1)); }
+.kakuni-band-line {
+  stroke-width: calc(1.1px * var(--scene-k) * var(--scene-z, 1));
+  stroke-opacity: 0.45;
+}
+.kakuni-gloss {
+  stroke: #fff;
+  stroke-opacity: 0.85;
+  stroke-width: calc(1.6px * var(--scene-k) * var(--scene-z, 1));
+}
+.kakuni-cabbage { --kakuni-cabbage-line: #C9D79A; }
+.kakuni-cabbage-strand {
+  stroke: var(--kakuni-cabbage-line);
+  stroke-width: calc(0.95px * var(--scene-k) * var(--scene-z, 1));
+}
+.kakuni-cabbage-hi {
+  stroke: #fff;
+  stroke-opacity: 0.85;
+  stroke-width: calc(0.95px * var(--scene-k) * var(--scene-z, 1));
+}
+.kakuni-yolk-line {
+  stroke: color-mix(in srgb, var(--accent) 70%, currentColor);
+  stroke-width: calc(1.1px * var(--scene-k) * var(--scene-z, 1));
+}
+.kakuni-shine { fill: #fff; fill-opacity: 0.9; }
+
+
+/* 線を描き進める部品（pathLength="1" と一緒に使う） */
+.scene-stroke-draw {
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 0;
+}
+/* 同じ時刻に描き進める線をまとめるとき（角煮の千切り）：動きは囲みの g（.scene-anim）にかけ、
+   中の線は描き進める値（stroke-dashoffset）を g から受け継ぐ（ここでは決めない）。pathLength="1" は線に付ける。
+   （鉄鍋の側面・座布団の線も同じ時刻のものがあるが、まとめると線のふちの画素がわずかに変わったので、まとめていない）
+   動く部品の数を減らすため（1つずつ動かすと、スクロールのたびの計算と合成のレイヤーが部品の数だけ増えて重い） */
+.scene-stroke-child {
+  stroke-dasharray: 1 1;
+}
+.scene-anim {
+  transform-box: fill-box;
+  transform-origin: var(--o, 50% 50%);
+}
+/* 席の絵の子どもの右の靴と手：回る中心を、靴のまん中（絵の座標で --o）に置く */
+.scene-anim.seat-fix { transform-box: view-box; }
+.scene-sway {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+/* せいろのふた（SeiroIllustration.tsx）：動き終わりは見えない（opacity 0。ふたのないせいろ）。
+   prefers-reduced-motion のときと、JavaScript が動かないブラウザで動き終わったあとも、この形で止まる。
+   transform は絵の座標で書くので、中心は絵の座標の原点（view-box の 0 0） */
+.seiro-lid-move { opacity: 0; }
+.scene-anim.seiro-lid-move { transform-box: view-box; transform-origin: 0 0; }
+/* ふたのすき間からもれる湯気：動き終わりは見えない（ふたが持ち去られるころに消える） */
+.seiro-leak { opacity: 0; }
+
+/* 注がれる流れ（部品は Pour.tsx。生ビール BeerIllustration.tsx と、日本酒・焼酎 SakeIllustration.tsx で使い回す）。
+   ・帯は幅 3.5〜9 ほどと細いので、小さい絵（--scene-k が大きい）でも輪郭の線が帯を埋めないよう、
+     帯の中だけ線の太さの倍率を 1.6 までにする（--scene-z で割り戻す。輪郭の線・水彩の切り抜き・明るい筋に効く）
+   ・明るい筋（.pour-flow）：白をうすく。破線を、時間でずっと上から下へ流す（下の @media の中。場面が画面の外にあるあいだは止める）。
+     prefers-reduced-motion のときは、破線のまま止まって見える。破線の長さは pathLength で流れの長さによらずそろえる（Pour.tsx）
+   ・.pour-gone … 注ぎ終わりに切れて消える流れ（Pour の cut）。動き終わり（prefers-reduced-motion のとき、
+     JavaScript が動かないブラウザで動き終わったあとも）は見えない。流れの中の明るい筋も、流れと一緒に見えなくなる
+   ・生ビールのレバー：根元（管の上、絵の座標 331・20）を中心に、まっすぐ立った形から手前（左）へ少し倒れ、
+     注ぎ終えると、まっすぐ立った形に戻る（toast-tilt を2段） */
+.pour-gone { opacity: 0; }
+.pour { --scene-z: calc(min(var(--scene-k), 1.6) / var(--scene-k)); }
+/* 日本酒・水の流れ（幅 3.5〜6 と、ビールより細い）は、輪郭の線をさらに 0.6 倍に（中の色と筋が見えるように） */
+.pour.pour-thin { --scene-z: calc(min(var(--scene-k), 1.6) / var(--scene-k) * 0.6); }
+.pour-flow {
+  fill: none;
+  stroke: #fff;
+  stroke-opacity: 0.7;
+  stroke-width: calc(1.8px * var(--scene-k) * var(--scene-z, 1));
+  stroke-dasharray: 0.16 0.22;
+}
+.pour-flow-2 {
+  stroke-opacity: 0.55;
+  stroke-width: calc(1.3px * var(--scene-k) * var(--scene-z, 1));
+  stroke-dasharray: 0.1 0.28;
+  stroke-dashoffset: 0.19;
+}
+.scene-anim.beer-lever-move { transform-box: view-box; transform-origin: 331px 20px; }
+/* 日本酒・焼酎（SakeIllustration.tsx）
+   ・徳利・水差しの傾き、マドラーの混ぜる動き：支点（--o。絵の座標の px）を中心に回る
+   ・.sake-gone … 動き終わりは見えない部品（注いでいる流れ・波紋・しずく・泡粒・水差し・マドラー・混ぜる前の濃い焼酎）。
+     prefers-reduced-motion のときと、JavaScript が動かないブラウザで動き終わったあとも、見えない（完成の形で止まる）。
+     流れの中の明るい筋（.pour-flow）も、流れと一緒に見えなくなる */
+.scene-anim.sake-vb { transform-box: view-box; }
+.sake-gone { opacity: 0; }
+
+/* 店舗情報のページの、項目のあいだの区切りの線（components/Washi.tsx の BrushRule）。
+   料理の絵の線と同じ描き方（draw.ts の line の揺らぎ）と色（currentColor ＝ text-foreground）。
+   幅いっぱいに伸ばしても太さが変わらないよう non-scaling-stroke。料理の絵の中の線（scene-fine）くらいの細さ */
+.info-rule-line {
+  vector-effect: non-scaling-stroke;
+  stroke-width: 1.6px;
+}
+
+/* ─── 動き（動く前 → 動き終わり） ─── */
+@keyframes scene-draw {
+  from { stroke-dashoffset: 1; opacity: 0; }
+  10%  { opacity: 1; }
+  to   { stroke-dashoffset: 0; opacity: 1; }
+}
+@keyframes scene-fade-up {
+  from { opacity: 0; transform: translateY(var(--dy, 12px)); }
+  to   { opacity: 1; transform: none; }
+}
+/* ぱっと出る（少し大きくなってから落ち着く） */
+@keyframes scene-pop {
+  from { opacity: 0; transform: scale(0.3); }
+  60%  { opacity: 1; transform: scale(1.15); }
+  to   { opacity: 1; transform: none; }
+}
+/* 横から寄ってくる（ジョッキ） */
+@keyframes scene-slide-in {
+  from { opacity: 0; transform: translateX(var(--dx, -56px)) rotate(var(--rot, -6deg)); }
+  50%  { opacity: 1; }
+  to   { opacity: 1; transform: none; }
+}
+/* 肉みそ冷奴のたれ：じわっと広がって出る（水彩の塗り。いちばん最後） */
+@keyframes hiyayakko-spread {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: none; }
+}
+/* ふわっと盛り上がる（下を支点に、低く平たい形から。泡） */
+@keyframes scene-swell {
+  from { opacity: 0; transform: scale(0.9, 0.15); }
+  60%  { opacity: 1; transform: scale(1.02, 1.08); }
+  to   { opacity: 1; transform: none; }
+}
+/* 乾杯の絵（ToastIllustration.tsx）：まっすぐ立った形から、少し内側へ傾く（底のまん中を支点に） */
+@keyframes toast-tilt {
+  from { transform: rotate(var(--tilt, 0deg)); }
+  to   { transform: none; }
+}
+/* 乾杯の絵の泡：ぶつかった勢いで、下を支点にふわっと少しはねて、元の形に戻る */
+@keyframes toast-bounce {
+  from { transform: none; }
+  45%  { transform: scale(1.04, 1.14); }
+  to   { transform: none; }
+}
+/* せいろのふた：手で開けるように（形は SeiroIllustration.tsx の LID_VARS。奥のふちを支点にした回転・縦の伸び縮み・移動）
+   ・〜6%   閉じたまま（--lid-0）
+   ・〜22%  手前のふちから少し浮く（--lid-1）。奥のふちはせいろに付いたまま
+   ・〜46%  少し浮いたまま、わずかに傾きが増す（--lid-2）。この間に、すき間から湯気がもれる（seiro-leak）
+   ・〜72%  大きく傾けながら、奥のふちも離れて上の奥へ（--lid-3）
+   ・〜100% 上の奥へ持ち去られながら、すっと消える（--lid-4）。消え始めるまでは濃いまま（残ったふたの下は透けない） */
+@keyframes seiro-lid-open {
+  from, 6% { opacity: 1; transform: var(--lid-0); }
+  22%      { opacity: 1; transform: var(--lid-1); }
+  46%      { opacity: 1; transform: var(--lid-2); }
+  72%      { opacity: 1; transform: var(--lid-3); }
+  to       { opacity: 0; transform: var(--lid-4); }
+}
+/* 名物の欄のカードのせいろのふた（形は同じ。「手前が少し浮いた状態」を長く見せる）。トップの場面は上の seiro-lid-open のまま
+   ・〜4%   閉じたまま
+   ・〜16%  手前のふちから少し浮く（--lid-1）
+   ・〜56%  少し浮いたまま、わずかに傾きが増す（--lid-2）。ふたの動きの 4 割。この間に、すき間から湯気がもれる
+   ・〜78%  大きく傾けながら、奥のふちも離れて上の奥へ（--lid-3）
+   ・〜100% 上の奥へ持ち去られながら、すっと消える（--lid-4） */
+@keyframes seiro-lid-open-slow {
+  from, 4% { opacity: 1; transform: var(--lid-0); }
+  16%      { opacity: 1; transform: var(--lid-1); }
+  56%      { opacity: 1; transform: var(--lid-2); }
+  78%      { opacity: 1; transform: var(--lid-3); }
+  to       { opacity: 0; transform: var(--lid-4); }
+}
+/* ふたのすき間からもれる湯気：下から描かれながらふわっと出て、少し残り、ふたが持ち去られるころに薄くなって消える */
+@keyframes seiro-leak {
+  from { stroke-dashoffset: 1; opacity: 0; }
+  20%  { opacity: 0.9; }
+  60%  { stroke-dashoffset: 0; opacity: 0.9; }
+  to   { stroke-dashoffset: 0; opacity: 0; }
+}
+/* 席の絵（SeatIllustration.tsx）の子どもの右の靴（そろう段 18〜60 の割合。段ごとに ease でなめらかに）：
+   ・〜28.5% … ずれた形（つま先が外へ開き、少し前）で止まって見える「間」
+   ・〜55%   … ゆっくり浮く（ずれた位置から上へ 13px。ease-in-out）。浮きながら、靴のまん中（--o。view-box の座標）を中心に向きを半分ほど直す
+   ・〜78.5% … ふわっと下りて、向きを直しきり、そろった位置に着地（ease-in-out。下りきる手前でゆっくりになる）
+   ・〜83%   … 着地で縦に少しだけ縮む（0.94）
+   ・〜89%   … 小さく弾む（上へ 1.5px）
+   ・〜95%   … 止まる。そこから後ろは、そろった形のまま
+   以前（0201390）は「間」〜24%・はねて 50%・着地 74%・縮む 79%・弾む 85%・止まる 91%（そろう段 34〜60）。そろう段を長くしたうえで、各段を長くした */
+@keyframes seat-fix {
+  from, 28.5% { transform: translateY(var(--fix-dy, 6px)) rotate(var(--fix-rot, -22deg)) scaleY(1); animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
+  55%         { transform: translateY(-7px) rotate(calc(var(--fix-rot, -22deg) * 0.5)) scaleY(1); animation-timing-function: cubic-bezier(0.4, 0, 0.3, 1); }
+  78.5%       { transform: translateY(0px) rotate(0deg) scaleY(1); animation-timing-function: cubic-bezier(0.33, 0, 0.3, 1); }
+  83%         { transform: translateY(0px) rotate(0deg) scaleY(0.94); animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
+  89%         { transform: translateY(-1.5px) rotate(0deg) scaleY(1); animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
+  95%, to     { transform: translateY(0px) rotate(0deg) scaleY(1); }
+}
+/* 席の絵の「きらっ」：靴が着地したところ（78.5%）から線が描かれ（86% で描き終わる）、そろったまま少し残り（94% まで）、
+   薄くなって消える（100%）。動き終わりは見えない形（prefers-reduced-motion のときと同じ）。
+   以前は 74% から描かれ、86% から 100% にかけて、すぐ薄くなっていた */
+@keyframes seat-sparkle {
+  from, 78.5% { stroke-dashoffset: 1; opacity: 0; }
+  80%         { opacity: 1; }
+  86%         { stroke-dashoffset: 0; opacity: 1; }
+  94%         { stroke-dashoffset: 0; opacity: 1; animation-timing-function: ease-in-out; }
+  to          { stroke-dashoffset: 0; opacity: 0; }
+}
+/* ぱっと出て、すぐ消える（からあげの油のパチパチ）。動き終わりは消えた形。
+   動かないとき（prefers-reduced-motion など）は、消えずに見えたままの形で止まる */
+@keyframes scene-flicker {
+  from { opacity: 0; transform: scale(0.4); }
+  30%  { opacity: 1; transform: none; }
+  65%  { opacity: 1; transform: none; }
+  to   { opacity: 0; transform: scale(1.15); }
+}
+/* 注がれる流れ（Pour.tsx）：上から下へ伸びる（上の端を支点に、縦に伸びる） */
+@keyframes pour-grow {
+  from { opacity: 0; transform: scaleY(0); }
+  8%   { opacity: 1; }
+  to   { opacity: 1; transform: none; }
+}
+/* 流れが当たる所の粒（生ビールの泡の粒、日本酒・水割りのしずく）：当たる所（--sx・--sy だけ戻った位置）から、外へはねて出る */
+@keyframes pour-splash {
+  from { opacity: 0; transform: translate(var(--sx, 0px), var(--sy, 0px)) scale(0.4); }
+  55%  { opacity: 1; transform: translate(calc(var(--sx, 0px) * -0.15), calc(var(--sy, 0px) * -0.15)); }
+  to   { opacity: 1; transform: none; }
+}
+/* ── 「注いで、終える」動き（日本酒・焼酎 SakeIllustration.tsx、生ビール BeerIllustration.tsx） ── */
+/* 注ぎ終わり：流れが上から切れて、下へ吸い込まれるように縮んで消える（下の端 --o を支点に。Pour.tsx の cut） */
+@keyframes pour-cut {
+  from { opacity: 1; transform: none; }
+  70%  { opacity: 1; }
+  to   { opacity: 0; transform: scaleY(0.04); }
+}
+/* 波紋：描かれながら少し広がり、静まって消える */
+@keyframes sake-ripple {
+  from { stroke-dashoffset: 1; opacity: 0; transform: scale(0.85); }
+  12%  { opacity: 1; }
+  45%  { stroke-dashoffset: 0; opacity: 1; }
+  70%  { opacity: 0.7; }
+  to   { stroke-dashoffset: 0; opacity: 0; transform: scale(1.2); }
+}
+/* しずく：当たる所からはねて出て、少し落ちながら消える */
+@keyframes pour-splash-out {
+  from { opacity: 0; transform: translate(var(--sx, 0px), var(--sy, 0px)) scale(0.4); }
+  35%  { opacity: 1; transform: translate(calc(var(--sx, 0px) * -0.15), calc(var(--sy, 0px) * -0.15)); }
+  55%  { opacity: 1; transform: none; }
+  to   { opacity: 0; transform: translateY(3px) scale(0.6); }
+}
+/* 泡粒：ぱっと出て、少し浮かびながら消える */
+@keyframes scene-pop-out {
+  from { opacity: 0; transform: scale(0.3); }
+  30%  { opacity: 1; transform: scale(1.15); }
+  50%  { opacity: 1; transform: none; }
+  to   { opacity: 0; transform: translateY(-6px) scale(0.6); }
+}
+/* すっと消える */
+@keyframes scene-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+/* 水差し：注ぎ終わったら、支点を中心に起き上がりながら（--rot）少し上へ動き、すっと消える */
+@keyframes sake-lift-out {
+  from { opacity: 1; transform: none; }
+  35%  { opacity: 1; }
+  to   { opacity: 0; transform: translate(-3px, -8px) rotate(var(--rot, 12deg)); }
+}
+/* マドラーで混ぜる：グラスの口の少し下（--o）を中心に左右へ小さく傾け、少しずらして、小さく回るように 1 周半
+   （グラスの中の先が、左右に1往復半。止まって見えないよう、円を 30 度ずつ 18 コマでなめらかにたどる。
+   最初はゆっくり動き出す）。1 周半を回り終えるのは 92%（そのときマドラーの傾きは 0、先は奥へ 2px ずれた所）。
+   92% から 100% で、ずれを戻して、まっすぐ立った形（transform なし）にそろえる。そのあと抜く（sake-pull-out）。
+   以前は、同じ段の長さで、ゆっくり 1 周（12 コマ）だった。回数が増えた分、1 周は少し速い。
+   値は x ＝ 2·sin θ、y ＝ −(1 − cos θ)、傾き ＝ 5·sin θ（θ は 0 → 3π） */
+@keyframes sake-stir {
+  from     { transform: none; animation-timing-function: ease-in; }
+  5.111%   { transform: translate(1px, -0.13px) rotate(2.5deg); }
+  10.222%  { transform: translate(1.73px, -0.5px) rotate(4.33deg); }
+  15.333%  { transform: translate(2px, -1px) rotate(5deg); }
+  20.444%  { transform: translate(1.73px, -1.5px) rotate(4.33deg); }
+  25.556%  { transform: translate(1px, -1.87px) rotate(2.5deg); }
+  30.667%  { transform: translate(0px, -2px) rotate(0deg); }
+  35.778%  { transform: translate(-1px, -1.87px) rotate(-2.5deg); }
+  40.889%  { transform: translate(-1.73px, -1.5px) rotate(-4.33deg); }
+  46%      { transform: translate(-2px, -1px) rotate(-5deg); }
+  51.111%  { transform: translate(-1.73px, -0.5px) rotate(-4.33deg); }
+  56.222%  { transform: translate(-1px, -0.13px) rotate(-2.5deg); }
+  61.333%  { transform: translate(0px, 0px) rotate(0deg); }
+  66.444%  { transform: translate(1px, -0.13px) rotate(2.5deg); }
+  71.556%  { transform: translate(1.73px, -0.5px) rotate(4.33deg); }
+  76.667%  { transform: translate(2px, -1px) rotate(5deg); }
+  81.778%  { transform: translate(1.73px, -1.5px) rotate(4.33deg); }
+  86.889%  { transform: translate(1px, -1.87px) rotate(2.5deg); }
+  92%      { transform: translate(0px, -2px) rotate(0deg); animation-timing-function: ease-in-out; }
+  to       { transform: none; }
+}
+/* 混ぜるときの氷の揺れ（--j で、氷ごとに向きと大きさを変える）。マドラーの 1 周半に合わせて、3回揺れる
+   （マドラーの先が片側へ来るころ〈θ ＝ π/2・3π/2・5π/2 ＝ 15.3%・46%・76.7%〉に、片側・反対側・片側へ傾き、
+   マドラーがまっすぐにそろうころに元に戻る。3回目は少し小さく） */
+@keyframes sake-ice-jiggle {
+  from, 15.333%, 46%, 76.667%, to { animation-timing-function: ease-in-out; }
+  from, to { transform: none; }
+  15.333% { transform: translate(calc(1.5px * var(--j, 1)), -1px) rotate(calc(4deg * var(--j, 1))); }
+  46%     { transform: translate(calc(-1.5px * var(--j, 1)), 0.5px) rotate(calc(-3.5deg * var(--j, 1))); }
+  76.667% { transform: translate(calc(1.1px * var(--j, 1)), -0.7px) rotate(calc(2.5deg * var(--j, 1))); }
+}
+/* マドラーを抜く：上へまっすぐ（--pull）動かし、後ろ半分で消える */
+@keyframes sake-pull-out {
+  from { opacity: 1; transform: none; }
+  50%  { opacity: 1; transform: translateY(calc(var(--pull, -110px) * 0.5)); }
+  to   { opacity: 0; transform: translateY(var(--pull, -110px)); }
+}
+/* 流れの中の明るい筋（Pour.tsx）：破線を上から下へ流す（破線ひと組の長さ 0.38 だけずらして、つなぎ目なく繰り返す） */
+@keyframes pour-flow {
+  from { stroke-dashoffset: 0; }
+  to   { stroke-dashoffset: -0.38; }
+}
+/* 湯気の揺れ（時間で、ずっとゆっくり。スクロールとは別） */
+/* 炭酸の泡（コーラとビール。部品は Fizz.tsx）：底の近く（--from）から液の上の端（--to）まで、まっすぐ上へ。途中で横に少しゆれる（--wx）。
+   出始めと上の端の手前で、すっと見えなくなる。止まっているとき（prefers-reduced-motion）は、各粒の cy の位置（液の中に散らばる） */
+@keyframes fizz-rise {
+  0%   { transform: translate(0, var(--from)); opacity: 0; }
+  12%  { opacity: 1; }
+  50%  { transform: translate(var(--wx, 0px), calc((var(--from) + var(--to)) / 2)); }
+  86%  { opacity: 1; }
+  100% { transform: translate(0, var(--to)); opacity: 0; }
+}
+@keyframes scene-sway {
+  from { transform: translateX(-2.5px) rotate(-1.6deg); }
+  to   { transform: translateX(2.5px) rotate(1.6deg); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .scene-sway {
+    animation: scene-sway var(--sway-dur, 5s) ease-in-out var(--sway-delay, 0s) infinite alternate;
+  }
+  .scene-art[data-inview="false"] .scene-sway { animation-play-state: paused; }
+  .pour-flow { animation: pour-flow 0.9s linear infinite; }
+  .pour-flow-2 { animation-duration: 1.2s; animation-delay: -0.6s; }
+  .scene-art[data-inview="false"] .pour-flow { animation-play-state: paused; }
+  /* 炭酸の泡（コーラとビール。時間でずっと。粒ごとに長さと始まる時刻をずらす。Fizz.tsx）。
+     .scene-anim ではないので、スクロールで進める形（CSS・sceneScroll.ts）には入らず、どのブラウザでも時間で動く */
+  .fizz-bubble { animation: fizz-rise var(--rise-dur, 3s) linear var(--rise-delay, 0s) infinite; }
+  .scene-art[data-inview="false"] .fizz-bubble { animation-play-state: paused; }
+
+  /* 1) スクロールの位置で進める
+     動きの範囲は、絵（.scene-art）が「画面の中に全部入ったところ」から「絵の真ん中が画面の真ん中に来たところ」まで。
+     これは view() の contain 0% 〜 contain 50%（entry 100% 〜 cover 50% と同じ位置）。
+     各部品の --r0・--r1（4〜60）を、この 0%〜50% に割り当てる：contain ((r − 4) ÷ 56 × 50%)
+     ・絵が画面より大きいとき：contain 0% は「絵の上の端が画面の上に来たところ」、contain 50% は「真ん中どうしが重なるところ」。
+       そのあいだ絵は画面いっぱいに見えているので、動きは見える範囲で進む（entry 100% 〜 cover 50% だと順番が逆になり、動かなくなる）
+     ・画面の上の固定ヘッダー（--header-h。globals.css。lg より狭い画面 64px・lg 以上 76px）と、md より狭い画面の下の「電話する」ボタン（52px ＋ safe-area）に隠れる分は、
+       画面に入っていないものとして数える（view-timeline-inset）
+     ・animation の一括指定は animation-timeline・animation-range を初期値に戻すので、必ずその後ろに書く
+     ・--scene-len … 4 〜 (4 + --scene-len) の数を、範囲の始まり 〜 終わりに割り当てる（付けていない絵は 56 ＝ 4〜60）
+     ・--scene-span … 終わりの位置（contain の %。付けていない絵は 50% ＝ 絵の真ん中が、見えている画面の真ん中）
+     ・--scene-lead … 始まりを contain 0% より前へ出す長さ（付けていない絵は 0px）。始まりは contain 0% − lead、
+       終わりは contain --scene-span のまま、そのあいだに 4 〜 (4 + --scene-len) を均等に割り当てる（段の配分の割合は変わらない）
+     ・トップの場面（Scene.tsx）は、どれも付けない（4〜60 を contain 0〜50%。今までと同じ）
+
+     名物の欄の決まり（ディナーメニューのページの、料理6品・お飲みもの3つのカード。Specialties.tsx・.scene-svg-card）
+     ・始まり：絵の線のいちばん下が、見えている画面の下の端に入ったところ。
+       --scene-lead ＝ (1 − --scene-ink) × 絵の場所の幅（cqw）。--scene-ink は、絵の線のいちばん下が絵の場所の上から何割の所か
+       （絵ごとに svg の style で付ける。draw.ts の cardTiming。完成の形で測り、線の太さの分だけ少し大きめ）。
+       絵の場所は正方形なので、幅の % ＝ 高さの %。絵は画面より小さいので、このとき絵の線の全体が画面に入っている
+     ・完成：絵の場所の真ん中が、見えている画面（固定ヘッダーとスマホの「電話する」を除く）の真ん中に来たところ（contain 50%）
+     ・列のずらしはしない（どのカードも、完成の位置を画面の真ん中にそろえる）
+     ・段の配分（各絵の T）は、主役の動きに全体の 3〜4 割をあて、段のあいだに短い「間」を入れる */
+  @supports (animation-timeline: view()) {
+    .scene-art {
+      view-timeline: --scene block;
+      view-timeline-inset: var(--header-h) 0px;
+    }
+    .scene-anim {
+      animation: var(--a) linear both;
+      animation-timeline: --scene;
+      animation-range:
+        contain
+          calc(
+            max(0, var(--r0) - 4) * var(--scene-span, 50%) / var(--scene-len, 56) -
+              (1 - max(0, var(--r0) - 4) / var(--scene-len, 56)) * var(--scene-lead, 0px)
+          )
+        contain
+          calc(
+            min(var(--scene-len, 56), var(--r1) - 4) * var(--scene-span, 50%) / var(--scene-len, 56) -
+              (1 - min(var(--scene-len, 56), var(--r1) - 4) / var(--scene-len, 56)) * var(--scene-lead, 0px)
+          );
+    }
+    /* 名物の欄のカードの絵：始まりを、絵の線のいちばん下に合わせて前へ出す（上の「名物の欄の決まり」）。
+       --scene-lead に絵の幅（cqw）を使うので、絵の場所を幅のコンテナにする（幅はカードで決まるので、形は変わらない） */
+    .scene-svg.scene-svg-card { --scene-lead: calc((1 - var(--scene-ink, 1)) * 100cqw); }
+    .scene-art:has(> .scene-svg-card) { container-type: inline-size; }
+  }
+  @supports (animation-timeline: view()) {
+    @media (max-width: 767px) {
+      .scene-art { view-timeline-inset: var(--header-h) calc(52px + env(safe-area-inset-bottom)); }
+    }
+    /* 背の低い画面（高さ 500px 以下。スマホの横向き）のトップの場面：始まりを 100px 前へ出す（--scene-lead）。
+       絵は画面に収まる大きさにしている（下の「背の低い画面」）が、見えている高さと絵の高さの差が小さく、
+       contain 0〜50% だけでは動きにあてるスクロールが 16〜36px しかなかったため。
+       終わり（絵の真ん中が見えている画面の真ん中）は変えない。始まりでは、絵の下の 100px がまだ画面の下の外にある。
+       高さが 500px より大きい画面（縦向きのスマホ・タブレット・パソコン）は今までどおり */
+    /* （値の --scene-lead: 100px は、JS で進める形〈sceneScroll.ts〉と同じ値を読むため、下の「範囲の値」に書く） */
+    /* 席の場面（SeatIllustration.tsx の .seat-svg）だけ、動きにあてるスクロールの範囲を広げる（靴がそろう動きを長く見せるため）：
+       ・終わりを contain 50% → 62% にする（絵の真ん中が、見えている画面の真ん中を少し過ぎたところで完成。
+         そのあとも絵が画面から出始めるまで、範囲の残りの 38% のあいだ、そろった形が見えている）。
+         範囲の長さは 1.24 倍（段の配分を変えたのと合わせて、そろう段のスクロールの長さは以前の約 2 倍）
+       ・背の低い画面（高さ 500px 以下。667×375 で見えている高さ 259px）は、席の絵を少し小さくし（下の「背の低い画面」。幅 45svh）、
+         終わりを contain 80%、始まりを前へ出す長さを 75px にする。
+         絵が画面より少し小さいだけなので、始まりを前へ出しすぎると、靴が並ぶ所と「間」が画面の下（「電話する」）に隠れる。
+         この形で、4足目が置かれてからの「間」・浮く・下りる・弾む・そろった形が、画面の中で見える
+       ほかの場面・ほかのページの範囲は変えない */
+    /* （値は、下の「範囲の値」に書く） */
+  }
+  /* 範囲の値（上の2つの説明のもの）。CSS の仕組み（animation-range）と、JS で進める形（sceneScroll.ts が svg から読む）の両方で使う。
+     custom property を置くだけなので、どちらの仕組みでも、ほかの見た目は変わらない */
+  @media (max-height: 500px) {
+    .scene-top-art { --scene-lead: 100px; }
+  }
+  .seat-svg { --scene-span: 62%; }
+  @media (max-height: 500px) {
+    .scene-top-art.seat-svg { --scene-span: 80%; --scene-lead: 75px; }
+  }
+
+  /* 1') JS で進める形（data-scene="js"。scroll-driven animations が使えないブラウザ。sceneScroll.ts が付ける）
+     各部品の動きを「長さ 1000ms・一時停止・linear」にしておき、sceneScroll.ts が currentTime を
+     スクロールの位置から出した進み具合 × 1000ms にする（範囲・段の配分の決まりは 1) と同じ）。
+     animation-timeline は、CSS の仕組みが使えるブラウザで試すとき（判定をすり替えたとき）のために、初期値（時間）に戻しておく */
+  .scene-art[data-scene="js"] .scene-anim {
+    animation: var(--a) 1s linear both paused;
+    animation-timeline: auto;
+  }
+
+  /* 2) 使えないブラウザで、Web Animations API（getAnimations）も使えないとき（とても古いブラウザ）だけ：
+     絵の 70% 以上が画面に入ったとき1回だけ、時間で同じ順に進める（data-scene は ScenePlayOnView が付ける）。
+     始まる時刻は (--r0 − 4) × 0.045 秒、長さは (--r1 − --r0) × 0.05 秒（短くても 0.5 秒）。
+     どちらも --scene-time 倍（名物の欄のカードの絵が、svg の style で付ける。主役の動きが 1.4 秒ほど見えるよう、絵ごとに
+     1.3〜1.45、日本酒・焼酎は 3。付けていない絵〈トップの場面〉は 1） */
+  .scene-art[data-scene="wait"] .scene-anim {
+    animation: var(--a) 1s linear both paused;
+  }
+  .scene-art[data-scene="play"] .scene-anim {
+    animation: var(--a) calc(max(0.5, (var(--r1) - var(--r0)) * 0.05 * var(--scene-time, 1)) * 1s) cubic-bezier(0.33, 1, 0.68, 1)
+      calc(max(0, var(--r0) - 4) * 0.045s * var(--scene-time, 1)) both;
+  }
+  /* 席の絵：スクロールの範囲を 1.24 倍に広げたのに合わせて、時間で動くときも 1.24 倍の長さにする（そろう動きは約 2.6 秒）。
+     靴がそろう動きと「きらっ」は、keyframes の割合（「間」・浮く・下りる・弾む・残る）のとおりに進むよう、全体の ease-out をかけない
+     （段ごとの ease は keyframes の中にある） */
+  .seat-svg { --scene-time: 1.24; }
+  .scene-art[data-scene="play"] .scene-anim.seat-fix,
+  .scene-art[data-scene="play"] .seat-sparkle .scene-anim {
+    animation-timing-function: linear;
+  }
+}
+
+/* ─── 背の低い画面（高さ 500px 以下。スマホの横向きなど）のトップの場面 ───
+   場面（絵・縦書きの見出しと文・入口）が、見えている高さ（ヘッダーとスマホの「電話する」を除く。667×375 で 259px、844×390 で 326px）に
+   1画面で収まるようにする。クラスは Scene.tsx（.scene-layout など）と app/page.tsx（.scene-top-art）。
+   ・絵：幅は画面の幅の 70%（md 以上 400px）のまま、高さの 55%（55svh）より大きくしない（667×375 で約 206px）
+   ・並び：md より狭くても、絵と縦書きを左右に並べる（reverse の場面は左右を入れ替える。md 以上と同じ）
+   ・縦書き：見出しは 24px（結びは 28px）、文は 15px。見出しの長さ（縦の高さ）は、見えている高さから少し引いた長さまで。
+     それより長い見出し（「ひとりでも、大勢でも。」約 306px）は、「、」の後ろで2列に折る（Scene.tsx のかたまり）
+   ・入口：縦書きの下ではなく左（読み終わりの側）に置き、下の端をそろえる
+   高さが 500px より大きい画面（縦向きのスマホ・タブレット・パソコン）は、このどれも当たらない（今までのまま）。
+   Tailwind のクラスより後ろで効くよう、ここ（レイヤーの外の CSS）に書いている */
+@media (max-height: 500px) {
+  .scene-top-art { width: min(70vw, 55vh); }
+  /* 席の絵は横長（400×280）で、絵と画面の高さの差を大きくとるため、少し小さく（そろう動きを、画面の中で長く見せる。scenes.css の .seat-svg） */
+  .scene-top-art.seat-svg { width: min(70vw, 45vh); }
+  .scene-layout { flex-direction: row; gap: 3rem; }
+  .scene-layout.is-reverse { flex-direction: row-reverse; }
+  .scene-textwrap { flex-direction: row-reverse; align-items: flex-end; gap: 2rem; }
+  .scene-action { margin-top: 0; }
+  .scene-heading {
+    font-size: 1.5rem;
+    white-space: normal;
+    max-height: calc(100vh - var(--header-h) - 52px - 1rem - env(safe-area-inset-bottom));
+  }
+  .scene-heading.is-large { font-size: 1.75rem; }
+  .scene-lines { font-size: 15px; margin-block-start: 1.25rem; }
+}
+@supports (height: 100svh) {
+  @media (max-height: 500px) {
+    .scene-top-art { width: min(70vw, 55svh); }
+    .scene-top-art.seat-svg { width: min(70vw, 45svh); }
+  }
+}

@@ -6,22 +6,22 @@ import BreadcrumbJsonLd from "../../components/BreadcrumbJsonLd";
 import { LUNCH_SUSPENDED, LUNCH_SUSPENDED_NOTICE } from "../../lib/businessHours";
 import { pageMetadata } from "../../lib/seo";
 
-export const metadata = pageMetadata({
-  title: "ランチメニュー｜きたげん",
-  description: "きたげんのランチメニューをご覧いただけます。",
-  path: "/menu/lunch",
-});
+// ランチはお休みしているので、このページは検索に出さない（noindex, follow）。ページは残す。
+// ランチを再開したら（lib/businessHours.ts の LUNCH_SUSPENDED を false にしたら）、robots の行を消して検索に戻し、
+// app/sitemap.ts にも /menu/lunch を足す
+export const metadata = {
+  ...pageMetadata({
+    title: "ランチメニュー｜桃谷駅の居酒屋 IZAKAYA きたげん",
+    description: "桃谷の居酒屋 IZAKAYA きたげんのランチメニュー。ランチは、しばらくお休みしています。",
+    path: "/menu/lunch",
+  }),
+  robots: { index: false, follow: true },
+};
 
-function SectionHeading({ label, title }: { label: string; title: string }) {
+function SectionHeading({ title }: { title: string }) {
   return (
     <div className="mb-10">
-      <p className="text-[10px] tracking-[0.45em] text-accent/80 mb-2">{label}</p>
       <h2 className="text-xl font-bold text-foreground">{title}</h2>
-      <div className="flex items-center gap-3 mt-3">
-        <div className="w-8 h-px bg-accent/50" />
-        <div className="w-1 h-1 rounded-full bg-accent/60" />
-        <div className="w-8 h-px bg-accent/50" />
-      </div>
     </div>
   );
 }
@@ -68,20 +68,14 @@ export default async function LunchMenuPage() {
     <div className="min-h-screen">
       <BreadcrumbJsonLd
         items={[
-          { name: "トップ", path: "/" },
+          { name: "はじめに", path: "/" },
           { name: "ランチメニュー", path: "/menu/lunch" },
         ]}
       />
 
       {/* ── ページヘッダー ─────────────────────────────────── */}
       <section className="section-warm border-b border-border py-16 px-4 text-center">
-        <p className="text-[10px] tracking-[0.5em] text-accent/80 mb-3">LUNCH</p>
         <h1 className="text-4xl font-bold text-foreground mb-4">ランチメニュー</h1>
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <div className="w-8 h-px bg-accent/50" />
-          <div className="w-1 h-1 rounded-full bg-accent/70" />
-          <div className="w-8 h-px bg-accent/50" />
-        </div>
         {/* ランチ臨時休業の告知（再開時は lib/businessHours.ts の LUNCH_SUSPENDED を false に） */}
         {LUNCH_SUSPENDED && (
           <p className="text-sm text-accent/90 mb-3 leading-relaxed">
@@ -97,7 +91,7 @@ export default async function LunchMenuPage() {
       {hasItems ? (
         <section className="py-16 px-4 section-light">
           <div className="max-w-3xl mx-auto">
-            <SectionHeading label="LUNCH" title="ランチメニュー" />
+            <SectionHeading title="ランチメニュー" />
             <div className="space-y-10">
               {foodSections.map((sec) => (
                 <div key={sec.heading}>
@@ -124,13 +118,7 @@ export default async function LunchMenuPage() {
             <div className="flex items-center justify-center mb-8">
               <Utensils size={32} strokeWidth={1.2} className="text-accent/40" />
             </div>
-            <p className="text-[10px] tracking-[0.45em] text-accent/70 mb-4">COMING SOON</p>
-            <h2 className="text-xl font-bold mb-4">ランチメニューを準備中です</h2>
-            <div className="flex items-center justify-center gap-3 mb-6">
-              <div className="w-8 h-px bg-accent/40" />
-              <div className="w-1 h-1 rounded-full bg-accent/50" />
-              <div className="w-8 h-px bg-accent/40" />
-            </div>
+            <h2 className="text-xl font-bold mb-6">ランチメニューを準備中です</h2>
             <p className="text-sm text-muted leading-[2.0]">
               ランチの詳細メニューは現在準備中です。<br />
               最新情報はInstagramまたは店頭にてご確認ください。

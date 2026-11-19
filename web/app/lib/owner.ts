@@ -8,7 +8,6 @@
 // 【本文の編集】
 //   OWNER_SECTIONS の heading（小見出し）と body（段落配列）を書き換える。
 //   1つの見出しに複数段落を持たせたいときは body に要素を足す。
-//   OWNER_PULLQUOTE は本文中で特に伝えたい一文を大きく引用表示するための一言。
 //
 // 【店主の写真が届いたときの反映手順】
 //   1. 写真ファイルを web/public/images/owner/ に置く（ファイル名は owner.jpg）
@@ -55,9 +54,6 @@ export const OWNER_SECTIONS: OwnerSection[] = [
     ],
   },
 ];
-
-/** 本文中で最も店の想いが伝わる一文。ページ内でプルクオートとして大きく見せる。 */
-export const OWNER_PULLQUOTE = "地元のみんなの居場所みたいな店にしたかったんです。";
 
 /** 店主の顔写真パス（public/ からのパス）。未設定なら "" のまま。 */
 export const OWNER_PHOTO = "";

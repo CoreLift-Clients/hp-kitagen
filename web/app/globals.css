@@ -21,10 +21,31 @@
      字のファイルは @fontsource から読む（layout.tsx と page.tsx の import）。
      読み込めなかったときは、後ろに並べた端末の字で出す。
      ・ゴシック体（サイト全体）… Noto Sans JP（400・500・700）
-     ・明朝体（トップの見出しと、lg 以上の本文）… Noto Serif JP（OUR STORY の本文 500・ほかの欄の本文 600・見出し 700）。
-       Tailwind の font-serif で使う。lg より狭い画面の本文はゴシック体 */
+     ・明朝体（ヘッダーのロゴ・項目名、ページの見出し、フッターの店名、トップの見出しと、lg 以上の本文）… Noto Serif JP
+       （ヘッダーの項目名・OUR STORY の本文 500・ほかの欄の本文 600・ロゴ・見出し 700）。
+       Tailwind の font-serif で使う。lg より狭い画面の本文はゴシック体
+     ・筆の字（メニューのページの名物のカードの品名だけ）… 佑字 朴（Yuji Boku 400。太さはこれだけ）。
+       Tailwind の font-brush で使う。字のファイルはメニューのページ（app/menu/dinner/page.tsx）だけで読む。
+       読み込めなかったときは明朝体で出す */
   --font-noto-sans-jp:  "Noto Sans JP", sans-serif;
   --font-noto-serif-jp: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", serif;
+  --font-yuji-boku:     "Yuji Boku", var(--font-noto-serif-jp);
+}
+
+/* ─── 固定ヘッダーの高さ（サイトでここだけで決める） ───
+   lg（1024px）より狭い画面は 64px、lg 以上は 76px（大きい画面で字と幅を大きくしたため）。
+   ヘッダーの高さを前提にする所は、みなこの変数を使う：
+   ・ヘッダーの中身の高さ（components/Header.tsx）、main の上の余白（layout.tsx）
+   ・トップのヒーロー（.hero-full の高さ・sticky の止まる位置〈app/page.tsx〉）、トップの各欄（.section-screen）
+   ・絵の動きで「ヘッダーに隠れる分」（components/scenes/scenes.css の view-timeline-inset、
+     ScenePlayOnView.tsx の rootMargin。rootMargin は px しか使えないので、値は px で書く） */
+:root {
+  --header-h: 64px;
+}
+@media (min-width: 1024px) {
+  :root {
+    --header-h: 76px;
+  }
 }
 
 @theme inline {
@@ -37,6 +58,16 @@
   --color-border:     var(--border);
   --font-sans:        var(--font-noto-sans-jp);
   --font-serif:       var(--font-noto-serif-jp);
+  --font-brush:       var(--font-yuji-boku);
+}
+
+/* ─── サイト共通の幅 ───
+   ページの中身の最大幅（lg 以上で 1040px まで。画面の左右には SectionInner の余白 px-6 md:px-8 が残る）。
+   Tailwind の max-w-page-wide で使う（CSS からは var(--container-page-wide)）。
+   使っている所：店舗情報の和紙（app/info/page.tsx）、メニューのページの名物の欄とテイクアウトのご案内
+   （components/scenes/Specialties.tsx・components/TakeoutNote.tsx）。ほかのページも、あとでこの幅にそろえる */
+@theme {
+  --container-page-wide: 1040px;
 }
 
 body {
@@ -55,8 +86,21 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* ページの中の「#」の場所へのリンクは、滑らかに流す。ページを移るときは Next.js が止める
+   （layout.tsx の html の data-scroll-behavior="smooth"）。移ったら上から始めるのは components/ScrollToTop.tsx */
 html {
   scroll-behavior: smooth;
+}
+
+/* ─── フォーカスの枠（サイト全体のリンク・ボタン） ───
+   マウスで押したときは枠を出さず（:focus だけのときは消す）、キーボード（Tab）で移動したときだけ出す（:focus-visible）。
+   キーボードのときの枠は消さない。色は見出しの字の色（漆褐）、2px、要素から 2px 離す */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+:focus-visible {
+  outline: 2px solid var(--foreground);
+  outline-offset: 2px;
 }
 
 ::selection {
@@ -90,28 +134,75 @@ html {
 }
 
 /* ─── トップのヒーローの高さ ───
-   固定ヘッダー（h-16 = 4rem）の下から画面のいちばん下まで。
+   固定ヘッダー（--header-h）の下から画面のいちばん下まで。
    svh（アドレスバーが出ているときの画面の高さ）で決め、バーの出し入れで高さが変わらないようにする。
    svh が効かないブラウザ向けに、vh の指定を先に置く。
    （同じ所に2つ並べると、ビルドの CSS 圧縮で vh の方が消されるため、@supports で分けている） */
 .hero-full {
-  height: calc(100vh - 4rem);
+  height: calc(100vh - var(--header-h));
 }
 
 @supports (height: 100svh) {
   .hero-full {
-    height: calc(100svh - 4rem);
+    height: calc(100svh - var(--header-h));
+  }
+}
+
+/* ─── トップのヒーロー：スクロールで写真をぼかす ───
+   ページのスクロール（scroll(root)）に合わせて、写真だけを少しずつぼかし、少し暗くする。
+   ヒーローの下の端が画面の上に来るまで（スクロール 0 → 100vh。main の上の余白〈--header-h〉＋ ヒーローの高さ ＝ 1画面なので、ヘッダーの高さが変わっても 100vh のまま）で
+   ぼかし 0 → 10px、明るさ 100% → 85%。上に戻ると元に戻る。
+   ・.hero-photo-blur … 写真の入れ物（components/HeroImage.tsx）。ぼかしはこの要素だけにかける（will-change: filter）。
+     ぼかすと写真のふちが透けて後ろの暗い背景がにじむので、入れ物を上下左右 24px ずつ大きくして、ふちを画面の外に出す
+     （ヒーローは overflow-hidden なので、はみ出した分は見えない）
+   ・.hero-text-fade … 店名・キャッチコピー。ぼかさず、薄くするだけ（スクロール 0 → 60vh で 100% → 0%）
+   scroll-driven animations が使えないブラウザ（@supports で判定）と、
+   prefers-reduced-motion: reduce のときは、何も付けない（写真も文字も今のままの見た目）。
+   ※ animation の一括指定は animation-timeline を初期値に戻すので、animation-timeline・animation-range は必ずその後ろに書く */
+@keyframes heroPhotoBlur {
+  from {
+    filter: blur(0) brightness(1);
+  }
+  to {
+    filter: blur(10px) brightness(0.85);
+  }
+}
+
+@keyframes heroTextFade {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .hero-photo-blur {
+      inset: -24px;
+      will-change: filter;
+      animation: heroPhotoBlur linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 100vh;
+    }
+
+    .hero-text-fade {
+      animation: heroTextFade linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 60vh;
+    }
   }
 }
 
 /* ─── トップの各欄の高さ（最低1画面） ───
-   ヒーローと同じく、固定ヘッダー（h-16 = 4rem）の下から画面のいちばん下まで。
+   ヒーローと同じく、固定ヘッダー（--header-h）の下から画面のいちばん下まで。
    「ちょうど」ではなく「最低」1画面：中身が収まらない欄はそのまま長くなる。
    中身は欄の上下の真ん中に置く（子の SectionInner は横幅いっぱい）。
    欄の上下の余白は md 以上 64px（md:py-16）、md より狭い画面は各欄の py のまま。
    vh → svh の順と @supports で分ける理由は .hero-full と同じ。 */
 .section-screen {
-  min-height: calc(100vh - 4rem);
+  min-height: calc(100vh - var(--header-h));
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -123,7 +214,7 @@ html {
 
 @supports (height: 100svh) {
   .section-screen {
-    min-height: calc(100svh - 4rem);
+    min-height: calc(100svh - var(--header-h));
   }
 }
 
@@ -239,3 +330,5 @@ html {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* トップの線画の場面の線と動きは components/scenes/scenes.css */

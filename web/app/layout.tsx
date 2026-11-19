@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 // フォントはサイトの中に持たせる（ビルドのたびに Google Fonts へ取りに行かない）。
 // @fontsource のファイルはビルド時に node_modules から出力される。文字の範囲ごとに分かれているので、
 // ブラウザはページで使う文字を含むファイルだけを読む。太さは使うものだけ（400・500・700）。
@@ -6,15 +6,26 @@ import type { Metadata } from "next";
 import "@fontsource/noto-sans-jp/400.css";
 import "@fontsource/noto-sans-jp/500.css";
 import "@fontsource/noto-sans-jp/700.css";
+// 明朝体（Noto Serif JP。globals.css の --font-noto-serif-jp、Tailwind の font-serif）。
+// ヘッダーのロゴ（700）・項目名（500。スマホのメニューのいまのページは 700）、ページの見出し（PageHeading・700）、
+// フッターの店名（700）はどのページにも出るので、ここで読み込む
+import "@fontsource/noto-serif-jp/500.css";
+import "@fontsource/noto-serif-jp/700.css";
 import Link from "next/link";
 import Header from "./components/Header";
+import { NAV_LINKS } from "./lib/nav";
 import StructuredData from "./components/StructuredData";
 import MobileCallBar from "./components/MobileCallBar";
-import { SITE_URL, OG_IMAGE } from "./lib/seo";
+import ScrollToTop from "./components/ScrollToTop";
+import { SITE_URL, OG_IMAGE, OG_IMAGE_ALT } from "./lib/seo";
+import { PHONE } from "./lib/contact";
+import { hoursForFooter } from "./lib/businessHours";
 import "./globals.css";
 
-const TITLE       = "IZAKAYA きたげん｜桃谷の居酒屋【公式サイト】";
-const DESCRIPTION = "桃谷の居酒屋「IZAKAYA きたげん」公式サイト。こだわりの料理とお酒を楽しめるお店です。ランチ・ディナー・テイクアウト対応。宴会や飲み会にもおすすめ。";
+// トップの title・description（og・twitter も同じ文）。下層のページは各 page.tsx の pageMetadata() で上書きする。
+// 席数（41席）・テイクアウトは手で書いている。席を変えたら、ここと app/info/page.tsx もそろえる
+const TITLE       = "桃谷駅の居酒屋 IZAKAYA きたげん｜鉄鍋餃子と自家製しゅうまい";
+const DESCRIPTION = "JR桃谷駅から歩いて2分、桃谷商店街の居酒屋「IZAKAYA きたげん」の公式サイト。名物は自家製しゅうまいと鉄鍋餃子。1階カウンター・2階座敷の41席で、宴会や団体もお電話でご相談ください。テイクアウトもできます。";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -24,7 +35,8 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/favicon.ico",  sizes: "any" },
-      { url: "/favicon.png",  type: "image/png" },
+      // favicon.png は 48×48（約 5KB）。以前の 400×400（218KB）は、どのページでも読みこまれて重かった
+      { url: "/favicon.png",  type: "image/png", sizes: "48x48" },
     ],
     apple: "/apple-touch-icon.png",
   },
@@ -40,7 +52,7 @@ export const metadata: Metadata = {
         url: OG_IMAGE,
         width: 1200,
         height: 630,
-        alt: TITLE,
+        alt: OG_IMAGE_ALT,
       },
     ],
   },
@@ -57,42 +69,57 @@ export const metadata: Metadata = {
   },
 };
 
+// 画面の大きさの指定。viewportFit: "cover" で、iPhone の画面の端（丸い角・切り欠き・ホームのバー）の
+// 大きさが env(safe-area-inset-*) で分かるようにする（付けないと iOS では env() がいつも 0）。
+// その分、下に固定した「電話する」・メニューの板・トップの写真の場面・フッター・ヘッダーと、
+// 中身の左右の余白（SectionInner）で、env() の分をあけている。パソコンと Android では env() は 0 で、見た目は変わらない
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
 
 function Footer() {
   const currentYear = new Date().getFullYear();
   return (
     // md より狭い画面では、下に固定した「電話する」ボタン（MobileCallBar・52px ＋ safe-area）に
-    // 隠れないよう、フッターの下に同じ高さのあきを足す
-    <footer className="border-t border-border bg-card-bg pb-[calc(52px+env(safe-area-inset-bottom))] md:pb-0">
-      <div className="max-w-5xl mx-auto px-4 py-8">
+    // 隠れないよう、フッターの下に同じ高さのあきを足す。md 以上は safe-area の分だけ（iPad のホームのバー。ほかの端末では 0）。
+    // 左右は、iPhone の横向きの丸い角・切り欠きより狭くしない（ほかの端末では今までの 16px）
+    <footer className="border-t border-border bg-card-bg pb-[calc(52px+env(safe-area-inset-bottom))] md:pb-[env(safe-area-inset-bottom)]">
+      <div className="max-w-5xl mx-auto pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] py-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-center md:text-left">
-            <p className="text-lg font-bold text-accent">きたげん</p>
+            {/* 店名の色は、生成りの地（card-bg）との文字の色の差が 4.5:1 以上になるよう、焼橙（accent）より少し深い色にする */}
+            <p className="font-serif text-lg font-bold text-[#9A5516]">きたげん</p>
             <p className="text-sm text-muted">落ち着いて飲める、ちゃんとした居酒屋。</p>
+            {/* 住所・駅・営業時間・電話（検索や地図で、店の情報がどのページにも同じ書き方で出るように）。
+                営業時間は lib/businessHours.ts の hoursForFooter() から作る（ランチを再開すると、曜日ごとの行に分かれる）。
+                住所・駅を変えたら、app/info/page.tsx と components/StructuredData.tsx もそろえる */}
+            <address className="mt-3 not-italic text-sm text-muted leading-[1.9]">
+              <span className="block">大阪市生野区勝山北1丁目2-13（桃谷商店街）</span>
+              <span className="block">JR桃谷駅 徒歩2分</span>
+              {hoursForFooter().map((line) => (
+                <span key={line} className="block">{line}</span>
+              ))}
+              {/* 押せる範囲は高さ 44px（py-3。上下にはみ出す分は -my-3 で戻し、行の並びは変えない） */}
+              <a href={`tel:${PHONE}`} className="inline-block py-3 -my-3 tabular-nums hover:text-foreground transition-colors">
+                {PHONE}
+              </a>
+            </address>
           </div>
-          {/* ヘッダーを4タブに絞ったため、外したトップ・お知らせは
-              フッターから辿れるようにまとめる。項目が増えたら折り返す。 */}
-          <ul className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-muted">
-            <li>
-              <Link href="/" className="hover:text-foreground transition-colors">
-                トップ
-              </Link>
-            </li>
-            <li>
-              <Link href="/menu" className="hover:text-foreground transition-colors">
-                メニュー
-              </Link>
-            </li>
-            <li>
-              <Link href="/info" className="hover:text-foreground transition-colors">
-                店舗情報
-              </Link>
-            </li>
-            <li>
-              <Link href="/news" className="hover:text-foreground transition-colors">
-                お知らせ
-              </Link>
-            </li>
+          {/* 並びは、ヘッダー・スマホのメニューと同じ項目（lib/nav.ts の NAV_LINKS：はじめに・お品書き・ご案内・ごあいさつ）。
+              お知らせのページはやめた（お知らせは、ご案内のページの欄からインスタグラムへ）。
+              390px でも1行に収まるよう、あきは 20px。項目が増えたら折り返す。
+              押せる範囲は高さ 44px（py-3。上下にはみ出す 12px ずつは -my-3 で戻し、並びと見た目は今までのまま）。
+              折り返したときに、上下の行の押せる範囲が重ならないよう、行のあきは 24px（gap-y-6） */}
+          <ul className="flex flex-wrap justify-center gap-x-5 gap-y-6 text-sm text-muted">
+            {NAV_LINKS.map(({ href, label }) => (
+              <li key={href}>
+                <Link href={href} className="inline-block py-3 -my-3 hover:text-foreground transition-colors">
+                  {label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
         <p className="text-center text-xs text-muted mt-6">
@@ -109,11 +136,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ja">
+    // data-scroll-behavior="smooth"：html の scroll-behavior: smooth（globals.css）を、ページを移るときだけ Next.js が止める
+    // （付けないと、移ったあとのスクロールが下から滑らかに流れる）。ページを移ったら上から始めるのは ScrollToTop
+    <html lang="ja" data-scroll-behavior="smooth">
       <body className="font-sans antialiased">
         <StructuredData />
+        <ScrollToTop />
         <Header />
-        <main className="pt-16">{children}</main>
+        {/* 固定ヘッダーの下に中身を逃がす（高さは globals.css の --header-h） */}
+        <main className="pt-[var(--header-h)]">{children}</main>
         <Footer />
         <MobileCallBar />
       </body>

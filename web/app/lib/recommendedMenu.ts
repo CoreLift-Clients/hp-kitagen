@@ -1,6 +1,9 @@
 // web/app/lib/recommendedMenu.ts
 //
-// ディナーメニュー先頭の「名物・おすすめ」セクションで見せる指定8品。
+// ディナーメニュー先頭の「名物・おすすめ」セクションで見せていた指定8品。
+// ※ 今はどこからも使っていない。ディナーメニューの「名物・おすすめ」はジグザグの名物（components/scenes/Specialties.tsx）に
+//    まとめ、写真の枠のカードの欄は外した。料理の写真がそろったときに使えるよう、カードの部品
+//    （components/RecommendCard.tsx）とあわせて残している。
 // 料理写真は「フォルダ方式」（owner.ts / gallery.ts と同じ考え方）で後入れする。
 // 価格はメニューのデータ（app/content/menus.ts の dinner）を正とし、品名一致で引く。
 //

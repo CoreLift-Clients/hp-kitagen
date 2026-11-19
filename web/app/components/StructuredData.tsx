@@ -5,36 +5,48 @@
  * layout.tsx から全ページに出力している（1店舗のため内容は共通）。
  *
  * ── 更新のポイント ──────────────────────────────────────
- * ・営業時間は lib/businessHours.ts の BUSINESS_HOURS から作る。
- *   開店時刻は openTimeNow() を使い、ランチ休止中（LUNCH_SUSPENDED）は
- *   ランチの曜日もディナーの開始時刻（DINNER_START）からにする。
+ * ・営業時間は lib/businessHours.ts の businessHoursNow() から作る（/info の表と同じ関数）。
+ *   ランチ休止中（LUNCH_SUSPENDED）は、ランチの曜日もディナーの開始時刻（DINNER_START）からになり、
+ *   時間が同じ月〜土は1つにまとまる。日曜（定休日）は入れない。祝日は PublicHolidays の1つ
+ *   （/info の表では、時間が同じなら「月〜土・祝日」の1行にまとめるが、ここでは分けたまま）。
  * ・sameAs には公式・予約系アカウントのURLを入れる。分かった順に追記する。
  * ────────────────────────────────────────────────────────
  */
 
-import { PHONE_INTL, INSTAGRAM_URL } from "../lib/contact";
+import { PHONE_INTL, INSTAGRAM_URL, MAP_URL } from "../lib/contact";
 import { SITE_URL, OG_IMAGE } from "../lib/seo";
-import { BUSINESS_HOURS, openTimeNow } from "../lib/businessHours";
+import { businessHoursNow } from "../lib/businessHours";
+import { DEFAULT_SITE_IMAGES } from "../lib/site-image-defaults";
 
 const restaurantJsonLd = {
   "@context": "https://schema.org",
   "@type": "Restaurant",
+  // このお店を指す決まった名前（ほかの JSON-LD から参照するとき・Google がまとめるときに使う）
+  "@id": `${SITE_URL}/#restaurant`,
   name: "IZAKAYA きたげん",
+  alternateName: "きたげん",
   url: SITE_URL,
   telephone: PHONE_INTL,
-  image: `${SITE_URL}${OG_IMAGE}`,
+  // 写真は複数：料理（og.jpg）と、店先（トップの写真）
+  image: [`${SITE_URL}${OG_IMAGE}`, `${SITE_URL}${DEFAULT_SITE_IMAGES.hero.pc}`],
+  hasMap: MAP_URL,
   priceRange: "¥3,000〜4,000",
   // 日本語表記に加え、英語圏の検索・リッチリザルト向けに "Japanese" を併記。
   servesCuisine: ["居酒屋", "中華", "Japanese"],
   // メニューページ（実ページはディナー）。電話予約を受けるため予約可も明示。
   menu: `${SITE_URL}/menu/dinner`,
+  hasMenu: `${SITE_URL}/menu/dinner`,
   acceptsReservations: true,
+  currenciesAccepted: "JPY",
+  // お支払い（/info の「お支払い」と同じ内容。変えるときは両方そろえる）
+  paymentAccepted: "Cash, Credit Card, PayPay",
   address: {
     "@type": "PostalAddress",
     postalCode: "544-0033",
     addressRegion: "大阪府",
     addressLocality: "大阪市生野区",
-    streetAddress: "勝山北1-2-13",
+    // 画面（/info・フッター）と同じ書き方
+    streetAddress: "勝山北1丁目2-13",
     addressCountry: "JP",
   },
   geo: {
@@ -42,11 +54,18 @@ const restaurantJsonLd = {
     latitude: 34.6574639,
     longitude: 135.5293742,
   },
+  // お店の設備・できること（/info の「お席」とメニューのページのテイクアウトのご案内と同じ内容）
+  amenityFeature: [
+    { "@type": "LocationFeatureSpecification", name: "座敷", value: true },
+    { "@type": "LocationFeatureSpecification", name: "カウンター席", value: true },
+    { "@type": "LocationFeatureSpecification", name: "テイクアウト", value: true },
+  ],
   // 通常営業時間（曜日ごと）。臨時休業などの一時的な状態はここには反映しない。
-  openingHoursSpecification: BUSINESS_HOURS.map((g) => ({
+  // 祝日は、時間が同じでも曜日の行に混ぜず、PublicHolidays の1つとして出す（mergeHolidays: false）
+  openingHoursSpecification: businessHoursNow({ mergeHolidays: false }).map((g) => ({
     "@type": "OpeningHoursSpecification",
     dayOfWeek: g.schemaDays,
-    opens: openTimeNow(g),
+    opens: g.open,
     closes: g.close,
   })),
   // ── 公式・予約系アカウント ──────────────────────────────

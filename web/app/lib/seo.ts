@@ -13,6 +13,8 @@ import type { Metadata } from "next";
 export const SITE_URL = "https://www.kitagen-izakaya.com";
 export const SITE_NAME = "きたげん";
 export const OG_IMAGE = "/og.jpg";
+/** og.jpg の写真の説明（og:image:alt）。og.jpg を差し替えたら、写っているものに合わせて直す */
+export const OG_IMAGE_ALT = "鉄鍋餃子・自家製しゅうまい・からあげが並んだ食卓";
 
 type PageMetaInput = {
   /** ページのtitle（<title> と og:title に使用） */
@@ -46,7 +48,7 @@ export function pageMetadata({ title, description, path }: PageMetaInput): Metad
           url: OG_IMAGE,
           width: 1200,
           height: 630,
-          alt: title,
+          alt: OG_IMAGE_ALT,
         },
       ],
     },

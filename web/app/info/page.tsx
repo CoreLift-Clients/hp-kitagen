@@ -1,334 +1,235 @@
-import Image from "next/image";
-import { MapPin, ExternalLink, Phone } from "lucide-react";
-import SectionInner from "../components/SectionInner";
+import type { ReactNode } from "react";
+import { ExternalLink, Phone } from "lucide-react";
+import PageHeading from "../components/PageHeading";
+import CardFrame from "../components/scenes/CardFrame";
+import { WashiSheet, WashiItem, BrushRule, WASHI_LINK as LINK } from "../components/Washi";
 import { PHONE, INSTAGRAM_URL, MAP_URL } from "../lib/contact";
-import {
-  BUSINESS_HOURS,
-  isLunchSuspendedFor,
-  openTimeNow,
-  REGULAR_CLOSED,
-  LUNCH_SUSPENDED,
-  LUNCH_SUSPENDED_NOTICE,
-} from "../lib/businessHours";
+import { businessHoursNow, REGULAR_CLOSED, LUNCH_SUSPENDED, hoursForDescription } from "../lib/businessHours";
 import { pageMetadata } from "../lib/seo";
 import BreadcrumbJsonLd from "../components/BreadcrumbJsonLd";
+import { keepWords } from "../lib/keepWords";
 
+// 明朝体（Noto Serif JP）。項目名（縦書き）・営業時間の大きな数字のために、
+// このページでも読み込む（メニューのページと同じ 500・700）
+import "@fontsource/noto-serif-jp/500.css";
+import "@fontsource/noto-serif-jp/700.css";
+
+// description の営業時間（「月〜土・祝日17:00〜22:00（L.O.21:30）、日曜休み」）は lib/businessHours.ts の
+// hoursForDescription() から作る（ランチ再開などで、ページの表と食い違わないように）。
+// 席数・お支払いは手で書いている。席やお支払いを変えたら、ここと下の「お席」「お支払い」の欄、
+// components/StructuredData.tsx の paymentAccepted もそろえる
 export const metadata = pageMetadata({
-  title: "店舗情報｜きたげん",
-  description: "きたげんの営業時間・アクセス・席数・お支払い方法などをご確認いただけます。",
+  title: "店舗情報・アクセス｜桃谷駅2分の居酒屋 IZAKAYA きたげん",
+  description: `大阪市生野区勝山北、桃谷商店街の中。JR環状線「桃谷駅」から歩いて2分。営業は${hoursForDescription()}。41席（1階カウンター7席・2階座敷）。現金・クレジットカード・PayPayが使えます。`,
   path: "/info",
 });
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 編集はここだけ
+// 編集はここだけ（文は、お店の人が書いたお知らせの言葉づかいにそろえる）
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-// 営業時間・定休日・ランチ臨時休業フラグは lib/businessHours.ts で一元管理。
-// （BUSINESS_HOURS / REGULAR_CLOSED / LUNCH_SUSPENDED を import して使用）
+// 営業時間・定休日・ランチ休止中かどうかは lib/businessHours.ts で一元管理。
+// 時間の行は businessHoursNow()（いまの時間が同じ曜日と祝日を1行にまとめたもの。ランチ休止中は「月〜土・祝日」の1行、
+// ランチ再開〈LUNCH_SUSPENDED = false〉で、ランチのある曜日とない曜日の行に自動で分かれる）。
+// 「ランチは、しばらくお休みしています。」の行は LUNCH_SUSPENDED が true のときだけ出す。
 
-// ┌──────────────────────────────────────────────────────────┐
-// │ 【店舗写真の差し込み口】                                    │
-// │  ページ上部に表示する外観／店内写真。                       │
-// │  父から外観写真（例: gaikan.jpg）が届いたら、               │
-// │  下記パスを差し替えるだけで反映されます。                   │
-// │  例: "/images/exterior/gaikan.jpg"                         │
-// │  ※ 現状は既存の店舗写真 about/shop.jpg を使用。            │
-// └──────────────────────────────────────────────────────────┘
-const STORE_PHOTO = "/images/about/shop.jpg";
+// 住所は、狭い画面で「勝山北／1丁目」のように番地の途中で折れないよう、前と後ろに分けて後ろを折り返さない
+const ADDRESS = ["〒544-0033　大阪府大阪市生野区", "勝山北1丁目2-13"] as const;
 
-const SEATS = {
-  count:    "41席",
-  features: ["カウンター席あり", "貸切可能"],
-  smoking:  ["電子タバコ：店内OK", "紙タバコ：2階喫煙所あり"],
-  parking:  "なし",
-};
-
-const PAYMENT = ["現金", "クレジットカード"];
-
-const ACCESS = {
-  address:     "〒544-0033 大阪府大阪市生野区\n勝山北1丁目2-13",
-  nearest:     "JR大阪環状線「桃谷駅」徒歩2分",
-  parking:     "駐車場はございません。お近くのコインパーキングをご利用ください。",
-  mapEmbedUrl: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3281.89049709441!2d135.52679927628435!3d34.65746828553037!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6000df000a517bf7%3A0x81ed5ec961cb5e!2zSVpBS0FZQSDjgY3jgZ_jgZLjgpM!5e0!3m2!1sja!2sjp!4v1773280180352!5m2!1sja!2sjp",
-  mapUrl:      MAP_URL,
-};
+// Google マップの埋め込み（2回目で、手描きの道案内の地図に替える予定）
+const MAP_EMBED_URL =
+  "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3281.89049709441!2d135.52679927628435!3d34.65746828553037!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x6000df000a517bf7%3A0x81ed5ec961cb5e!2zSVpBS0FZQSDjgY3jgZ_jgZLjgpM!5e0!3m2!1sja!2sjp!4v1773280180352!5m2!1sja!2sjp";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-// セクション見出し（ページ主要セクション用の大きい見出し）
-function SectionLabel({ en, ja }: { en: string; ja: string }) {
-  return (
-    <div className="mb-8 md:mb-10">
-      <p className="text-[10px] md:text-[11px] tracking-[0.55em] text-accent/70 mb-2">{en}</p>
-      <h2 className="text-3xl md:text-4xl font-bold">{ja}</h2>
-    </div>
-  );
+// ─── ページの作り：店先の貼り紙 ───
+// ・ページの見出しの帯（section-warm。メニューのページと同じ形）は、見出しだけ
+//   （以前は見出しの下に店の入口の絵を置いていたが、料理の絵と雰囲気が離れていたので外した）
+// ・和紙・項目・区切りの線の部品は components/Washi.tsx（店主紹介のページは便箋にして、見た目を分けている）
+// ・その下の地（section-deep。メニューのページの名物の欄と同じ）に、縦に長い1枚の和紙（section-light。
+//   名物のカードと同じ紙の色）を置き、項目を上から順に並べる。囲みの格子・「項目：内容」の表は使わない
+// ・項目のあいだは、筆で引いたような細い横線1本だけ（BrushRule。料理の絵の線と同じ揺らぎ・色）
+// ・項目名は明朝体 700。md 以上は縦書きで各項目の左に（トップの OUR STORY の縦書きと同じ書き方）、
+//   md より狭い画面は横書きで項目の上に
+// ・営業時間の時間は、ページでいちばん大きな字（明朝体 700。看板のように）。L.O. は小さく添える
+// ・本文は今までの本文の字（ゴシック体）のまま
+// ・和紙の幅：md より狭い画面は左右の余白を除いた幅いっぱい、md〜lg も幅いっぱい、lg 以上は 1040px まで
+//   （サイト共通の幅 max-w-page-wide。globals.css の --container-page-wide）。
+//   広い画面で広がった分は、紙のふちの左右の余白（md 48px・lg 96px）と、縦書きの項目名と本文のあいだ
+//   （md 48px・lg 80px）に回す。本文の1行は 38em（約 38 字）まで。地図の枠も本文の幅に合わせる。
+//   区切りの線は紙の内側の幅いっぱい
+// ・折り返しは語の切れ目で（auto-phrase。メニューのページのテイクアウトのご案内と同じ）。
+//   それでも語の途中で折れてしまう所（Chrome の語の切れ目の判定が外れる所）と、auto-phrase が効かない
+//   iPhone の Safari で語の途中で折れそうな所は、NoBreak で語のかたまりを折り返さない
+
+// 本文の、折り返さない語のかたまり（lib/keepWords.tsx）。iPhone の Safari は auto-phrase が効かず、
+// 字と字のあいだのどこででも折れるため、語の切れ目でだけ折れるよう、本文を語のかたまりに分けている。
+// 文を変えたり足したりしたら、ここにも語を足すこと（足さなくても表示はできるが、Safari で語の途中で折れることがある）
+const INFO_KEEP = [
+  "しばらく", "お休みしています。", "急に", "お休みや", "時間を", "変える",
+  "〒544-0033", "大阪府", "大阪市", "生野区",
+  "JR環状線", "「桃谷駅」から、", "歩いて", "2分。", "駐車場は", "ありません。", "近くの",
+  "41席。", "1階は", "カウンター", "7席、", "2階は", "座敷です。",
+  "電子タバコは", "店内で", "どうぞ。", "紙タバコは、", "2階に", "喫煙所が", "あります。",
+  "現金・", "クレジットカード・", "PayPay、", "どれも", "使えます。",
+  "人数が", "多いときは、", "お電話ください。", "お席を", "ご用意します。",
+  "お昼や", "開店前でも、", "予約の", "お電話を", "受け付けています。",
+  "「ホームページを見た」", "とお伝えください。",
+  "料理や", "お店の", "様子を、", "お休みの", "お知らせも、", "こちらから。",
+] as const;
+const k = (text: string) => keepWords(text, INFO_KEEP);
+
+// 押せる範囲を高さ 44px 以上にする（上下の余白を足し、同じだけ負の余白で戻す。並びと見た目は今までのまま）。
+// 地図アプリで開く：字の行 31px ＋ 16px。Instagram：24px ＋ 20px。電話番号（32px）は、その a に py-1.5 -my-1.5（＋12px）
+const LINK_HIT_MAP = "py-2 -my-2";
+const LINK_HIT_INSTAGRAM = "py-2.5 -my-2.5";
+
+// 語のかたまりを折り返さない（狭い画面で、語の途中で折れてしまう所だけに使う。かたまりは短く、320px の本文の幅に収まる長さまで）。
+// iPhone の Safari では auto-phrase が効かないので、Safari で語の途中で折れそうな所も、これで守る
+function NoBreak({ children }: { children: ReactNode }) {
+  return <span className="whitespace-nowrap">{children}</span>;
 }
 
-// カード内の小見出し（席・支払い・予約・SNS の 2×2 グリッド用）
-function CardLabel({ en, ja }: { en: string; ja: string }) {
-  return (
-    <div className="mb-5">
-      <p className="text-[10px] tracking-[0.5em] text-accent/70 mb-1.5">{en}</p>
-      <h3 className="text-xl md:text-2xl font-bold">{ja}</h3>
-    </div>
-  );
+// 文の下に置くリンク・電話の行（本文との間を少しあける）
+function ActionRow({ children }: { children: ReactNode }) {
+  return <div className="!mt-5">{children}</div>;
 }
-
-// 和紙テーマに馴染むカード枠
-const CARD =
-  "rounded-2xl border border-border bg-background/70 p-6 md:p-8 shadow-[0_1px_2px_rgba(90,65,30,0.04)]";
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 export default function InfoPage() {
+  const hours = businessHoursNow();
+
+  const items: { label: string; id?: string; body: ReactNode }[] = [
+    {
+      label: "営業時間",
+      body: (
+        <>
+          {/* 時間の行（看板のように大きく）。曜日は小さく、L.O. は小さく添える */}
+          <div className="space-y-4 md:space-y-3 pb-3">
+            {hours.map((g) => (
+              <p key={g.days} className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <span className="w-full font-serif text-base md:text-lg font-bold tracking-[0.12em]">{g.days}</span>
+                {/* 時刻の字：スマホ 40px・md 以上 60px。360px より狭い画面（320px）は、本文の幅（約 232px）に入るよう 34px */}
+                <span className="font-serif text-[2.5rem] max-[359px]:text-[2.125rem] md:text-6xl font-bold leading-[1.1] tracking-[0.02em] tabular-nums whitespace-nowrap">
+                  {g.open}〜{g.close}
+                </span>
+                <span className="text-sm text-muted tabular-nums whitespace-nowrap">（L.O. {g.lo}）</span>
+              </p>
+            ))}
+          </div>
+          <p className="font-semibold">{REGULAR_CLOSED}はお休みです。</p>
+          {LUNCH_SUSPENDED && <p>{k("ランチは、しばらくお休みしています。")}</p>}
+          <p className="text-muted">{k("急にお休みや時間を変える")}<NoBreak>ときは、Instagramで</NoBreak><NoBreak>お知らせすることがあります。</NoBreak></p>
+        </>
+      ),
+    },
+    {
+      label: "場所",
+      body: (
+        <>
+          <p className="font-medium">
+            {k(ADDRESS[0])}
+            <NoBreak>{ADDRESS[1]}</NoBreak>
+          </p>
+          <p>{k("JR環状線「桃谷駅」から、歩いて2分。")}</p>
+          <p className="text-muted">{k("駐車場はありません。")}<NoBreak>お車の方は、</NoBreak>{k("近くの")}<NoBreak>コインパーキングを</NoBreak><NoBreak>ご利用ください。</NoBreak></p>
+          <ActionRow>
+            <a href={MAP_URL} target="_blank" rel="noopener noreferrer" className={`${LINK} ${LINK_HIT_MAP}`}>
+              地図アプリで開く
+              <ExternalLink size={13} strokeWidth={1.5} className="opacity-60" />
+            </a>
+          </ActionRow>
+          {/* 地図（Google マップの埋め込み）。和紙の地になじむよう、細い手描きの枠（CardFrame）で囲む。
+              枠の線が地図に隠れないよう、地図は枠の内側に少しあけて置く */}
+          <div className="relative !mt-7 p-2">
+            <CardFrame seed={13000} />
+            <iframe
+              src={MAP_EMBED_URL}
+              className="block w-full h-[260px] md:h-[320px] opacity-95"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              title="きたげん アクセスマップ"
+            />
+          </div>
+        </>
+      ),
+    },
+    {
+      label: "お席",
+      body: (
+        <>
+          <p>{k("41席。1階はカウンター7席、2階は座敷です。")}</p>
+          <p>{k("電子タバコは店内でどうぞ。紙タバコは、2階に喫煙所があります。")}</p>
+        </>
+      ),
+    },
+    {
+      label: "お支払い",
+      body: <p>{k("現金・クレジットカード・PayPay、どれも使えます。")}</p>,
+    },
+    {
+      label: "ご予約",
+      body: (
+        <>
+          <p>{k("人数が多いときは、お電話ください。お席をご用意します。")}</p>
+          <p>{k("お昼や開店前でも、予約のお電話を受け付けています。")}</p>
+          <p className="text-muted">{k("「ホームページを見た」とお伝えください。")}</p>
+          <ActionRow>
+            <a
+              href={`tel:${PHONE}`}
+              className="inline-flex items-center gap-2.5 py-1.5 -my-1.5 font-serif text-2xl md:text-3xl font-bold tracking-[0.06em] tabular-nums text-foreground hover:text-accent transition-colors duration-200"
+            >
+              <Phone size={20} strokeWidth={1.75} className="text-accent" aria-hidden="true" />
+              {PHONE}
+            </a>
+          </ActionRow>
+        </>
+      ),
+    },
+    {
+      label: "お知らせ",
+      // お知らせのページ（やめた）から来た人の飛び先（next.config.ts の redirects で /info#news）
+      id: "news",
+      body: (
+        <>
+          <p>{k("料理やお店の様子を、")}<NoBreak>Instagramにのせています。</NoBreak></p>
+          <p>{k("お休みのお知らせも、こちらから。")}</p>
+          <ActionRow>
+            <a href={INSTAGRAM_URL} target="_blank" rel="noopener noreferrer" className={`${LINK} ${LINK_HIT_INSTAGRAM} text-base md:text-lg`}>
+              @izakaya_kitagen
+              <ExternalLink size={14} strokeWidth={1.5} className="opacity-60" />
+            </a>
+          </ActionRow>
+        </>
+      ),
+    },
+  ];
+
   return (
-    <div className="min-h-screen pt-16">
+    <div className="min-h-screen">
       <BreadcrumbJsonLd
         items={[
-          { name: "トップ", path: "/" },
-          { name: "店舗情報", path: "/info" },
+          { name: "はじめに", path: "/" },
+          { name: "ご案内", path: "/info" },
         ]}
       />
 
-      {/* ── ページヘッダー ───────────────────────────────── */}
-      <section className="section-warm py-16 md:py-20 border-b border-foreground/15">
-        <SectionInner className="text-center">
-          <p className="text-[10px] md:text-[11px] tracking-[0.45em] text-accent/80 mb-2">STORE INFO</p>
-          <h1 className="text-3xl md:text-4xl font-bold">店舗情報</h1>
-          <div className="flex items-center justify-center gap-3 mt-4">
-            <div className="w-8 h-px bg-accent/50" />
-            <div className="w-1 h-1 rounded-full bg-accent/70" />
-            <div className="w-8 h-px bg-accent/50" />
+      {/* ── ページヘッダー（お品書きのページと同じ帯・同じ見出しの形。components/PageHeading.tsx）──────────
+          添え書きは「仕事帰りに、ふらっと一杯。」（以前の「桃谷駅から、歩いて2分。」は、下の「場所」と重なるので外した。上下の余白は、お品書きのページと同じ） */}
+      <PageHeading title="ご案内" lead="仕事帰りに、ふらっと一杯。" />
+
+      {/* ── 1枚の和紙（店先の貼り紙）──────────────────────────── */}
+      <WashiSheet>
+        {items.map((it, i) => (
+          <div key={it.label}>
+            {i > 0 && <BrushRule seed={20000 + i * 97} />}
+            <WashiItem label={it.label} id={it.id}>{it.body}</WashiItem>
           </div>
-          <p className="text-sm md:text-base text-muted mt-4">営業時間・アクセス・各種ご案内</p>
-        </SectionInner>
-      </section>
-
-      {/* ── メインコンテンツ ─────────────────────────────── */}
-      <div className="section-light pb-24">
-        <SectionInner>
-
-          {/* ── 店舗写真 ───────────────────────────────────
-              差し替えは上部の STORE_PHOTO 定数を編集するだけ。 */}
-          <div className="pt-14 md:pt-20">
-            <div className="relative aspect-[16/10] sm:aspect-[16/9] md:aspect-[21/9] rounded-2xl overflow-hidden border border-border">
-              <Image
-                src={STORE_PHOTO}
-                alt="居酒屋きたげんの店舗"
-                fill
-                priority
-                className="object-cover brightness-[0.96]"
-                sizes="(max-width: 768px) 100vw, 1152px"
-              />
-            </div>
-          </div>
-
-          {/* ════════════════════════════════════════════════
-              ① 営業時間 — 情報の主役。左に営業時間カード、右に補足＋カレンダー
-          ════════════════════════════════════════════════ */}
-          <section className="pt-16 md:pt-24 pb-16">
-            <SectionLabel en="HOURS" ja="営業時間" />
-
-            <div className="md:grid md:grid-cols-2 md:gap-10 lg:gap-14 items-start">
-
-              {/* 営業時間テーブル（カード） */}
-              <div className={CARD}>
-                <div>
-                  {BUSINESS_HOURS.map((g) => (
-                    <div
-                      key={g.days}
-                      className="grid grid-cols-[6rem_1fr] items-baseline gap-x-6 py-4 border-b border-dashed border-border first:pt-0"
-                    >
-                      <span className="text-sm md:text-base font-semibold text-foreground">{g.days}</span>
-                      <div>
-                        {/* ランチ休止中の曜日は、いまの開店時刻（ディナーの開始）を出し、ランチは休止中と添える */}
-                        <div className="flex items-baseline justify-between gap-4">
-                          <span className="text-base md:text-lg font-medium tabular-nums">{openTimeNow(g)}〜{g.close}</span>
-                          <span className="text-xs md:text-sm text-muted tabular-nums">L.O.&nbsp;{g.lo}</span>
-                        </div>
-                        {isLunchSuspendedFor(g) && (
-                          <p className="text-xs md:text-sm text-accent-dark mt-1 tabular-nums">
-                            ランチ（{g.open}〜）は休止中
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* 定休日 */}
-                  <div className="grid grid-cols-[6rem_1fr] items-baseline gap-x-6 py-4">
-                    <span className="text-sm md:text-base text-muted">定休日</span>
-                    <span className="text-base md:text-lg font-bold text-accent">{REGULAR_CLOSED}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* 補足＋カレンダー導線 */}
-              <div className="mt-6 md:mt-0 space-y-4">
-                {/* ランチ臨時休業のお知らせ（再開時は lib/businessHours.ts の LUNCH_SUSPENDED を false に） */}
-                {LUNCH_SUSPENDED && (
-                  <div className="rounded-xl border border-accent/25 bg-accent/5 px-5 py-4">
-                    <p className="text-sm md:text-base text-accent-dark leading-relaxed">
-                      ※ {LUNCH_SUSPENDED_NOTICE}
-                    </p>
-                  </div>
-                )}
-
-                <p className="text-sm text-muted/90 leading-relaxed">
-                  ※ 急な営業時間の変更はInstagramでお知らせする場合があります
-                </p>
-              </div>
-
-            </div>
-          </section>
-
-          {/* ════════════════════════════════════════════════
-              ② アクセス — 左にテキスト、右に地図（PC 2カラム）
-          ════════════════════════════════════════════════ */}
-          <section className="py-16">
-            <SectionLabel en="ACCESS" ja="アクセス" />
-
-            <div className="md:grid md:grid-cols-2 md:gap-10 lg:gap-14 items-stretch">
-
-              {/* 住所・最寄り駅・駐車場（カード） */}
-              <div className={`${CARD} flex flex-col`}>
-                <dl>
-                  {[
-                    { label: "住所",     value: ACCESS.address, pre: true  },
-                    { label: "最寄り駅", value: ACCESS.nearest, pre: false },
-                    { label: "駐車場",   value: ACCESS.parking, pre: false },
-                  ].map(({ label, value, pre }) => (
-                    <div
-                      key={label}
-                      className="grid grid-cols-[5rem_1fr] items-baseline gap-x-6 py-4 border-b border-dashed border-border first:pt-0"
-                    >
-                      <dt className="text-sm md:text-base text-muted">{label}</dt>
-                      <dd className={`text-base md:text-lg leading-relaxed ${pre ? "whitespace-pre-line font-medium" : ""}`}>
-                        {value}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
-
-                <div className="mt-auto pt-6">
-                  <a
-                    href={ACCESS.mapUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-sm md:text-base text-accent hover:text-accent-dark transition-colors duration-200"
-                  >
-                    <MapPin size={14} strokeWidth={1.5} />
-                    Googleマップで開く
-                    <ExternalLink size={11} strokeWidth={1.5} className="opacity-60" />
-                  </a>
-                </div>
-              </div>
-
-              {/* 地図 — カード内に収め、ワイドに合わせて拡大 */}
-              <div className="mt-6 md:mt-0 rounded-2xl overflow-hidden border border-border">
-                <iframe
-                  src={ACCESS.mapEmbedUrl}
-                  className="w-full h-[320px] md:h-full md:min-h-[360px] block"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  title="きたげん アクセスマップ"
-                />
-              </div>
-
-            </div>
-          </section>
-
-          {/* ════════════════════════════════════════════════
-              ③④⑤⑥ 席・お支払い・ご予約・公式アカウント（2×2 カード）
-          ════════════════════════════════════════════════ */}
-          <section className="py-16">
-            <div className="grid md:grid-cols-2 gap-6">
-
-              {/* ③ 席・設備 */}
-              <div className={CARD}>
-                <CardLabel en="SEATS" ja="席・設備" />
-                <dl>
-                  {[
-                    { label: "席数",   value: SEATS.count    },
-                    { label: "設備",   value: SEATS.features },
-                    { label: "喫煙",   value: SEATS.smoking  },
-                    { label: "駐車場", value: SEATS.parking  },
-                  ].map(({ label, value }) => (
-                    <div
-                      key={label}
-                      className="grid grid-cols-[5rem_1fr] items-baseline gap-x-6 py-3.5 border-b border-dashed border-border first:pt-0 last:border-b-0 last:pb-0"
-                    >
-                      <dt className="text-sm md:text-base text-muted">{label}</dt>
-                      <dd className="text-base leading-relaxed space-y-0.5">
-                        {Array.isArray(value)
-                          ? value.map((v) => <p key={v}>{v}</p>)
-                          : value}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
-              </div>
-
-              {/* ④ お支払い */}
-              <div className={CARD}>
-                <CardLabel en="PAYMENT" ja="お支払い" />
-                <div className="grid grid-cols-[5rem_1fr] items-baseline gap-x-6 py-3.5">
-                  <span className="text-sm md:text-base text-muted">支払い</span>
-                  <span className="text-base md:text-lg">{PAYMENT.join("・")}</span>
-                </div>
-                <p className="mt-4 text-sm text-muted/90 leading-relaxed">
-                  各種クレジットカードがご利用いただけます。
-                </p>
-              </div>
-
-              {/* ⑤ ご予約 */}
-              <div className={CARD}>
-                <CardLabel en="RESERVATION" ja="ご予約" />
-                <p className="text-sm md:text-base text-muted mb-1.5 leading-relaxed">
-                  ご宴会・団体でのご利用は、お電話でお席をご用意いたします。
-                </p>
-                <p className="text-xs md:text-sm text-muted/90 mb-6 leading-relaxed">
-                  「ホームページを見た」とお伝えいただくとご案内がスムーズです。
-                  営業時間外（昼間・開店前）でも、ご予約のお電話を承ります。
-                </p>
-                <a
-                  href={`tel:${PHONE}`}
-                  className="inline-flex items-center gap-2.5 text-2xl md:text-3xl font-bold tracking-wider text-foreground hover:text-accent transition-colors duration-200 tabular-nums"
-                >
-                  <Phone size={20} strokeWidth={1.75} className="text-accent" />
-                  {PHONE}
-                </a>
-                <p className="text-xs md:text-sm text-muted mt-2">タップで発信できます</p>
-              </div>
-
-              {/* ⑥ 公式アカウント */}
-              <div className={CARD}>
-                <CardLabel en="SOCIAL" ja="公式アカウント" />
-                <p className="text-sm md:text-base text-muted leading-relaxed mb-1.5">
-                  料理や店内の様子をInstagramで発信しています。
-                </p>
-                <p className="text-xs md:text-sm text-muted/90 mb-6 leading-relaxed">
-                  最新情報や営業日の変更なども随時更新していますので、ぜひご確認ください。
-                </p>
-                <a
-                  href={INSTAGRAM_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-base md:text-lg text-accent hover:text-accent-dark transition-colors duration-200"
-                >
-                  @izakaya_kitagen
-                  <ExternalLink size={14} strokeWidth={1.5} className="opacity-60" />
-                </a>
-              </div>
-
-            </div>
-          </section>
-
-        </SectionInner>
-      </div>
+        ))}
+      </WashiSheet>
     </div>
   );
 }

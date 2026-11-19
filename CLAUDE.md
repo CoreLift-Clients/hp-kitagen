@@ -25,16 +25,17 @@ This is the official website for **きたげん（居酒屋）** - a Japanese iz
 - Create trust and a "proper, reliable shop" impression
 - Guide visitors to the menu, shop info and Instagram
 
-**Pages:** Top, Menu (dinner / lunch), Takeout, Shop Info, Owner, News
+**Pages:** Top, Menu (dinner / lunch), Shop Info, Owner
+(News is posted on Instagram; the former news page redirects to the notice section of Shop Info.)
 
 ## Content and Updates
 
 - The site runs standalone. It does not depend on any external API or database
   (the former review-support API is no longer used).
-- Menus, news and photos live in the repository:
-  - `web/app/content/` — data files (`menus.ts`, `news.ts`) and the single loader (`index.ts`)
+- Menus and photos live in the repository:
+  - `web/app/content/` — data files (`menus.ts` etc.) and the single loader (`index.ts`)
   - `web/public/images/` — photos
-- There is no admin screen (CMS). News and photos will be connected to Instagram (phase 2);
+- There is no admin screen (CMS). Photos will be connected to Instagram (phase 2);
   the loader in `web/app/content/index.ts` is the place to switch the source.
 - Menu changes are handled by CoreLiftSystem by editing the code.
 

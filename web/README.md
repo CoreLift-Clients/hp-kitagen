@@ -21,7 +21,6 @@ npx tsc --noEmit   # 型の確認
 | 内容 | 場所 |
 |---|---|
 | メニュー | `app/content/menus.ts` |
-| お知らせ | `app/content/news.ts` |
 | データの読み込み口 | `app/content/index.ts` |
 | 写真 | `public/images/` |
 | 営業時間・定休日 | `app/lib/businessHours.ts` |
@@ -31,4 +30,5 @@ npx tsc --noEmit   # 型の確認
 ## 更新のしかた
 
 - メニューの変更は CoreLiftSystem がコードを直して反映する
-- お知らせ・写真は Instagram につなぐ予定（第2段）。そのときは `app/content/index.ts` の中身を差し替える
+- お知らせはサイトでは持たない（Instagram で出す。ご案内のページの「お知らせ」の欄から案内する）
+- 写真は Instagram につなぐ予定（第2段）。そのときは `app/content/index.ts` の中身を差し替える

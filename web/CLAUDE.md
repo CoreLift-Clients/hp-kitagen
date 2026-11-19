@@ -21,14 +21,13 @@ npx tsc --noEmit   # 型の確認（package.json に lint のスクリプトは�
 # データと更新のしかた
 
 - サイトは単独で動く。外部の API・DB には頼らない（口コミ案内サポートの API は使わない）
-- メニュー・お知らせ・写真はリポジトリの中で持つ
+- メニュー・写真はリポジトリの中で持つ（お知らせはサイトでは持たず、Instagram で出す）
   - `app/content/menus.ts` … メニュー
-  - `app/content/news.ts` … お知らせ
   - `app/content/index.ts` … 読み込み口（ページや `app/lib/` はここから取る）
   - `public/images/` … 写真
   - 営業時間は `app/lib/businessHours.ts`、電話・Instagram の URL は `app/lib/contact.ts`
 - 管理画面（CMS）は持たない
-- お知らせ・写真の更新は Instagram につなぐ（第2段）。差し替えは `app/content/index.ts` の中身だけを変える
+- 写真の更新は Instagram につなぐ（第2段）。差し替えは `app/content/index.ts` の中身だけを変える
 - メニューの変更は CoreLiftSystem がコードを直して反映する
 
 ---
@@ -70,34 +69,30 @@ npx tsc --noEmit   # 型の確認（package.json に lint のスクリプトは�
 - ヒーロー（写真 / 店名 / キャッチコピー）
 - メニュー導線
 - 店舗情報導線
-- お知らせ（無いときは Instagram へ案内）
 
-メニュー `/menu/dinner`（`/menu` は `/menu/dinner` へ転送）
+メニュー `/menu/dinner`（`/menu` は `/menu/dinner` へ恒久転送。next.config の redirects）
 
-- 名物・おすすめ / フード / ドリンク
+- 名物・おすすめ（イラストのカード。「料理」→ テイクアウトのご案内 `#takeout` →「お飲みもの」）（フード・ドリンクの欄は、中身が空だったので外した）
 - HTMLベースの見やすいメニュー
-- データが空のときは「準備中・最新情報は Instagram で」と案内
 
-ランチ `/menu/lunch`（ランチ臨時休業中。ナビ・sitemap には出さない）
-
-テイクアウト `/takeout`
+ランチ `/menu/lunch`（ランチ臨時休業中。ナビ・sitemap には出さず、noindex。再開したら robots の行を消し、sitemap に足す）
 
 店舗情報 `/info`
 
 - 営業時間・定休日（急な変更は Instagram へ案内）
 - アクセス
-- 店舗外観写真
+- お知らせ（Instagram への案内。`#news`）
 
 店主紹介 `/owner`
-
-お知らせ `/news`
-
-- シンプルな一覧
 
 外したページ
 
 - `/survey` … `/` へ恒久転送（next.config の redirects）
+- `/takeout` … `/menu/dinner#takeout` へ恒久転送（テイクアウトのメニューは店内と同じなので、メニューのページの中で案内する）
+- お知らせのページ（とその下）… `/info#news` へ恒久転送（お知らせは Instagram で出す。ご案内のページの「お知らせ」の欄へ）
 - `/portal`・`/admin`（管理画面）… ページごと外した（404）
+
+見つからないページ（404）… `app/not-found.tsx`（日本語。はじめに・お品書き・ご案内への入口。noindex・canonical なし）
 
 ---
 

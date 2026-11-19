@@ -1,0 +1,185 @@
+import type { ReactNode } from "react";
+import Link from "next/link";
+import SectionInner from "../SectionInner";
+import ScenePlayOnView from "./ScenePlayOnView";
+import "./scenes.css";
+
+// ─── トップの線画の場面（共通の部品） ───
+// トップは「場面をめくるように淡々と進む」入口。各場面は次の4つだけにする（詳しい説明は遷移先のページ）。
+//   1) 動く線画（art。場面ごとの *Illustration.tsx。飾りなので aria-hidden）
+//   2) 縦書きの短い見出し（heading。明朝体 700）
+//   3) 縦書きの短い文（lines。明朝体 500。配列の1つが1行）
+//   4) 詳しいページへの入口（action。SceneLink などを渡す）
+// ・並び：md 以上は「左に絵、右に縦書き」。reverse のときは左右を入れ替える（場面ごとに互い違いにする）。
+//   md より狭い画面は「上に絵、下に縦書きを真ん中に」
+// ・高さ：「最低1画面」の決まり（section-screen）は当てない。中身に合わせた高さで、上下にゆったり余白をとる
+// ・背景：tone で section-light・section-warm・section-deep のどれか。隣の場面と色が変わるように順に使う。
+//   絵の中の「後ろの線を隠す塗り」（--scene-paper）も、この背景の色になる（scenes.css）
+// ・絵の大きさ：md 以上 幅 400px、スマホ 画面の幅の 70%
+// ・縦書きの横幅：見出し1列（約 45px）＋文3行（約 102px）＋あき（約 70px）で約 220px。
+//   320px の画面（左右の余白を除いて 272px）にも収まる。文を4行以上にするときは、ここの計算を見直すこと
+// ・背の低い画面（高さ 500px 以下。スマホの横向きなど）は、場面が1画面に収まるよう形を変える（scenes.css の「背の低い画面」）：
+//   md より狭くても「絵と縦書きを左右に並べる」形、絵は高さでも抑える、縦書きの字を一段小さく、
+//   入口（action）は縦書きの下ではなく左に置く（縦書きの読み終わりの側。下端をそろえる）。
+//   クラス：.scene-layout（絵と文の並び。reverse のときは .is-reverse）・.scene-textwrap（縦書きと入口の並び）・
+//   .scene-action（入口）・.scene-heading・.scene-lines（SceneText）
+export type SceneTone = "light" | "warm" | "deep";
+
+export default function Scene({
+  art,
+  heading,
+  lines,
+  action,
+  tone,
+  reverse = false,
+  id,
+  name,
+}: {
+  art: ReactNode;
+  heading: string;
+  lines: readonly string[];
+  action: ReactNode;
+  tone: SceneTone;
+  reverse?: boolean;
+  id?: string;
+  /** ?debug=1 の表示に出す絵の名前（ScenePlayOnView） */
+  name?: string;
+}) {
+  return (
+    <section id={id} className={`scene py-28 md:py-40 section-${tone}`}>
+      <SectionInner>
+        <div
+          className={`scene-layout flex flex-col items-center justify-center gap-14 md:gap-20 lg:gap-24 ${
+            reverse ? "is-reverse md:flex-row-reverse" : "md:flex-row"
+          }`}
+        >
+          <ScenePlayOnView className="shrink-0" name={name}>{art}</ScenePlayOnView>
+
+          <div className="scene-textwrap flex max-w-full flex-col items-center">
+            <SceneText heading={heading} lines={lines} />
+            <div className="scene-action mt-10">{action}</div>
+          </div>
+        </div>
+      </SectionInner>
+    </section>
+  );
+}
+
+// ─── 結びの場面（絵なし、文字だけで締める） ───
+// トップのいちばん最後の場面。絵は置かず、縦書きの見出しと文、その下の入口を、欄の横の真ん中にそろえる。
+// ・絵がない分、見出しと文を一段大きくする（SceneText の large）
+// ・上下の余白・背景は Scene と同じ（py-28 md:py-40 ＝ スマホ 112px・md 以上 160px、tone で背景）
+// ・縦書きの横幅：320px の画面では 見出し1列（36px × 1.6 ≒ 58px）＋あき（28px）＋文1行（18px × 2 ＝ 36px）で約 122px。
+//   左右の余白を除いた 272px に収まる。文を増やすときは 1行 36px ずつ足して見直すこと
+export function TextOnlyScene({
+  heading,
+  lines,
+  action,
+  tone,
+  id,
+}: {
+  heading: string;
+  lines: readonly string[];
+  action: ReactNode;
+  tone: SceneTone;
+  id?: string;
+}) {
+  return (
+    <section id={id} className={`scene py-28 md:py-40 section-${tone}`}>
+      <SectionInner>
+        <div className="scene-textwrap flex flex-col items-center text-center">
+          <SceneText heading={heading} lines={lines} large />
+          <div className="scene-action mt-10 flex justify-center">{action}</div>
+        </div>
+      </SectionInner>
+    </section>
+  );
+}
+
+// ─── 縦書きの中の半角の数字（縦中横） ───
+// 縦書きでは半角の数字が横に寝るので、1〜2 桁の半角の数字を、横に並べたまま1字分に立てる
+// （text-combine-upright: all）。3 桁以上と英字はそのまま（縦中横にすると字が細くなりすぎるため）。
+// 文章そのものは変えず、数字の所だけ span で囲む
+function withUprightDigits(text: string): ReactNode {
+  const parts = text.split(/([0-9]+)/);
+  if (parts.length === 1) return text;
+  return parts.map((part, i) =>
+    /^[0-9]{1,2}$/.test(part) ? (
+      <span key={i} className="[text-combine-upright:all]">
+        {part}
+      </span>
+    ) : (
+      part
+    ),
+  );
+}
+
+// ─── 縦書きの見出しと文 ───
+// 右から左へ読み、見出しが右端。高さは見出しの字数で決まる。
+// ・見出しと文の中の 1〜2 桁の半角の数字は、縦中横で立てる（withUprightDigits）
+// ・見出しは明朝体 700、文は明朝体 500（配列の1つが1行）
+// ・level … 見出しの階層（場面は h2。名物の欄の各品は、欄の見出しの下なので h3）
+// ・compact … 名物の欄の各品用。lg 以上で字を一段小さくする（絵を小さくした分に合わせる）
+// ・large … 結びの場面（TextOnlyScene）用。絵がない分、字を一段大きくする
+//   （見出し スマホ 36px・md 以上 46px、文 スマホ 18px・md 以上 20px。見出しと文のあきは普段と同じ）
+export function SceneText({
+  heading,
+  lines,
+  level = "h2",
+  compact = false,
+  large = false,
+}: {
+  heading: string;
+  lines: readonly string[];
+  level?: "h2" | "h3";
+  compact?: boolean;
+  large?: boolean;
+}) {
+  const Heading = level;
+  const headingSize = large
+    ? "text-[2.25rem] md:text-[2.875rem]"
+    : `text-[1.75rem] md:text-[2rem] ${compact ? "lg:text-[1.625rem]" : ""}`;
+  const textSize = large
+    ? "text-[18px] md:text-[20px]"
+    : `text-[17px] md:text-[18px] ${compact ? "lg:text-[16px]" : ""}`;
+  const textGap = `[margin-block-start:1.75rem] md:[margin-block-start:2.25rem] ${
+    compact ? "lg:[margin-block-start:1.5rem]" : ""
+  }`;
+  return (
+    <div className="font-serif [writing-mode:vertical-rl] text-foreground">
+      <Heading className={`scene-heading ${large ? "is-large " : ""}${headingSize} font-bold leading-[1.6] tracking-[0.16em] whitespace-nowrap`}>
+        {/* 「、」の後ろで分けたかたまり（それぞれ折り返さない）。ふだんは見出しごと折り返さないので1列のまま。
+            背の低い画面だけ、見出しの長さ（縦書きの高さ）を画面に合わせて抑え、かたまりの切れ目（「、」の後ろ）で2列に折る（scenes.css） */}
+        {heading.split("、").map((part, i, all) => (i < all.length - 1 ? `${part}、` : part)).filter(Boolean).map((part, i) => (
+          <span key={i} className="whitespace-nowrap">
+            {withUprightDigits(part)}
+          </span>
+        ))}
+      </Heading>
+      <p
+        className={`scene-lines ${textGap} ${textSize} font-medium leading-[2] tracking-[0.14em] [padding-inline-start:2.5em]`}
+      >
+        {lines.map((l) => (
+          <span key={l} className="block whitespace-nowrap">
+            {withUprightDigits(l)}
+          </span>
+        ))}
+      </p>
+    </div>
+  );
+}
+
+// 入口の小さなリンク（横書き）の見た目（色・下線・字）。external のときは新しいタブで開く
+export const SCENE_LINK_CLASS =
+  "text-sm tracking-wider text-accent hover:text-accent-dark underline underline-offset-4 decoration-accent/40 transition-colors duration-200";
+// 押せる範囲を高さ 44px にする（字の行 20px ＋ 上下 12px）。上下にはみ出す分は -my-3 で戻し、並びと見た目は今までのまま。
+// display（inline-block・inline-flex）は使う所で付ける
+export const SCENE_LINK_HIT = "py-3 -my-3";
+
+export function SceneLink({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <Link href={href} className={`inline-block ${SCENE_LINK_HIT} ${SCENE_LINK_CLASS}`}>
+      {children}
+    </Link>
+  );
+}
