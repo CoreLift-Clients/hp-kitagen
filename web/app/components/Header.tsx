@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import MobileNav from "./MobileNav";
@@ -11,18 +11,30 @@ import { PHONE as TEL } from "@/app/lib/contact";
 export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
+  const topMark = useRef<HTMLDivElement>(null);
 
+  // 「スクロールしたか」（ページの上から 20px より下へ動いたか）：ページの上端に置いた高さ 20px の目印（topMark）が
+  // 画面から出たかを IntersectionObserver で見る。scroll のたびに window.scrollY を読む形は、料理の絵の動きが多いページで
+  // そのたびにスタイルの計算をやり直させて重かったため、やめた（判定の位置は同じ。20px ちょうどまでは「スクロール前」）
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const el = topMark.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setScrolled(!e.isIntersecting));
+    io.observe(el);
+    return () => io.disconnect();
   }, []);
 
   return (
+    <>
+    {/* 「スクロールしたか」を見る目印（ページの上端から高さ 20px。見えない・押せない） */}
+    <div ref={topMark} aria-hidden="true" className="pointer-events-none absolute left-0 top-0 h-5 w-px" />
+    {/* スクロールした後の形（背景 97% 不透明）は、ぼかし（backdrop-blur）を付けない（透ける分がわずかで、
+        ぼかしは見た目にほとんど効かず、絵の動きが多いページで画面の重ね合わせ〈GPU〉の負担になるため）。
+        スクロールする前の形（背景 90%）のぼかしは今のまま */}
     <header
       className={`fixed top-0 left-0 right-0 z-50 h-[var(--header-h)] transition-all duration-300 ${
         scrolled
-          ? "bg-[#FBF8F2]/97 backdrop-blur-md border-b border-border shadow-[0_2px_24px_rgba(47,36,28,0.07)]"
+          ? "bg-[#FBF8F2]/97 border-b border-border shadow-[0_2px_24px_rgba(47,36,28,0.07)]"
           : "bg-[#FBF8F2]/90 backdrop-blur-sm border-b border-transparent"
       }`}
     >
@@ -107,5 +119,6 @@ export default function Header() {
 
       </nav>
     </header>
+    </>
   );
 }
