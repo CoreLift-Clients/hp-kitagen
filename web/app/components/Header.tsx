@@ -57,7 +57,10 @@ export default function Header() {
         {/* ── デスクトップ: ナビ ＋ 電話番号 ────────────────── */}
         <div className="hidden md:flex items-center">
 
-          {/* ナビリンク（lib/nav.ts の主要項目だけ。ゆったり配置） */}
+          {/* ナビリンク（lib/nav.ts の項目：はじめに・お品書き・ご案内・ごあいさつ）。
+              項目の左右の余白は lg より狭い画面 10px（項目の字と字のあいだ 20px）、lg 以上 20px（あいだ 40px）。
+              lg より狭い画面は、「はじめに」を足して4項目にしたとき、768px でロゴと項目のあいだが 6px と窮屈になったので、
+              14px（あいだ 28px）から詰めた（768px でロゴと項目のあいだ 38px） */}
           <ul className="flex items-center">
             {NAV_LINKS.map(({ href, label }) => {
               const active = isNavActive(pathname, href);
@@ -66,13 +69,13 @@ export default function Header() {
                   <Link
                     href={href}
                     aria-current={active ? "page" : undefined}
-                    className={`relative px-3.5 lg:px-5 py-1.5 font-serif font-medium text-sm lg:text-base transition-colors duration-200 group whitespace-nowrap ${
+                    className={`relative px-2.5 lg:px-5 py-1.5 font-serif font-medium text-sm lg:text-base transition-colors duration-200 group whitespace-nowrap ${
                       active ? "text-accent" : "text-muted hover:text-accent"
                     }`}
                   >
                     {label}
                     <span
-                      className={`absolute bottom-0 left-3.5 right-3.5 lg:left-5 lg:right-5 h-px bg-accent transition-transform duration-200 origin-left ${
+                      className={`absolute bottom-0 left-2.5 right-2.5 lg:left-5 lg:right-5 h-px bg-accent transition-transform duration-200 origin-left ${
                         active ? "scale-x-100" : "scale-x-0 group-hover:scale-x-100"
                       }`}
                     />

@@ -74,11 +74,6 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-const FOOTER_LINKS = [
-  { href: "/", label: "トップ" },
-  ...NAV_LINKS,
-];
-
 function Footer() {
   const currentYear = new Date().getFullYear();
   return (
@@ -92,13 +87,13 @@ function Footer() {
             <p className="font-serif text-lg font-bold text-accent">きたげん</p>
             <p className="text-sm text-muted">落ち着いて飲める、ちゃんとした居酒屋。</p>
           </div>
-          {/* 並びは「トップ」→ ヘッダーと同じ項目（lib/nav.ts の NAV_LINKS：お品書き・ご案内・ごあいさつ）。
-              ヘッダーに無いトップも、ここから辿れる（お知らせのページはやめた。お知らせはご案内のページの欄からインスタグラムへ）。
+          {/* 並びは、ヘッダー・スマホのメニューと同じ項目（lib/nav.ts の NAV_LINKS：はじめに・お品書き・ご案内・ごあいさつ）。
+              お知らせのページはやめた（お知らせは、ご案内のページの欄からインスタグラムへ）。
               390px でも1行に収まるよう、あきは 20px。項目が増えたら折り返す。
               押せる範囲は高さ 44px（py-3。上下にはみ出す 12px ずつは -my-3 で戻し、並びと見た目は今までのまま）。
               折り返したときに、上下の行の押せる範囲が重ならないよう、行のあきは 24px（gap-y-6） */}
           <ul className="flex flex-wrap justify-center gap-x-5 gap-y-6 text-sm text-muted">
-            {FOOTER_LINKS.map(({ href, label }) => (
+            {NAV_LINKS.map(({ href, label }) => (
               <li key={href}>
                 <Link href={href} className="inline-block py-3 -my-3 hover:text-foreground transition-colors">
                   {label}
