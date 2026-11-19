@@ -17,11 +17,15 @@ import { NAV_LINKS } from "./lib/nav";
 import StructuredData from "./components/StructuredData";
 import MobileCallBar from "./components/MobileCallBar";
 import ScrollToTop from "./components/ScrollToTop";
-import { SITE_URL, OG_IMAGE } from "./lib/seo";
+import { SITE_URL, OG_IMAGE, OG_IMAGE_ALT } from "./lib/seo";
+import { PHONE } from "./lib/contact";
+import { hoursForFooter } from "./lib/businessHours";
 import "./globals.css";
 
-const TITLE       = "IZAKAYA きたげん｜桃谷の居酒屋【公式サイト】";
-const DESCRIPTION = "桃谷の居酒屋「IZAKAYA きたげん」公式サイト。こだわりの料理とお酒を楽しめるお店です。ランチ・ディナー・テイクアウト対応。宴会や飲み会にもおすすめ。";
+// トップの title・description（og・twitter も同じ文）。下層のページは各 page.tsx の pageMetadata() で上書きする。
+// 席数（41席）・テイクアウトは手で書いている。席を変えたら、ここと app/info/page.tsx もそろえる
+const TITLE       = "桃谷駅の居酒屋 IZAKAYA きたげん｜鉄鍋餃子と自家製しゅうまい";
+const DESCRIPTION = "JR桃谷駅から歩いて2分、桃谷商店街の居酒屋「IZAKAYA きたげん」の公式サイト。名物は自家製しゅうまいと鉄鍋餃子。1階カウンター・2階座敷の41席で、宴会や団体もお電話でご相談ください。テイクアウトもできます。";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -31,7 +35,8 @@ export const metadata: Metadata = {
   icons: {
     icon: [
       { url: "/favicon.ico",  sizes: "any" },
-      { url: "/favicon.png",  type: "image/png" },
+      // favicon.png は 48×48（約 5KB）。以前の 400×400（218KB）は、どのページでも読みこまれて重かった
+      { url: "/favicon.png",  type: "image/png", sizes: "48x48" },
     ],
     apple: "/apple-touch-icon.png",
   },
@@ -47,7 +52,7 @@ export const metadata: Metadata = {
         url: OG_IMAGE,
         width: 1200,
         height: 630,
-        alt: TITLE,
+        alt: OG_IMAGE_ALT,
       },
     ],
   },
@@ -84,8 +89,23 @@ function Footer() {
       <div className="max-w-5xl mx-auto pl-[max(1rem,env(safe-area-inset-left))] pr-[max(1rem,env(safe-area-inset-right))] py-8">
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-center md:text-left">
-            <p className="font-serif text-lg font-bold text-accent">きたげん</p>
+            {/* 店名の色は、生成りの地（card-bg）との文字の色の差が 4.5:1 以上になるよう、焼橙（accent）より少し深い色にする */}
+            <p className="font-serif text-lg font-bold text-[#9A5516]">きたげん</p>
             <p className="text-sm text-muted">落ち着いて飲める、ちゃんとした居酒屋。</p>
+            {/* 住所・駅・営業時間・電話（検索や地図で、店の情報がどのページにも同じ書き方で出るように）。
+                営業時間は lib/businessHours.ts の hoursForFooter() から作る（ランチを再開すると、曜日ごとの行に分かれる）。
+                住所・駅を変えたら、app/info/page.tsx と components/StructuredData.tsx もそろえる */}
+            <address className="mt-3 not-italic text-sm text-muted leading-[1.9]">
+              <span className="block">大阪市生野区勝山北1丁目2-13（桃谷商店街）</span>
+              <span className="block">JR桃谷駅 徒歩2分</span>
+              {hoursForFooter().map((line) => (
+                <span key={line} className="block">{line}</span>
+              ))}
+              {/* 押せる範囲は高さ 44px（py-3。上下にはみ出す分は -my-3 で戻し、行の並びは変えない） */}
+              <a href={`tel:${PHONE}`} className="inline-block py-3 -my-3 tabular-nums hover:text-foreground transition-colors">
+                {PHONE}
+              </a>
+            </address>
           </div>
           {/* 並びは、ヘッダー・スマホのメニューと同じ項目（lib/nav.ts の NAV_LINKS：はじめに・お品書き・ご案内・ごあいさつ）。
               お知らせのページはやめた（お知らせは、ご案内のページの欄からインスタグラムへ）。

@@ -18,7 +18,7 @@ import "@fontsource/noto-serif-jp/500.css";
 import "@fontsource/noto-serif-jp/700.css";
 
 export const metadata = pageMetadata({
-  title: "店主紹介 | IZAKAYA きたげん",
+  title: "店主のごあいさつ｜桃谷駅の居酒屋 IZAKAYA きたげん",
   description:
     "桃谷で生まれ育った、居酒屋きたげんの店主より。みんなの居場所になる店を目指して。鉄鍋餃子や自家製しゅうまいへの想い、女性お一人でも入りやすい店づくりについてお話しします。",
   path: "/owner",
@@ -68,8 +68,8 @@ export default function OwnerPage() {
     <div className="min-h-screen">
       <BreadcrumbJsonLd
         items={[
-          { name: "トップ", path: "/" },
-          { name: "店主紹介", path: "/owner" },
+          { name: "はじめに", path: "/" },
+          { name: "ごあいさつ", path: "/owner" },
         ]}
       />
 

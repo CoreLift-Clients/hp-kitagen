@@ -17,11 +17,12 @@ import "@fontsource/noto-serif-jp/700.css";
 // 筆の字（佑字 朴 400）。名物のカードの品名だけに使う（globals.css の font-brush）。読み込むのはこのページだけ
 import "@fontsource/yuji-boku/400.css";
 
-// title・description・パンくず（BreadcrumbJsonLd）は「ディナーメニュー」のまま（ページの見出しは「お品書き」）。
-// 「メニュー」で探す人が多いので、検索結果とタブでは今の名前を残す（ヘッダー・フッターの項目名は見出しに合わせて「お品書き」）
+// title は見出しと同じ「お品書き」に、「メニュー」で探す人のために（メニュー）を添える。
+// description の品名は、名物の欄（content/specialty-prices.ts）と同じもの。名物を入れ替えたら、ここも直す
 export const metadata = pageMetadata({
-  title: "ディナーメニュー｜きたげん",
-  description: "きたげんのディナーメニュー。名物の料理とお飲みものをご覧いただけます。",
+  title: "お品書き（メニュー）｜桃谷駅の居酒屋 IZAKAYA きたげん",
+  description:
+    "桃谷の居酒屋 IZAKAYA きたげんのお品書き。自家製しゅうまい・鉄鍋餃子・からあげ・豚の角煮・串焼き・肉みそ冷奴と、ビール・日本酒・焼酎。お料理はテイクアウトもできます（一部を除く）。",
   path: "/menu/dinner",
 });
 
@@ -33,8 +34,8 @@ export default async function DinnerMenuPage() {
     <div className="min-h-screen">
       <BreadcrumbJsonLd
         items={[
-          { name: "トップ", path: "/" },
-          { name: "ディナーメニュー", path: "/menu/dinner" },
+          { name: "はじめに", path: "/" },
+          { name: "お品書き", path: "/menu/dinner" },
         ]}
       />
 

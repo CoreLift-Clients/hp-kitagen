@@ -143,3 +143,31 @@ function mergeWeekdays(): HoursNowRow[] {
 
 /** 定休日（/info の「定休日」の行に出す）。日曜日は BUSINESS_HOURS に入れない。 */
 export const REGULAR_CLOSED = "日曜日";
+
+/** 定休日の短い書き方（「日曜日」→「日曜」）。「日曜休み」のように使う */
+function closedShort(): string {
+  return REGULAR_CLOSED.replace(/日$/, "");
+}
+
+/**
+ * ご案内のページの description に入れる営業時間の文（例：「月〜土・祝日17:00〜22:00（L.O.21:30）、日曜休み」）。
+ * businessHoursNow() から作るので、ランチを再開すると行ごとに「、」でつながる（description が長くなるので、そのときは見直す）
+ */
+export function hoursForDescription(): string {
+  const rows = businessHoursNow().map((r) => `${r.days}${r.open}〜${r.close}（L.O.${r.lo}）`);
+  return `${rows.join("、")}、${closedShort()}休み`;
+}
+
+/**
+ * フッターの営業時間の行（例：["17:00〜22:00（L.O. 21:30）日曜休み"]）。
+ * 時間の行が1つ（いまの、ランチ休止中）なら曜日を書かず1行。
+ * ランチを再開して時間の行が分かれたら、曜日付きの行を並べ、最後に「日曜休み」の行を足す
+ */
+export function hoursForFooter(): string[] {
+  const rows = businessHoursNow();
+  if (rows.length === 1) {
+    const r = rows[0];
+    return [`${r.open}〜${r.close}（L.O. ${r.lo}）${closedShort()}休み`];
+  }
+  return [...rows.map((r) => `${r.days} ${r.open}〜${r.close}（L.O. ${r.lo}）`), `${closedShort()}休み`];
+}

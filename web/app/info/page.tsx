@@ -4,7 +4,7 @@ import PageHeading from "../components/PageHeading";
 import CardFrame from "../components/scenes/CardFrame";
 import { WashiSheet, WashiItem, BrushRule, WASHI_LINK as LINK } from "../components/Washi";
 import { PHONE, INSTAGRAM_URL, MAP_URL } from "../lib/contact";
-import { businessHoursNow, REGULAR_CLOSED, LUNCH_SUSPENDED } from "../lib/businessHours";
+import { businessHoursNow, REGULAR_CLOSED, LUNCH_SUSPENDED, hoursForDescription } from "../lib/businessHours";
 import { pageMetadata } from "../lib/seo";
 import BreadcrumbJsonLd from "../components/BreadcrumbJsonLd";
 import { keepWords } from "../lib/keepWords";
@@ -14,9 +14,13 @@ import { keepWords } from "../lib/keepWords";
 import "@fontsource/noto-serif-jp/500.css";
 import "@fontsource/noto-serif-jp/700.css";
 
+// description の営業時間（「月〜土・祝日17:00〜22:00（L.O.21:30）、日曜休み」）は lib/businessHours.ts の
+// hoursForDescription() から作る（ランチ再開などで、ページの表と食い違わないように）。
+// 席数・お支払いは手で書いている。席やお支払いを変えたら、ここと下の「お席」「お支払い」の欄、
+// components/StructuredData.tsx の paymentAccepted もそろえる
 export const metadata = pageMetadata({
-  title: "店舗情報｜きたげん",
-  description: "きたげんの営業時間・アクセス・席数・お支払い方法などをご確認いただけます。",
+  title: "店舗情報・アクセス｜桃谷駅2分の居酒屋 IZAKAYA きたげん",
+  description: `大阪市生野区勝山北、桃谷商店街の中。JR環状線「桃谷駅」から歩いて2分。営業は${hoursForDescription()}。41席（1階カウンター7席・2階座敷）。現金・クレジットカード・PayPayが使えます。`,
   path: "/info",
 });
 
@@ -208,8 +212,8 @@ export default function InfoPage() {
     <div className="min-h-screen">
       <BreadcrumbJsonLd
         items={[
-          { name: "トップ", path: "/" },
-          { name: "店舗情報", path: "/info" },
+          { name: "はじめに", path: "/" },
+          { name: "ご案内", path: "/info" },
         ]}
       />
 
